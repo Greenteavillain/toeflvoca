@@ -20,6 +20,7 @@ STAGE="$(mktemp -d)"
 trap 'rm -rf "$STAGE"' EXIT
 cp "$PROJ/index.html" "$PROJ/manifest.json" "$PROJ/sw.js" "$STAGE/"
 cp -R "$PROJ/icons" "$STAGE/"
+cp -R "$PROJ/.well-known" "$STAGE/"   # TWA(APK) 도메인 검증 assetlinks.json
 
 NETLIFY_AUTH_TOKEN="$(cat "$TOKEN_FILE")" npx -y netlify-cli@latest deploy \
   --dir "$STAGE" --prod --site "$SITE_ID"

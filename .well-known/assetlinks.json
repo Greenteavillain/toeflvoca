@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.greenteavillain.toeflvoca",
+      "sha256_cert_fingerprints": [
+        "7B:93:C8:34:C0:A6:A8:96:75:6C:94:D3:C7:95:AA:FA:F5:DA:1C:D5:E4:23:3D:7A:73:19:1A:05:F9:FC:8E:13"
+      ]
+    }
+  }
+]
