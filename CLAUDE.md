@@ -156,6 +156,7 @@ hk:{part}  → 해당 part
 
 ### 7.6 저장(storage)
 - `STORE_KEY = 'malhaeboca_v3'`. **버전 올리지 말 것** — 사용자의 기존 기록이 날아간다.
+- **이어풀기 세션**: 통계와 별개로 `SESSION_KEY = 'malhaeboca_session_v1'`에 지금 풀던 **덱(원본 인덱스 배열)·idx·results·filter**를 저장. `saveSession`(renderCard마다)·`clearSession`(showResult 완료 시)·시작화면 `updateResumeBanner`→"이어서 풀기" 배너. 앱 껐다 켜도(TWA 재로드) 복귀. CARDS 순서가 바뀌면 인덱스 검증 실패 시 세션 자동 폐기.
 - `store = { words:{ [cardKey]: { seen, correct, synStats, … } }, sessions:[] }`.
 - `weakKeys()`: 정답률 낮은 카드 key 목록 → `weak` 필터.
 

@@ -226,6 +226,12 @@
   .sync-btn:active{transform:translateY(1px)}
   .sync-hint{margin:0;font-size:.76rem;line-height:1.5;color:var(--muted)}
   .sync-status{font-size:.78rem;font-weight:700;color:var(--green);min-height:1em}
+  /* "이어서 풀기" 배너 */
+  .resume{display:flex;align-items:center;gap:12px;width:100%;margin:2px 0 14px;border:none;border-radius:14px;padding:14px 16px;background:linear-gradient(135deg,#4a95f7,#1c56cf);color:#fff;font:inherit;font-size:1rem;font-weight:800;cursor:pointer;box-shadow:0 8px 20px rgba(28,86,207,.28);text-align:left}
+  .resume:active{transform:translateY(1px)}
+  .resume-ico{flex:0 0 auto;width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.22);display:grid;place-items:center;font-size:.82rem}
+  .resume-txt{display:flex;flex-direction:column;line-height:1.3}
+  .resume-txt small{font-size:.76rem;font-weight:600;opacity:.92}
 </style>
 </head>
 <body>
@@ -243,6 +249,11 @@
   <section id="screenStart" class="panel">
     <div class="title">복습 시작하기</div>
     <div class="subtitle">예문의 빈칸을 영어로 채운 뒤, 이어서 동의어를 골라요. 문장 복습 · 단어 암기(TOEFL Voca) · 해커스 보카 세 묶음이 있어요.</div>
+
+    <button class="resume hidden" id="resumeBtn" type="button">
+      <span class="resume-ico">▶</span>
+      <span class="resume-txt">이어서 풀기<small id="resumeInfo"></small></span>
+    </button>
 
     <div class="stats hidden" id="statsBox">
       <div class="stats-main"><b id="statStudied">0</b>개 학습 · 정답률 <b id="statAcc">0</b>%</div>
@@ -636,7 +647,7 @@ function recordResult(key, correct, hinted){
 }
 
 /* ── 상태 ── */
-let deck = [], idx = 0, results = [];
+let deck = [], idx = 0, results = [], sessionActive = false;
 let filter = 'hk:1', shuffle = false, lastFilter = 'hk:1', lastShuffle = false;
 // 문장형
 let sAnswered = false, sHint = 0, sAns = '';
@@ -650,7 +661,7 @@ function showScreen(name){
   $('topbar').style.visibility = (name === 'play') ? 'visible' : 'hidden';
   document.querySelector('.brandline').style.visibility = (name === 'play') ? 'visible' : 'hidden';
   if (name !== 'play'){ const _kb = $('kbd'); if (_kb) _kb.classList.add('hidden'); }
-  if (name === 'start') renderStats();
+  if (name === 'start'){ renderStats(); updateResumeBanner(); }
 }
 function actions(o){
   o = o || {};
@@ -712,7 +723,7 @@ function startSet(f, s){
   deck = deckFor(f);
   if (!deck.length) return;
   if (s) deck.sort(() => Math.random() - 0.5);
-  idx = 0; results = [];
+  idx = 0; results = []; sessionActive = true;
   showScreen('play'); renderCard();
 }
 /* ── 미리 보기(목록) ── */
@@ -772,9 +783,48 @@ function renderCard(){
   else if (c.mode === 'hackers'){ $('cardHackers').classList.remove('hidden'); renderHackers(c); }
   else { $('cardSentence').classList.remove('hidden'); renderSentence(c); }
   $('blankModeBtn').classList.toggle('hidden', !(c.mode === 'sentence' || c.mode === 'hackers'));
+  saveSession();   // 카드가 바뀔 때마다 현재 위치 저장 → 껐다 켜도 이어풀기
 }
 function setNextLabel(){ $('nextBtn').textContent = (idx === deck.length - 1) ? '결과 보기' : '다음'; }
 function pushResult(c, correct, hinted){ results.push({ i:c.i, correct, hinted }); recordResult(cardKey(c), correct, hinted); }
+
+/* ============================================================
+   진행 중 세션 저장/복원 — "하던 곳에서 이어풀기"
+   단어별 통계와 별개로, 지금 풀던 덱 순서·위치·결과를 로컬에 저장한다.
+   앱을 껐다 켜도(폰 홈 → TWA 재로드) 시작화면의 "이어서 풀기"로 복귀.
+   ============================================================ */
+const SESSION_KEY = 'malhaeboca_session_v1';
+function saveSession(){
+  if (!sessionActive || !deck.length) return;
+  try {
+    localStorage.setItem(SESSION_KEY, JSON.stringify({
+      d: deck.map(c => c.i), i: idx, r: results, f: lastFilter, s: lastShuffle
+    }));
+  } catch(e){}
+}
+function clearSession(){ sessionActive = false; try { localStorage.removeItem(SESSION_KEY); } catch(e){} }
+function loadSession(){
+  try {
+    const o = JSON.parse(localStorage.getItem(SESSION_KEY) || 'null');
+    if (!o || !Array.isArray(o.d) || !o.d.length) return null;
+    if (typeof o.i !== 'number' || o.i < 0 || o.i >= o.d.length) return null;              // 끝났거나 이상
+    if (o.d.some(i => typeof i !== 'number' || i < 0 || i >= CARDS.length)) return null;   // 콘텐츠 변경으로 인덱스 어긋남
+    return o;
+  } catch(e){ return null; }
+}
+function resumeSession(o){
+  deck = o.d.map(i => ({ ...CARDS[i], i }));
+  idx = o.i; results = Array.isArray(o.r) ? o.r : [];
+  lastFilter = o.f; lastShuffle = !!o.s; sessionActive = true;
+  showScreen('play'); renderCard();
+}
+function updateResumeBanner(){
+  const btn = $('resumeBtn'); if (!btn) return;
+  const o = loadSession();
+  if (o){ $('resumeInfo').textContent = ' ' + filterLabel(o.f) + ' · ' + (o.i + 1) + '/' + o.d.length; btn.classList.remove('hidden'); }
+  else btn.classList.add('hidden');
+}
+$('resumeBtn').addEventListener('click', () => { const o = loadSession(); if (o) resumeSession(o); });
 
 /* ============================================================
    문장형 카드
@@ -1339,6 +1389,7 @@ $('speakBtn').addEventListener('click', () => speakSentence(deck[idx]));
    결과
    ============================================================ */
 function showResult(){
+  clearSession();   // 세트 완료 → 이어풀기 세션 종료
   showScreen('result');
   const total = results.length, right = results.filter(r => r.correct).length;
   $('scoreNum').innerHTML = `<b>${right}</b> / ${total}`;
@@ -1365,7 +1416,7 @@ function fillList(container, arr, miss){
 }
 function plainMean(ko){ const m = ko.match(/<mark>(.*?)<\/mark>/); return m ? m[1] : ''; }
 
-$('retryWrongBtn').addEventListener('click', () => { deck = results.filter(r => !r.correct).map(r => ({ ...CARDS[r.i], i:r.i })); idx = 0; results = []; showScreen('play'); renderCard(); });
+$('retryWrongBtn').addEventListener('click', () => { deck = results.filter(r => !r.correct).map(r => ({ ...CARDS[r.i], i:r.i })); idx = 0; results = []; sessionActive = true; showScreen('play'); renderCard(); });
 $('againBtn').addEventListener('click', () => startSet(lastFilter, lastShuffle));
 $('homeBtn').addEventListener('click', () => showScreen('start'));
 
