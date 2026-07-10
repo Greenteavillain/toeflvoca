@@ -1,0 +1,219 @@
+# CLAUDE.md — 말해보카식 복습 (TOEFL 단어 퀴즈)
+
+이 문서는 Claude Code가 이 프로젝트를 이어서 작업할 때 필요한 맥락 전부를 담는다.
+새 세션에서 헤매지 않도록, **아키텍처 / 데이터 모델 / 지켜야 할 규칙 / 그동안 밟은 함정**을 정리했다.
+
+---
+
+## 1. 프로젝트 개요
+- **단일 파일 웹앱.** 빌드 도구·프레임워크·의존성·서버 없음. `index.html` 하나가 전부(HTML + CSS + JS + 데이터 모두 인라인).
+- **모바일 우선.** TOEFL 단어 암기용 자기주도 퀴즈.
+- **실행:** `index.html`을 브라우저로 열면 끝.
+- **배포:** 정적 호스팅이면 충분(GitHub Pages 권장 — 사용자는 `greenteavillain.github.io` 스타일로 운영).
+- **기록:** 브라우저 `localStorage`. `file://`로 열어도 대부분 동작하지만 시크릿/일부 환경은 저장이 막혀서, 앱이 상단에 경고 배너를 띄운다.
+
+## 2. 파일 구조
+```
+malhaeboca/
+├─ index.html      # 앱 전체 (약 1,330줄)
+├─ CLAUDE.md       # 이 문서
+├─ README.md       # 사람용 개요
+├─ .gitignore
+└─ test/
+   └─ smoke.js     # Node 회귀 테스트 (렌더 없이 로직 검증)
+```
+
+## 3. 큰 그림 (아키텍처)
+- `index.html` 안에 `<style>`(CSS) · `<section>` 4개(화면) · `<script>`(로직) · `const CARDS`(데이터)가 전부 인라인.
+- **데이터를 별도 JSON으로 빼서 `fetch`하지 말 것.** `file://`에서 CORS로 막힌다. 인라인 유지가 정석. 정 나누고 싶으면 `<script src="cards.js">`로 전역 `CARDS`를 세팅하는 방식(파일 프로토콜에서 동작).
+- 배열 정의 직후:
+  ```js
+  CARDS.forEach(c => { if (!c.mode) c.mode = 'sentence'; });
+  ```
+  → **`mode`가 없는 카드는 문장형으로 간주.** (문장형 카드에는 `mode` 키를 안 적는다.)
+
+## 4. 데이터 모델 (`const CARDS`)
+카드는 3종. mode로 분기한다.
+
+### (A) 문장형 — `mode` 생략 → `'sentence'`
+```js
+{ set:'보존',
+  ko:'<mark>보존</mark>은 인간의 활동으로 위협받는 …',
+  note:'', pre:'', answer:'Conservation',
+  post:' involves safeguarding endangered plants and animals …' }
+```
+- 한국어 문장의 `<mark>` 부분을 영어로 채우는 빈칸 문제. `pre + answer + post` = 전체 영어 문장.
+- `set`: `보존` / `경제` / `대화` (필터 `sent:*`).
+
+### (B) 해커스형 — `mode:'hackers'`, **`part` 보유 = 해커스 보카 Day 1**
+```js
+{ mode:'hackers', part:1, num:1, mi:'', key:'exploit',
+  word:'exploit', pos:'동사', koMean:'(부당하게) 이용하다',
+  syn:['utilize','use','make use of','take advantage of'],
+  ko:'… 아동의 노동을 <mark>이용하는</mark> 회사들에 …',
+  pre:'Human rights activists have led protests against companies that ',
+  answer:'exploit', post:' child labor.',
+  note:'…', bold:3 }
+```
+- **2단계 카드:** (1) 예문 빈칸 채우기 → (2) 동의어 4지선다.
+- `part`: 1/2/3 (필터 `hk:1/2/3`). `num`: 책 단어 번호. `mi`: 다의어 분리 표시(`①②③`). `bold`: 앞에서부터 몇 개가 '핵심(책 볼드)' 동의어인지.
+
+### (C) 해커스형 — `mode:'hackers'`, **`lesson` 보유 = 단어 암기 · TOEFL Voca 01**
+```js
+{ mode:'hackers', lesson:'1-1', key:'1-1/abound',
+  word:'abound', pos:'동사', mi:'', koMean:'풍부하다, 많이 있다',
+  syn:['be plentiful','teem','proliferate'],
+  ko:'… 물고기가 <mark>많이 산다</mark>.',
+  pre:'Fish ', answer:'abound', post:' in the cold, nutrient-rich waters …',
+  note:'…' }
+```
+- Day 1과 **메커니즘은 완전히 동일**하지만 `part` 대신 `lesson`을 쓴다.
+- `bold` 없음 → 동의어 전부를 핵심으로 취급.
+- `lesson`: `1-1` / `1-2` / `2-1` (필터 `voca:1-1/1-2/2-1`).
+
+### 현재 카드 수
+| 묶음 | 필터 | 수 |
+|---|---|---|
+| 문장 복습 | `sent:보존/경제/대화` | 17 (5 / 10 / 2) |
+| 단어 암기 · TOEFL Voca 01 | `voca:1-1/1-2/2-1` | 60 (20 / 20 / 20) |
+| 해커스 보카 Day 1 | `hk:1/2/3` | 65 (26 / 20 / 19) |
+
+해커스 계열(hackers) 총 125장.
+
+### 키 규칙 (중요)
+```js
+cardKey(c) = (c.mode === 'hackers') ? 'hk:' + c.key
+                                    : (c.mode === 'word' ? c.word : c.answer).toLowerCase();
+```
+- **`key`는 반드시 유일해야 한다.** Day 1은 `word`(+`mi`), Voca는 `lesson/word`로 네임스페이스한다.
+- 이유: `annihilate` / `deliberate` / `genuine` / `compensate` 는 Day 1과 Voca 2-1 **양쪽에** 있다. Voca를 `lesson/word`로 접두하지 않으면 `cardKey`가 충돌해 기록이 섞인다.
+
+## 5. 화면 & 흐름
+```js
+const screens = { start, play, result, preview };
+showScreen(name); // 나머지 화면 hidden 처리
+```
+흐름:
+```
+시작 화면(세트 칩 선택)
+   └─ [시작하기]  → preview(그 세트 단어 목록)
+                        └─ [이 세트로 시작하기] → play(퀴즈) → result
+```
+- `topbar`와 화면 키보드는 **play에서만** 보인다.
+- `[← 뒤로]`로 preview→start 복귀.
+
+## 6. 세트 선택 로직 — `deckFor(filter)`
+```
+weak       → 이전에 틀린 카드 (weakKeys)
+sent:all   → 모든 문장형
+sent:{set} → 해당 set 문장형
+voca:all   → lesson 있는 해커스 (= Voca 전체)
+voca:{les} → 해당 lesson
+hk:all     → part 있는 해커스   (= Day1 전체)
+hk:{part}  → 해당 part
+```
+> **주의:** Voca·Day1 둘 다 `mode:'hackers'`다. 그래서 `hk:all`은 `&& c.part`, `voca:all`은 `&& c.lesson`으로 구분한다. (안 하면 서로 섞인다.)
+
+## 7. 핵심 서브시스템
+
+### 7.1 빈칸 입력
+- 두 모드: **slots**(글자 수만큼 밑줄칸, 기본) / **width**(입력폭). 우상단 토글, `localStorage 'malhaeboca_blankmode'`에 저장.
+- **정답 비교는 반드시 `blankNorm()`을 쓴다:**
+  ```js
+  function blankNorm(s){ return String(s).toLowerCase().replace(/[^a-z0-9]+/g, ''); }
+  ```
+  슬롯이 "글자만" 채우므로 비교도 글자 기준이어야 일관된다. 공백·nbsp가 섞여도 글자만 맞으면 정답(`"account for" ↔ "accountfor"` 모두 정답).
+- ⚠️ **`trim().toLowerCase()` 직접 비교로 되돌리지 말 것.** 실기기(안드로이드 등)가 입력에 공백/nbsp를 넣으면 슬롯엔 정답으로 보이는데 비교에서 틀리는 버그가 있었음. `blankNorm`이 그 수정.
+
+### 7.2 화면 내장 키보드
+- OS 키보드가 화면을 가려서 자체 QWERTY를 구현. 입력창은 `inputmode="none"`(OS 키보드 억제, 물리키는 통과).
+- **하단 `position:fixed` 고정.** 표시 시 `setKbd`가 `.wrap`의 `paddingBottom`을 키보드 높이+24px로 세팅(카드 안 가리게), 숨길 때 해제.
+- **PC 물리 키보드:** 입력창 포커스면 native 입력이 처리, 포커스 밖이면 전역 `keydown`이 활성 입력으로 라우팅. **중복 입력 방지** — 포커스가 입력창 안(`inField`)일 땐 전역 핸들러가 관여하지 않는다. 키 버튼은 `mousedown` `preventDefault`로 포커스를 뺏지 않아 PC에서 클릭/타이핑 혼용이 된다.
+
+### 7.3 해커스 2단계 & 오답(distractor) — **여기 규칙이 제일 중요**
+- `resolveH1`(빈칸 통과) → `syn` 있으면 `openMcq`, 없으면 `finishNoSyn`(방어용; 현재는 모든 카드가 `syn` 보유).
+- 4지선다 두 형식:
+  - **pick**: 정답 동의어 1 + 오답 3.
+  - **odd**: 동의어 3 + '아닌 것' 침입자 1 (동의어 3개↑ 카드에서 일부 확률). 질문의 **"아닌"에 밑줄**.
+- 동의어 로테이션(`pickTargetSyn`): 이전에 틀린 동의어 → 미노출 볼드 → 미노출 → 가중 순. 동의어별 기록 `synStats`.
+- **오답 풀 = `mcqPool(c)`: 그 카드의 홈 세트에서만 뽑는다.**
+  ```js
+  function mcqPool(c){
+    if (c.part   != null) return CARDS.filter(x => x.mode==='hackers' && x.part   === c.part);
+    if (c.lesson != null) return CARDS.filter(x => x.mode==='hackers' && x.lesson === c.lesson);
+    return CARDS.filter(x => x.mode==='hackers');
+  }
+  ```
+  - **덱과 무관하게** 카드의 `part`/`lesson` 기준. 그래서 `weak`('이전에 틀린 것')·`전체` 복습이어도 파트가 절대 안 섞인다. (예: Day1 1–20 카드는 항상 part 1 안에서만 오답.)
+  - 각 세트가 19장 이상이라 4지선다는 항상 채워진다(별도 확장 불필요).
+- 오답 어휘 필터: `hkTokens` 토큰 겹침 제거 → 오답이 정답 동의어와 어휘가 겹치지 않게.
+
+### 7.4 edible (특이 이력)
+- 원래 "시험용 동의어 없음"으로 특수 처리(`tasty`/`succulent`는 동의어 아님)했다가, 이후 **`eatable`, `fit for consumption`** 추가 → 지금은 일반 카드로 동작. `finishNoSyn`/가드는 방어용으로 남겨둠(다른 무동의어 카드가 생겨도 안 깨지게).
+
+### 7.5 미리보기(preview)
+- `openPreview` → `deckFor(filter)`로 목록 렌더. `previewItem`이 카드 3종을 분기(단어·품사·뜻·동의어[핵심 볼드]·예문·노트). 문장형은 `<mark>` 제거 후 한국어+예문.
+
+### 7.6 저장(storage)
+- `STORE_KEY = 'malhaeboca_v3'`. **버전 올리지 말 것** — 사용자의 기존 기록이 날아간다.
+- `store = { words:{ [cardKey]: { seen, correct, synStats, … } }, sessions:[] }`.
+- `weakKeys()`: 정답률 낮은 카드 key 목록 → `weak` 필터.
+
+## 8. 지켜야 할 규칙 & 함정 요약
+1. **정답 비교는 `blankNorm`** (영숫자만). `trim().toLowerCase()` 직접 비교로 회귀 금지.
+2. **오답은 `mcqPool` = 카드의 홈 세트(part/lesson)**. 파트 섞지 말 것.
+3. **`STORE_KEY` 고정**('malhaeboca_v3').
+4. **카드 `key` 유일성** — Voca는 `lesson/word`.
+5. `ko`는 대상 의미에 `<mark>`. `answer`는 굴절형 가능(`exposed`, `supplanted`)하되 `word`/`syn`은 기본형(4지선다 질문은 `word`를 씀).
+6. **Dead code**: `mode:'word'`(구 암기짱형 — `renderWord`/`buildWordSlots`/동의어 스테이지 등)는 현재 미사용이나 무해하게 남겨둠. 되살리려면 `deckFor`의 `voca:*`가 지금은 해커스형을 가리킨다는 점에 유의.
+7. 데이터 편집 시 JSON 따옴표/중괄호 균형 주의(카드 한 줄이 길다).
+
+## 9. 테스트 워크플로 (회귀 방지)
+브라우저 렌더 없이 **로직만 빠르게** 검증하며 개발했다:
+1. `index.html`에서 `<script>` 추출.
+2. `node --check`로 문법 확인.
+3. `document`/`localStorage`/`speechSynthesis`/`getComputedStyle` 등을 stub한 mock-DOM에 eval → 함수를 직접 호출해 단언.
+
+```bash
+node test/smoke.js
+```
+카드 수, `deckFor` 카운트, `mcqPool` 홈세트 스코프, `blankNorm` 정규화 등 핵심 불변식을 확인한다. **큰 변경 후 항상 실행 권장.** (CSS/레이아웃/키보드 고정 등 시각적인 건 목으로 못 잡으니 브라우저로도 확인.)
+
+## 10. 다음 작업 아이디어 (TODO 후보)
+- 1-1·1-2 예문 40개는 직접 작성한 것 → 원하면 실제 TOEFL 지문 예문으로 교체.
+- Voca 후속 레슨 / 해커스 Day 2 추가(스키마 그대로, `key` 네임스페이스만 지키면 됨).
+- preview에 **셀프 테스트**(뜻·동의어 가림/펼치기) 토글.
+- '단어 암기'와 '해커스'가 형식이 같아졌으니 명칭/그룹 정리 검토.
+- SRS(간격 반복) 스케줄링, 오답 노트 내보내기.
+- 필요 시 파일 분리(`cards.js` 전역 로드). 단 **JSON `fetch`는 `file://`에서 불가**.
+
+## 11. PWA & 클라우드 동기화 (2026-07-10 추가)
+웹앱을 "설치되는 앱"으로 만들기 위해 **웹은 그대로 두고 껍데기만 추가**했다. 기존 로직·데이터·저장 구조는 안 건드렸다.
+
+### 파일 구조 변화
+```
+index.html      # <head>에 PWA 메타/링크, <script> 끝에 동기화·SW등록 블록 추가
+manifest.json   # 앱 이름·아이콘·standalone·테마색
+sw.js           # 서비스워커
+icons/          # icon-512/192 · apple-touch-icon(180) · favicon-32 (파란 배경 흰 V + 빈칸밑줄)
+```
+
+### 서비스워커 전략 (`sw.js`)
+- **문서(index.html)는 네트워크 우선**, 실패 시 캐시 → **`git push`가 온라인에서 즉시 반영**된다(앱 재빌드·재설치 불필요). 이게 "라이브 URL을 감싸는" 핵심.
+- 아이콘 등 정적 자산은 캐시 우선. 외부 오리진(Supabase)은 `respondWith` 없이 그대로 통과.
+- 캐시 이름 `toeflvoca-v1`. activate에서 옛 캐시 삭제 + `skipWaiting`/`clients.claim`.
+- ⚠️ **PWA 기능(설치·오프라인·SW)은 HTTPS(또는 localhost)에서만 켜진다.** `file://`에선 그냥 웹.
+
+### 클라우드 동기화 — 로그인 없음, "동기화 코드" 방식
+- **localStorage가 원본**(`STORE_KEY='malhaeboca_v3'`), Supabase는 백업 / 기기 간 이어보기.
+- 첫 실행 때 기기에서 랜덤 코드 생성(`malhaeboca_sync_code`, 예 `voca-xxxx-xxxx-xxxx`) → **공개 레포에 안 들어감**. 다른 기기에서 시작화면 "기기 간 동기화"에 그 코드를 넣으면 같은 데이터.
+- **supabase-js 안 씀.** `fetch`로 RPC만 호출(`SB_URL` + `/rest/v1/rpc/…`, `SB_KEY`=publishable). 무의존성 유지.
+- `saveStore()` 끝에서 `window.__voca_push`(=`cloudPushSoon`, 1.5s 디바운스) 호출. 부팅 시 `cloudInit()`가 pull→**단어별 `lastAt` 최신 병합**(`mergeStores`)→저장→push. `cloudReady` 플래그로 초기 병합 전 덮어쓰기 방지.
+- 실행 블록 전체가 `if (typeof window!=='undefined' && window.addEventListener)` 가드 안 → **Node 스모크 테스트에선 스킵**(smoke의 mock window엔 addEventListener 없음). 함수 정의는 밖, 실행만 안. crypto/fetch/navigator를 mock 안 해도 안 깨진다.
+
+### Supabase 백엔드 (공용 `manhwa_viewer` 프로젝트 `ihecmsgxpfdiizlkdylv`)
+- 테이블 `toeflvoca_progress(sync_code text pk, data jsonb, updated_at)`. **RLS 켜고 정책 없음 = anon 직접접근 전면 차단.**
+- 접근은 `SECURITY DEFINER` 함수 2개로만: `toeflvoca_pull(p_code)` / `toeflvoca_push(p_code, p_data)`(코드 최소 8자·페이로드 1MB 가드). anon/authenticated에 execute 권한. (erratogram·janflower와 같은 anon-RPC 안전 패턴.)
+
+### TWA(APK) 메모
+- 네이티브 APK는 위 PWA(배포된 HTTPS URL)를 **얇게 감싸는 TWA**로 만든다 → 콘텐츠 수정은 `git push`만, APK 재빌드는 아이콘/이름/URL 바꿀 때만. (아직 미생성.)

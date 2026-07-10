@@ -1,0 +1,1467 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<title>말해보카식 복습 · 학습지 + TOEFL Voca</title>
+<!-- PWA: 홈화면 설치·전체화면·오프라인. HTTPS(깃헙 Pages)에서만 활성화 -->
+<meta name="theme-color" content="#dcefff">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/favicon-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="말해보카">
+<style>
+  :root{
+    --bg-top:#dcefff; --bg-bot:#f3f9ff;
+    --card:#ffffff; --card-top:#f1f8ff; --line:#e4eef8;
+    --ink:#20303f; --ink-soft:#5a6b7a; --muted:#9aa8b6;
+    --green:#12a374;
+    --blue:#3f8cf4; --blue-soft:#dfeafd; --blue-ink:#1c56cf;
+    --purple:#6f5ad6;
+    --slot:#b9cbe0;
+    --ok-bg:#d9f6e8; --ok-ink:#0f8a5f;
+    --bad-bg:#fde3e3; --bad-ink:#d24747;
+    --warn-bg:#fff6e2; --warn-ink:#a9761b;
+    --shadow:0 18px 44px rgba(50,95,150,.16);
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    font-family:"Apple SD Gothic Neo","Pretendard","Malgun Gothic","Segoe UI",system-ui,sans-serif;
+    color:var(--ink);
+    background:linear-gradient(180deg,var(--bg-top) 0%,var(--bg-bot) 62%);
+    min-height:100dvh;-webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:600px;margin:0 auto;padding:20px 18px 40px;min-height:100dvh;display:flex;flex-direction:column;gap:18px}
+
+  /* 상단 진행 */
+  .top{display:flex;align-items:center;gap:12px}
+  .trophy{width:44px;height:44px;flex:0 0 auto;border-radius:50%;background:var(--blue);display:grid;place-items:center;font-size:20px;box-shadow:0 6px 14px rgba(63,140,244,.35)}
+  .bar{flex:1;height:14px;border-radius:99px;background:#cfe1f4;overflow:hidden}
+  .bar-fill{height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,#63a8ee,#3f8cf4);transition:width .35s ease}
+  .counter{flex:0 0 auto;font-size:.82rem;font-weight:700;color:var(--ink-soft);min-width:46px;text-align:right}
+  .mode-toggle{flex:0 0 auto;border:1.5px solid var(--line);background:#fff;border-radius:10px;padding:6px 9px;font:inherit;font-size:.74rem;font-weight:800;cursor:pointer;line-height:1}
+  .mode-toggle .mt-sep{margin:0 5px;color:var(--muted);font-weight:700}
+  .mode-toggle span{color:var(--muted)} .mode-toggle span.on{color:var(--blue-ink)}
+  /* 앱 내장 키보드 */
+  .kbd{position:fixed;left:0;right:0;bottom:0;margin:0 auto;max-width:600px;padding:10px 12px calc(10px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:7px;user-select:none;background:#e9f1fb;border-top:1px solid #d3e3f5;box-shadow:0 -8px 24px rgba(50,95,150,.18);z-index:60}
+  .kbd-row{display:flex;gap:6px;justify-content:center}
+  .kbd-row.indent{padding:0 4.5%}
+  .key{flex:1 1 0;min-width:0;height:47px;border:none;border-radius:9px;background:#fff;box-shadow:0 1px 2px rgba(50,95,150,.2);font:inherit;font-size:1.1rem;font-weight:700;color:var(--ink);cursor:pointer;display:grid;place-items:center;padding:0}
+  .key:active{background:#e3edfb;transform:translateY(1px)}
+  .key.kb-back{background:#e7edf4;flex:1.4 1 0;font-size:1.16rem}
+  .key.kb-space{flex:5 1 0;font-size:.9rem;color:var(--ink-soft)}
+  .key.kb-enter{flex:2.2 1 0;background:var(--blue);color:#fff;box-shadow:0 4px 12px rgba(63,140,244,.3)}
+  @media (max-width:430px){ .key{height:43px;font-size:1.02rem} }
+  .brandline{font-size:.72rem;letter-spacing:.02em;color:var(--muted);text-align:center;margin-top:-6px}
+
+  /* 카드 공통 */
+  .card{background:var(--card);border-radius:24px;box-shadow:var(--shadow);overflow:hidden}
+  .card-top{background:var(--card-top);padding:22px 22px 16px;border-bottom:1px solid var(--line)}
+  .level{display:inline-block;font-size:.74rem;font-weight:800;color:var(--blue);background:#e4eefc;border-radius:8px 8px 0 0;padding:5px 12px;margin:-22px 0 12px -22px}
+  .card-bot{padding:26px 22px 22px;background:var(--card)}
+  .feedback{min-height:22px;margin-top:16px;font-size:.98rem;font-weight:700}
+  .feedback.good{color:var(--ok-ink)} .feedback.wrong{color:var(--bad-ink)} .feedback.warn{color:var(--warn-ink)}
+  .feedback b{font-weight:800}
+  .src{margin-top:14px;font-size:.72rem;color:var(--muted)}
+
+  /* 문장형 카드 */
+  .ko{font-size:1.24rem;line-height:1.62;font-weight:600;color:var(--ink);word-break:keep-all}
+  .ko mark{background:transparent;color:var(--green);font-weight:800}
+  .note{margin-top:10px;text-align:right;font-size:.82rem;color:var(--muted)}
+  .en{font-size:1.42rem;line-height:1.72;color:var(--ink);word-break:break-word}
+  .en .pre,.en .post{white-space:pre-wrap}
+  .blank{display:inline-block;vertical-align:baseline;font:inherit;font-size:1.42rem;line-height:1.2;min-width:2ch;text-align:left;background:var(--blue-soft);color:var(--blue-ink);font-weight:700;border:none;border-radius:8px;padding:2px 10px;margin:0 2px;outline:none;caret-color:var(--blue);transition:background .18s,color .18s,box-shadow .18s;overflow:hidden}
+  .blank:focus{box-shadow:0 0 0 3px rgba(63,140,244,.28)}
+  .blank.ok{background:var(--ok-bg);color:var(--ok-ink)} .blank.bad{background:var(--bad-bg);color:var(--bad-ink)}
+  .blank.otp{opacity:0;width:1px;min-width:1px;padding:0;margin:0;border:none;background:transparent;caret-color:transparent}
+  .blank.otp:focus{box-shadow:none}
+  .inline-slots{display:inline-flex;flex-wrap:wrap;gap:3px 7px;vertical-align:baseline;align-items:flex-end}
+  .inline-slots .lslot{display:inline-block;min-width:.68em;padding:0 2px 2px;font-size:1.42rem;font-weight:700;text-align:center;border-bottom:3px solid var(--slot);color:var(--blue-ink);line-height:1.2}
+  .inline-slots .lgap{display:inline-block;width:9px}
+  .inline-slots .lsep{display:inline-block;font-size:1.42rem;font-weight:700;color:var(--muted)}
+  .inline-slots.ok .lslot{border-color:var(--ok-ink);color:var(--ok-ink)}
+  .inline-slots.bad .lslot{border-color:var(--bad-ink);color:var(--bad-ink)}
+
+  /* 단어형 카드 */
+  .w-mean-label{font-size:.76rem;font-weight:800;color:var(--muted);letter-spacing:.05em}
+  .w-mean{font-size:1.5rem;font-weight:800;color:var(--ink);margin-top:6px;line-height:1.4;word-break:keep-all}
+  .w-stage-label{font-size:.86rem;font-weight:800;color:var(--ink-soft)}
+  .slots{display:flex;flex-wrap:wrap;gap:8px 10px;cursor:text;padding:10px 0 4px;margin-top:8px}
+  .slot{display:inline-block;min-width:1.05em;padding:0 3px 3px;font-size:1.5rem;font-weight:800;text-align:center;border-bottom:3px solid var(--slot);color:var(--ink);line-height:1.35}
+  .slots.ok .slot{border-color:var(--ok-ink);color:var(--ok-ink)}
+  .slots.bad .slot{border-color:var(--bad-ink);color:var(--bad-ink)}
+  .w-input{font:inherit;font-size:1.3rem;font-weight:700;text-align:center;padding:12px 14px;border:none;border-radius:12px;background:var(--blue-soft);color:var(--blue-ink);outline:none;width:100%;margin-top:16px;caret-color:var(--blue)}
+  .w-input:focus{box-shadow:0 0 0 3px rgba(63,140,244,.25)}
+  .w-input.otp{position:absolute;opacity:0;height:1px;width:1px;padding:0;margin:0;pointer-events:none;overflow:hidden}
+  .w-syn-area{margin-top:22px;padding-top:16px;border-top:1px solid var(--line)}
+  .syn-rows{display:flex;flex-direction:column;gap:6px;margin-top:10px}
+  .syn-row{display:flex;flex-wrap:wrap;gap:5px 7px;align-items:flex-end;padding:6px 0}
+  .syn-row .slot{font-size:1.15rem;min-width:.85em;border-bottom-width:2px}
+  .syn-row .gap{display:inline-block;width:12px}
+  .syn-row .sep{font-size:1.15rem;font-weight:800;color:var(--muted);align-self:center}
+  .syn-row.done .slot{color:var(--ok-ink);border-color:var(--ok-ink)}
+  .syn-row.revealed .slot{color:var(--muted);border-color:var(--muted)}
+  .note-panel{margin-top:16px;background:#f4f9ff;border-radius:12px;padding:14px 16px;font-size:.92rem;line-height:1.55;color:var(--ink-soft)}
+  .note-panel .syn-full{color:var(--ink);font-weight:700}
+
+  /* 해커스 4지선다 */
+  .hk-mcq{margin-top:22px;padding-top:16px;border-top:1px solid var(--line)}
+  .mcq-q{font-size:.86rem;font-weight:800;color:var(--ink-soft)}
+  .mcq-q u{text-decoration-thickness:2px;text-underline-offset:3px;color:var(--bad-ink);font-weight:900}
+  .mcq-options{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+  .mcq-opt{display:flex;align-items:center;gap:12px;width:100%;text-align:left;border:1.5px solid var(--line);background:#fff;border-radius:14px;padding:14px 15px;cursor:pointer;font:inherit;font-size:1.02rem;font-weight:600;color:var(--ink);transition:.15s;word-break:break-word}
+  .mcq-opt:hover:not(:disabled){border-color:var(--blue);background:#f5f9ff}
+  .mcq-opt .lab{width:26px;height:26px;flex:0 0 auto;border-radius:8px;background:#eef3f9;color:var(--ink-soft);display:grid;place-items:center;font-weight:800;font-size:.9rem}
+  .mcq-opt .opt-text{flex:1}
+  .mcq-opt.ok{border-color:var(--ok-ink);background:var(--ok-bg);color:var(--ok-ink)} .mcq-opt.ok .lab{background:var(--ok-ink);color:#fff}
+  .mcq-opt.bad{border-color:var(--bad-ink);background:var(--bad-bg);color:var(--bad-ink)} .mcq-opt.bad .lab{background:var(--bad-ink);color:#fff}
+  .mcq-opt.dim{opacity:.4} .mcq-opt:disabled{cursor:default}
+  .note-panel .syn-dim{color:var(--ink-soft)}
+  .note-panel .syn-hint{font-size:.76rem;color:var(--muted);margin-left:4px}
+  .note-panel .fo-block{margin-top:12px;padding-top:10px;border-top:1px dashed var(--line)}
+  .note-panel .fo-head{font-size:.76rem;font-weight:800;color:var(--muted);margin-bottom:6px}
+  .note-panel .fo-row{display:flex;align-items:baseline;gap:8px;padding:3px 0;flex-wrap:wrap}
+  .note-panel .fo-w{font-weight:800;color:var(--ink)}
+  .note-panel .fo-m{color:var(--ink-soft);font-size:.9rem}
+  .note-panel .fo-s{margin-left:auto;font-size:.74rem;color:var(--muted);white-space:nowrap}
+
+  /* 버튼줄 */
+  .actions{display:flex;align-items:center;gap:10px;margin-top:6px;flex-wrap:wrap}
+  .spacer{flex:1}
+  .btn{border:none;cursor:pointer;font:inherit;font-weight:700;border-radius:14px;padding:14px 22px;transition:transform .06s ease,filter .15s ease}
+  .btn:active{transform:translateY(1px)}
+  .btn-primary{background:var(--blue);color:#fff;box-shadow:0 8px 18px rgba(63,140,244,.3)}
+  .btn-primary:hover{filter:brightness(1.04)}
+  .btn-ghost{background:transparent;color:var(--purple);display:inline-flex;align-items:center;gap:8px;padding:12px 6px}
+  .btn-ghost .q{width:26px;height:26px;border-radius:50%;background:#efeafb;color:var(--purple);display:grid;place-items:center;font-size:.9rem;font-weight:800}
+  .btn-soft{background:#eef3f9;color:var(--ink-soft)}
+  .icon-btn{width:44px;height:44px;border-radius:50%;border:none;cursor:pointer;background:#eef3f9;font-size:18px;display:grid;place-items:center;color:var(--ink-soft)}
+  .icon-btn:active{transform:translateY(1px)}
+
+  /* 시작 화면 */
+  .panel{background:var(--card);border-radius:24px;box-shadow:var(--shadow);padding:26px 22px}
+  .title{font-size:1.5rem;font-weight:800;letter-spacing:-.01em}
+  .subtitle{margin-top:6px;color:var(--ink-soft);font-size:.95rem;line-height:1.55}
+  .stats{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:18px;background:#eef5ff;border-radius:14px;padding:12px 16px}
+  .stats-main{font-size:.92rem;font-weight:700;color:var(--blue-ink)} .stats-main b{font-weight:800}
+  .reset-link{background:none;border:none;cursor:pointer;font:inherit;font-size:.82rem;font-weight:700;color:var(--muted);padding:6px 4px;white-space:nowrap}
+  .reset-link:hover{color:var(--bad-ink)}
+  .warn{margin-top:14px;background:var(--warn-bg);color:var(--warn-ink);border-radius:12px;padding:11px 14px;font-size:.84rem;line-height:1.5}
+  .field-label{margin:22px 0 10px;font-size:.82rem;font-weight:800;color:var(--muted);letter-spacing:.03em}
+  .chips{display:flex;gap:8px;flex-wrap:wrap}
+  .chip{border:1.5px solid var(--line);background:#fff;color:var(--ink-soft);border-radius:12px;padding:11px 15px;cursor:pointer;font-weight:700;font-size:.95rem;transition:.15s}
+  .chip .n{color:var(--muted);font-weight:700;margin-left:5px}
+  .chip.on{border-color:var(--blue);background:#eef5ff;color:var(--blue-ink)}
+  .chip.on .n{color:var(--blue)}
+  .chip[data-filter="weak"]{border-color:#f3d2d2;color:var(--bad-ink)}
+  .chip[data-filter="weak"].on{border-color:var(--bad-ink);background:#fdf1f1}
+  /* 미리보기(목록) 화면 */
+  .pv-top{display:flex;align-items:center;gap:10px;margin-bottom:4px}
+  .pv-back{border:none;background:none;font:inherit;font-size:.98rem;font-weight:800;color:var(--blue-ink);cursor:pointer;padding:6px 2px;flex:0 0 auto}
+  .pv-title-wrap{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;min-width:0}
+  .pv-title{font-size:1.15rem;font-weight:800;color:var(--ink)}
+  .pv-count{font-size:.85rem;color:var(--muted);font-weight:700}
+  .pv-hint{font-size:.82rem;color:var(--muted);margin:2px 0 4px}
+  .pv-list{display:flex;flex-direction:column;gap:10px}
+  .pv-item{background:#fff;border:1px solid var(--line);border-radius:14px;padding:13px 15px}
+  .pv-head{display:flex;align-items:baseline;gap:9px;flex-wrap:wrap}
+  .pv-num{flex:0 0 auto;min-width:24px;height:22px;padding:0 6px;border-radius:7px;background:#eef3f9;color:var(--ink-soft);font-size:.76rem;font-weight:800;display:inline-grid;place-items:center}
+  .pv-word{font-size:1.12rem;font-weight:800;color:var(--ink)}
+  .pv-pos{font-size:.72rem;font-weight:700;color:var(--muted);border:1px solid var(--line);border-radius:6px;padding:1px 6px}
+  .pv-mean{font-size:.95rem;color:var(--ink-soft)}
+  .pv-krline{margin-top:6px;font-size:.98rem;color:var(--ink)}
+  .pv-syn{margin-top:7px;font-size:.94rem;color:var(--muted);line-height:1.5}
+  .pv-syn b{color:var(--blue-ink);font-weight:800}
+  .pv-ex{margin-top:6px;font-size:.9rem;color:var(--ink-soft);line-height:1.55}
+  .pv-ex b{color:var(--ink);font-weight:700}
+  .pv-note{margin-top:7px;font-size:.82rem;color:var(--muted);line-height:1.5;background:#f6f8fb;border-radius:8px;padding:7px 9px}
+  .switch{display:flex;align-items:center;gap:12px;margin-top:22px;cursor:pointer;user-select:none}
+  .track{width:48px;height:28px;border-radius:99px;background:#cdd8e3;position:relative;transition:.2s;flex:0 0 auto}
+  .knob{position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2);transition:.2s}
+  .switch.on .track{background:var(--blue)} .switch.on .knob{left:23px}
+  .switch span{font-weight:700;color:var(--ink-soft);font-size:.95rem}
+  .start-btn{width:100%;margin-top:26px;padding:16px;font-size:1.05rem}
+
+  /* 결과 화면 */
+  .result-head{text-align:center}
+  .result-head .big{font-size:2.6rem;font-weight:800;letter-spacing:-.02em} .result-head .big b{color:var(--blue)}
+  .result-head .msg{margin-top:6px;color:var(--ink-soft);font-weight:600}
+  .group-title{margin:22px 0 12px;font-size:.85rem;font-weight:800;color:var(--muted);letter-spacing:.03em}
+  .wordlist{display:flex;flex-direction:column;gap:8px}
+  .wrow{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:13px;background:#f6f9fc}
+  .wrow.miss{background:#fdf1f1}
+  .wrow .w{font-weight:800;font-size:1.02rem} .wrow.miss .w{color:var(--bad-ink)}
+  .wrow .mean{color:var(--ink-soft);font-size:.9rem}
+  .wrow .tag{margin-left:auto;font-size:.72rem;color:var(--purple);background:#efeafb;padding:3px 8px;border-radius:7px;font-weight:700}
+  .result-actions{display:flex;flex-direction:column;gap:10px;margin-top:24px}
+  .result-actions .btn{width:100%;padding:15px}
+
+  .hidden{display:none !important}
+  @media (max-width:430px){
+    .wrap{padding:16px 14px 34px}
+    .ko{font-size:1.14rem} .en,.blank{font-size:1.24rem}
+    .w-mean{font-size:1.3rem} .slot{font-size:1.3rem} .syn-row .slot{font-size:1.05rem}
+    .inline-slots .lslot,.inline-slots .lsep{font-size:1.24rem}
+    .title{font-size:1.32rem} .result-head .big{font-size:2.2rem}
+  }
+  @media (prefers-reduced-motion:reduce){ *{transition:none !important} }
+</style>
+<style>
+  /* 기기 간 동기화 UI(로그인 없음) */
+  .sync{margin:10px 0 4px;border:1.5px solid var(--line);border-radius:12px;background:#fff;overflow:hidden}
+  .sync>summary{cursor:pointer;list-style:none;padding:10px 14px;font-size:.86rem;font-weight:800;color:var(--ink-soft)}
+  .sync>summary::-webkit-details-marker{display:none}
+  .sync[open]>summary{border-bottom:1px solid var(--line)}
+  .sync-body{padding:12px 14px;display:flex;flex-direction:column;gap:9px}
+  .sync-line{display:flex;align-items:center;gap:8px}
+  .sync-cap{font-size:.8rem;font-weight:700;color:var(--muted);flex:0 0 auto}
+  .sync code{flex:1 1 auto;font-family:ui-monospace,Menlo,monospace;font-size:.84rem;font-weight:700;color:var(--blue-ink);background:var(--blue-soft);border-radius:8px;padding:6px 9px;overflow:auto;white-space:nowrap}
+  .sync-in{flex:1 1 auto;min-width:0;border:1.5px solid var(--line);border-radius:8px;padding:8px 10px;font:inherit;font-size:.86rem;color:var(--ink)}
+  .sync-btn{flex:0 0 auto;border:none;border-radius:8px;background:var(--blue);color:#fff;font:inherit;font-size:.8rem;font-weight:800;padding:8px 12px;cursor:pointer}
+  .sync-btn:active{transform:translateY(1px)}
+  .sync-hint{margin:0;font-size:.76rem;line-height:1.5;color:var(--muted)}
+  .sync-status{font-size:.78rem;font-weight:700;color:var(--green);min-height:1em}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="top" id="topbar">
+    <div class="trophy">🏆</div>
+    <div class="bar"><div class="bar-fill" id="barFill"></div></div>
+    <div class="counter" id="counter">0 / 0</div>
+    <button class="mode-toggle hidden" id="blankModeBtn" type="button" title="빈칸 표시 방식 전환"><span id="mtA">밑줄</span><span class="mt-sep">/</span><span id="mtB">너비</span></button>
+  </div>
+  <div class="brandline">말해보카식 복습</div>
+
+  <!-- ───────── 시작 화면 ───────── -->
+  <section id="screenStart" class="panel">
+    <div class="title">복습 시작하기</div>
+    <div class="subtitle">예문의 빈칸을 영어로 채운 뒤, 이어서 동의어를 골라요. 문장 복습 · 단어 암기(TOEFL Voca) · 해커스 보카 세 묶음이 있어요.</div>
+
+    <div class="stats hidden" id="statsBox">
+      <div class="stats-main"><b id="statStudied">0</b>개 학습 · 정답률 <b id="statAcc">0</b>%</div>
+      <button class="reset-link" id="resetBtn">기록 초기화</button>
+    </div>
+    <div class="warn hidden" id="storageWarn">이 미리보기에서는 기록이 저장되지 않아요. 파일을 내려받거나 웹에 올리면 정상 저장됩니다.</div>
+
+    <details class="sync" id="syncBox">
+      <summary>☁️ 기기 간 동기화 · 백업</summary>
+      <div class="sync-body">
+        <div class="sync-line">
+          <span class="sync-cap">이 기기 코드</span>
+          <code id="syncCode">—</code>
+          <button type="button" id="syncCopy" class="sync-btn">복사</button>
+        </div>
+        <p class="sync-hint">다른 기기에서 아래에 이 코드를 넣으면 진도가 이어져요. 로그인 필요 없음.</p>
+        <div class="sync-line">
+          <input id="syncInput" class="sync-in" placeholder="다른 기기 코드 붙여넣기" autocapitalize="off" autocorrect="off" spellcheck="false">
+          <button type="button" id="syncApply" class="sync-btn">적용</button>
+        </div>
+        <div id="syncStatus" class="sync-status"></div>
+      </div>
+    </details>
+
+    <div id="filterArea">
+      <div class="field-label">문장 복습</div>
+      <div class="chips">
+        <button class="chip" data-filter="sent:all">전체<span class="n">17</span></button>
+        <button class="chip" data-filter="sent:보존">보존<span class="n">5</span></button>
+        <button class="chip" data-filter="sent:경제">경제<span class="n">10</span></button>
+        <button class="chip" data-filter="sent:대화">대화<span class="n">2</span></button>
+      </div>
+
+      <div class="field-label">단어 암기 · TOEFL Voca 01</div>
+      <div class="chips">
+        <button class="chip" data-filter="voca:1-1">레슨 1-1<span class="n">20</span></button>
+        <button class="chip" data-filter="voca:1-2">레슨 1-2<span class="n">20</span></button>
+        <button class="chip" data-filter="voca:2-1">레슨 2-1<span class="n">20</span></button>
+        <button class="chip" data-filter="voca:all">전체<span class="n">60</span></button>
+      </div>
+
+      <div class="field-label">해커스 보카 · Day 1 <span style="font-weight:700;color:var(--muted)">(카드 수 · 다의어는 뜻마다 분리)</span></div>
+      <div class="chips">
+        <button class="chip on" data-filter="hk:1">① 1–20<span class="n">26</span></button>
+        <button class="chip" data-filter="hk:2">② 21–40<span class="n">20</span></button>
+        <button class="chip" data-filter="hk:3">③ 41–57<span class="n">19</span></button>
+        <button class="chip" data-filter="hk:all">전체<span class="n">65</span></button>
+      </div>
+
+      <div class="field-label hidden" id="weakLabel">복습 필요</div>
+      <div class="chips">
+        <button class="chip hidden" data-filter="weak" id="weakChip">이전에 틀린 것<span class="n" id="weakN">0</span></button>
+      </div>
+    </div>
+
+    <div class="switch" id="shuffleSwitch">
+      <div class="track"><div class="knob"></div></div>
+      <span>순서 섞기</span>
+    </div>
+
+    <button class="btn btn-primary start-btn" id="startBtn">시작하기</button>
+  </section>
+
+  <!-- ───────── 미리 보기(목록) 화면 ───────── -->
+  <section id="screenPreview" class="panel hidden">
+    <div class="pv-top">
+      <button class="pv-back" id="previewBack">← 뒤로</button>
+      <div class="pv-title-wrap"><span class="pv-title" id="previewTitle">목록</span><span class="pv-count" id="previewCount"></span></div>
+    </div>
+    <div class="pv-hint">시작 전에 훑어보세요. 굵은 파란 글씨는 책의 핵심 동의어예요.</div>
+    <div class="pv-list" id="previewList"></div>
+    <button class="btn btn-primary start-btn" id="previewStartBtn" style="margin-top:14px">이 세트로 시작하기</button>
+  </section>
+
+  <!-- ───────── 문제 화면 ───────── -->
+  <section id="screenPlay" class="hidden">
+
+    <!-- 문장형 카드 -->
+    <div class="card hidden" id="cardSentence">
+      <div class="card-top">
+        <span class="level" id="sLevel">문장 1</span>
+        <div class="ko" id="ko"></div>
+        <div class="note" id="note"></div>
+      </div>
+      <div class="card-bot">
+        <div class="en">
+          <span class="pre" id="pre"></span><input class="blank" id="blank"
+            autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+            inputmode="none" aria-label="빈칸에 영어 단어 입력"><span class="inline-slots hidden" id="blankSlots"></span><span class="post" id="post"></span>
+        </div>
+        <div class="feedback" id="sFeedback"></div>
+        <div class="src" id="sSrc"></div>
+      </div>
+    </div>
+
+    <!-- 단어형 카드 -->
+    <div class="card hidden" id="cardWord">
+      <div class="card-top">
+        <span class="level" id="wLevel">레슨 1-1 · 1</span>
+        <div class="w-mean-label">뜻</div>
+        <div class="w-mean" id="wMean"></div>
+      </div>
+      <div class="card-bot">
+        <div class="w-stage-label" id="wStageLabel">단어를 입력하세요</div>
+        <div class="slots" id="wSlots"></div>
+        <div class="w-syn-area hidden" id="wSynArea">
+          <div class="w-stage-label">동의어를 모두 입력하세요 <span id="wSynCount">(0/0)</span></div>
+          <div class="syn-rows" id="wSynRows"></div>
+        </div>
+        <input class="w-input otp" id="wInput"
+          autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+          inputmode="none" aria-label="영어 입력">
+        <div class="feedback" id="wFeedback"></div>
+        <div class="note-panel hidden" id="wNote"></div>
+        <div class="src" id="wSrc"></div>
+      </div>
+    </div>
+
+    <!-- 해커스 카드 (예문 빈칸 → 동의어 4지선다) -->
+    <div class="card hidden" id="cardHackers">
+      <div class="card-top">
+        <span class="level" id="hLevel">Day 1 · 1</span>
+        <div class="ko" id="hKo"></div>
+        <div class="note" id="hPos"></div>
+      </div>
+      <div class="card-bot">
+        <div class="en" id="hEnWrap">
+          <span class="pre" id="hPre"></span><input class="blank" id="hBlank"
+            autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+            inputmode="none" aria-label="빈칸에 영어 단어 입력"><span class="inline-slots hidden" id="hBlankSlots"></span><span class="post" id="hPost"></span>
+        </div>
+        <div class="hk-mcq hidden" id="hMcqArea">
+          <div class="mcq-q" id="hMcqQ">동의어를 고르세요</div>
+          <div class="mcq-options" id="hMcqOpts"></div>
+        </div>
+        <div class="feedback" id="hFeedback"></div>
+        <div class="note-panel hidden" id="hNotePanel"></div>
+        <div class="src" id="hSrc"></div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn btn-ghost" id="hintBtn"><span class="q">?</span>힌트 보기</button>
+      <div class="spacer"></div>
+      <button class="icon-btn hidden" id="speakBtn" aria-label="듣기">🔊</button>
+      <button class="btn btn-soft hidden" id="skipBtn">모르겠어요</button>
+      <button class="btn btn-soft hidden" id="retryBtn">다시 입력</button>
+      <button class="btn btn-primary" id="checkBtn">확인</button>
+      <button class="btn btn-primary hidden" id="nextBtn">다음</button>
+    </div>
+    <div class="kbd hidden" id="kbd"></div>
+  </section>
+
+  <!-- ───────── 결과 화면 ───────── -->
+  <section id="screenResult" class="hidden">
+    <div class="panel">
+      <div class="result-head">
+        <div class="big" id="scoreNum">0 / 0</div>
+        <div class="msg" id="scoreMsg"></div>
+      </div>
+      <div id="missBlock" class="hidden">
+        <div class="group-title">다시 볼 것</div>
+        <div class="wordlist" id="missList"></div>
+      </div>
+      <div id="hintBlock" class="hidden">
+        <div class="group-title">힌트로 맞힌 것</div>
+        <div class="wordlist" id="hintList"></div>
+      </div>
+      <div class="result-actions">
+        <button class="btn btn-primary hidden" id="retryWrongBtn">틀린 것만 다시 풀기</button>
+        <button class="btn btn-soft" id="againBtn">이 세트 다시 풀기</button>
+        <button class="btn btn-ghost" id="homeBtn" style="justify-content:center">처음으로</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+/* ============================================================
+   데이터
+   - 문장형(mode 생략 → 'sentence'): set / ko(<mark>) / note / pre-answer-post
+   - 단어형(mode:'word'): lesson / word / meaning / synonyms[] / note
+   ============================================================ */
+const CARDS = [
+  { set:'보존', ko:'<mark>보존</mark>은 인간의 활동으로 위협받는 멸종 위기의 동식물을 지키는 일을 포함한다.',
+    note:'', pre:'', answer:'Conservation',
+    post:' involves safeguarding endangered plants and animals threatened by human actions.' },
+  { set:'보존', ko:'보존은 인간의 활동으로 위협받는 <mark>멸종 위기에 처한</mark> 동식물을 지키는 일을 포함한다.',
+    note:'', pre:'Conservation involves safeguarding ', answer:'endangered',
+    post:' plants and animals threatened by human actions.' },
+  { set:'보존', ko:'보존은 인간의 활동으로 <mark>위협받는</mark> 멸종 위기의 동식물을 지키는 일을 포함한다.',
+    note:'', pre:'Conservation involves safeguarding endangered plants and animals ', answer:'threatened',
+    post:' by human actions.' },
+  { set:'보존', ko:'보존론자들은 안전한 <mark>서식지</mark>를 조성하고 자연 보존의 가치에 대한 인식을 높임으로써 이 종들을 보호하려 노력한다.',
+    note:'복수형', pre:'Conservationists work to protect these species by establishing secure ', answer:'habitats',
+    post:' and raising awareness about the value of preserving nature.' },
+  { set:'보존', ko:'자연을 <mark>책임감 있게</mark> 돌봄으로써, 보존론자들은 다음 세대를 위한 더 건강한 지구에 기여한다.',
+    note:'부사', pre:'By ', answer:'responsibly',
+    post:' caring for our natural world, conservationists contribute to a healthier planet for generations to come.' },
+
+  { set:'경제', ko:'<mark>경제학</mark>은 사회가 자원을 관리·분배하고 생산·유통·소비 과정을 결정하는 방식을 탐구한다.',
+    note:'', pre:'', answer:'Economics',
+    post:' explores how societies manage and distribute resources and determine processes of production, distribution, and consumption.' },
+  { set:'경제', ko:'경제학은 사회가 자원을 관리하고 <mark>분배하며</mark> 생산·유통·소비 과정을 결정하는 방식을 탐구한다.',
+    note:'동사', pre:'Economics explores how societies manage and ', answer:'distribute',
+    post:' resources and determine processes of production, distribution, and consumption.' },
+  { set:'경제', ko:'경제학은 사회가 자원을 관리·분배하고 생산·유통·소비 과정을 <mark>결정하는</mark> 방식을 탐구한다.',
+    note:'', pre:'Economics explores how societies manage and distribute resources and ', answer:'determine',
+    post:' processes of production, distribution, and consumption.' },
+  { set:'경제', ko:'이 학문은 시장 체계 안에서 <mark>정부</mark>, 기업, 개인의 행동을 분석한다.',
+    note:'복수형', pre:'It analyzes the actions of ', answer:'governments',
+    post:', businesses, and individuals within market systems.' },
+  { set:'경제', ko:'경제학의 영역은 전문 경제학자나 금융 전문가로서의 경력을 <mark>추구하는</mark> 사람들의 훈련을 넘어서며, 폭넓은 대중에게 필수적인 분석 도구를 제공한다.',
+    note:'', pre:'The state of economics extends beyond the training of those who ', answer:'pursue',
+    post:' careers as professional economists or financial specialists; it provides essential analytical tools for a broad audience.' },
+  { set:'경제', ko:'공급과 수요, 인플레이션 메커니즘, 노동 시장 작동과 같은 핵심 경제 원리에 대한 <mark>기초적인</mark> 이해는 개인이 합리적인 선택을 하도록 한다.',
+    note:'', pre:'A ', answer:'foundational',
+    post:' comprehension of core economic principles, such as supply and demand, inflationary mechanisms, and labor market functioning, empowers individuals to make reasoned choices.' },
+  { set:'경제', ko:'공급과 수요, 인플레이션 메커니즘, 노동 시장 작동과 같은 핵심 경제 원리에 대한 기초적인 <mark>이해</mark>는 개인이 합리적인 선택을 하도록 한다.',
+    note:'명사 · comprehend(이해하다)와 구분', pre:'A foundational ', answer:'comprehension',
+    post:' of core economic principles, such as supply and demand, inflationary mechanisms, and labor market functioning, empowers individuals to make reasoned choices.' },
+  { set:'경제', ko:'공급과 <mark>수요</mark>, 인플레이션 메커니즘, 노동 시장 작동과 같은 핵심 경제 원리에 대한 기초적인 이해는 개인이 합리적인 선택을 하도록 한다.',
+    note:'', pre:'A foundational comprehension of core economic principles, such as supply and ', answer:'demand',
+    post:', inflationary mechanisms, and labor market functioning, empowers individuals to make reasoned choices.' },
+  { set:'경제', ko:'공급과 수요, <mark>물가 상승의(인플레이션)</mark> 메커니즘, 노동 시장 작동과 같은 핵심 경제 원리에 대한 기초적인 이해는 개인이 합리적인 선택을 하도록 한다.',
+    note:'형용사', pre:'A foundational comprehension of core economic principles, such as supply and demand, ', answer:'inflationary',
+    post:' mechanisms, and labor market functioning, empowers individuals to make reasoned choices.' },
+  { set:'경제', ko:'이러한 이해는 사람들이 더 나은 결정을 내리고 일상에 영향을 미치는 더 큰 경제적 요인을 <mark>이해(파악)하도록</mark> 한다.',
+    note:'동사 · comprehension(이해)과 구분', pre:'This understanding enables people to make better decisions and ', answer:'comprehend',
+    post:' the larger economic factors influencing everyday life.' },
+
+  { set:'대화', ko:'그건 <mark>재고 정리 할인</mark> 중이라 아마 안 될 거예요.',
+    note:'', pre:'Probably not since it’s on ', answer:'clearance',
+    post:'.' },
+  { set:'대화', ko:'그 가게는 단지 물건이 맞지 않거나 마음이 바뀌었다는 이유만으로 환불해 줄 <mark>의무가 있는</mark> 것은 아니에요.',
+    note:'형용사', pre:'The store isn’t ', answer:'obligated',
+    post:' to give you a refund simply because the item doesn’t fit or you had a change of heart.' },
+
+
+  /* ── 단어 암기 · TOEFL Voca 01 (해커스식, 60장) ── */
+  {"mode": "hackers", "lesson": "1-1", "key": "1-1/abound", "word": "abound", "pos": "동사", "mi": "", "koMean": "풍부하다, 많이 있다", "syn": ["be plentiful", "teem", "proliferate"], "ko": "차갑고 영양분이 풍부한 북쪽 연안 바다에는 물고기가 <mark>많이 산다</mark>.", "pre": "Fish ", "answer": "abound", "post": " in the cold, nutrient-rich waters off the northern coast.", "note": "abound in/with로 자주 씁니다. abound는 ‘성공하다’가 아니라 ‘많이 존재하다’입니다."},
+  {"mode": "hackers", "lesson": "1-1", "key": "1-1/abundant", "word": "abundant", "pos": "형용사", "mi": "", "koMean": "풍부한", "syn": ["plentiful", "ample", "bountiful", "copious"], "ko": "그 지역의 <mark>풍부한</mark> 강우량은 쌀 재배에 이상적이다.", "pre": "The region’s ", "answer": "abundant", "post": " rainfall makes it ideal for growing rice.", "note": "abound의 형용사 느낌. abundant resources처럼 씁니다."},
+  {"mode": "hackers", "lesson": "1-1", "key": "1-1/assuage", "word": "assuage", "pos": "동사", "mi": "", "koMean": "완화하다, 달래다", "syn": ["alleviate", "ease", "relieve", "soothe"], "ko": "회사는 화난 고객들의 우려를 <mark>달래기</mark> 위해 공개 사과문을 발표했다.", "pre": "The company issued a public apology to ", "answer": "assuage", "post": " the concerns of angry customers.", "note": "걱정·통증·두려움 등을 낮추는 느낌입니다."},
+  {"mode": "hackers", "lesson": "1-1", "key": "1-1/arbitrary", "word": "arbitrary", "pos": "형용사", "mi": "", "koMean": "임의적인, 제멋대로인", "syn": ["random", "capricious", "discretionary"], "ko": "비평가들은 그 새 규칙이 명확한 기준 없이 적용된 <mark>제멋대로인</mark> 것이라고 주장했다.", "pre": "Critics argued that the new rule was ", "answer": "arbitrary", "post": " and applied without any clear standard.", "note": "이유나 기준이 명확하지 않은 결정에 씁니다."},
+  {"mode": "hackers", "lesson": "1-1", "key": "1-1/anomaly", "word": "anomaly", "pos": "명사", "mi": "", "koMean": "이례적인 것, 이상 현상", "syn": ["abnormality", "irregularity", "deviation"], "ko": "비정상적으로 높게 나온 온도 값은 결함이 있는 센서 때문에 생긴 <mark>이상 현상</mark>으로 밝혀졌다.", "pre": "The unusually high temperature reading turned out to be an ", "answer": "anomaly", "post": " caused by a faulty sensor.", "note": "정상 패턴에서 벗어난 것. 과학 지문에서 자주 나옵니다."},
+  {"mode": "hackers", "lesson": "1-1", "key": "1-1/adept", "word": "adept", "pos": "형용사", "mi": "", "koMean": "능숙한", "syn": ["skilled", "proficient", "accomplished", "capable"], "ko": "그녀는 압박 속에서도 복잡한 문제를 푸는 데 놀랄 만큼 <mark>능숙하다</mark>.", "pre": "She is remarkably ", "answer": "adept", "post": " at solving complex problems under pressure.", "note": "adept at ~ = ~에 능숙한. adapt/adopt와 헷갈리지 마세요."},
+  {"mode": "hackers", "lesson": "1-1", "key": "1-1/arable", "word": "arable", "pos": "형용사", "mi": "", "koMean": "경작 가능한", "syn": ["farmable", "cultivable", "tillable"], "ko": "그 나라 국토 중 대규모 농업을 지탱할 만큼 <mark>경작 가능한</mark> 땅은 일부에 불과하다.", "pre": "Only a small fraction of the country’s land is ", "answer": "arable", "post": " enough to support large-scale farming.", "note": "땅/토지에 씁니다. arable land = 경작지."},
+  {"mode": "hackers", "lesson": "1-1", "key": "1-1/bias", "word": "bias", "pos": "명사", "mi": "", "koMean": "편견, 치우침", "syn": ["prejudice", "partiality", "inclination"], "ko": "심사위원들은 출품작을 평가할 때 개인적 <mark>편견</mark>을 배제하도록 훈련받는다.", "pre": "Reviewers are trained to set aside personal ", "answer": "bias", "post": " when judging the submissions.", "note": "부정적 편견일 수도, 통계·연구의 편향일 수도 있습니다."},
+  {"mode": "hackers", "lesson": "1-1", "key": "1-1/coerce", "word": "coerce", "pos": "동사", "mi": "", "koMean": "강요하다", "syn": ["force", "compel", "pressure"], "ko": "그 독재 정권은 시민들이 새 정책을 지지하도록 <mark>강요하려</mark> 했다.", "pre": "The dictatorship tried to ", "answer": "coerce", "post": " citizens into supporting the new policy.", "note": "설득이 아니라 압박해서 하게 만드는 느낌입니다."},
+  {"mode": "hackers", "lesson": "1-1", "key": "1-1/commendable", "word": "commendable", "pos": "형용사", "mi": "", "koMean": "칭찬할 만한", "syn": ["admirable", "praiseworthy", "laudable"], "ko": "자원봉사자들은 침수된 마을을 재건하기 위해 <mark>칭찬할 만한</mark> 노력을 기울였다.", "pre": "The volunteers made a ", "answer": "commendable", "post": " effort to rebuild the flooded village.", "note": "긍정 단어. 행동·노력·태도에 씁니다."},
+  {"mode": "hackers", "lesson": "1-1", "key": "1-1/coalesce", "word": "coalesce", "pos": "동사", "mi": "", "koMean": "합쳐지다", "syn": ["merge", "unite", "fuse", "consolidate"], "ko": "수백만 년에 걸쳐 먼지와 가스가 <mark>합쳐져</mark> 새로운 별을 형성한다.", "pre": "Over millions of years, dust and gas ", "answer": "coalesce", "post": " to form new stars.", "note": "여러 요소가 하나로 모이는 느낌입니다."},
+  {"mode": "hackers", "lesson": "1-1", "key": "1-1/constrain", "word": "constrain", "pos": "동사", "mi": "", "koMean": "제한하다, 억제하다", "syn": ["restrict", "limit", "restrain", "inhibit"], "ko": "빠듯한 예산은 연구자들이 조사할 수 있는 범위를 심하게 <mark>제한할</mark> 수 있다.", "pre": "A tight budget can severely ", "answer": "constrain", "post": " what researchers are able to investigate.", "note": "자유롭게 못 하게 막는 느낌. constraint도 중요합니다."},
+  {"mode": "hackers", "lesson": "1-1", "key": "1-1/concur", "word": "concur", "pos": "동사", "mi": "", "koMean": "동의하다, 동시에 일어나다", "syn": ["agree", "coincide", "correspond"], "ko": "대부분의 전문가들은 기후가 예측보다 빠르게 따뜻해지고 있다는 데 <mark>동의한다</mark>.", "pre": "Most experts ", "answer": "concur", "post": " that the climate is warming faster than predicted.", "note": "acquiesce는 ‘마지못해 받아들이다’라서 느낌이 다릅니다."},
+  {"mode": "hackers", "lesson": "1-1", "key": "1-1/deceive", "word": "deceive", "pos": "동사", "mi": "", "koMean": "속이다", "syn": ["mislead", "trick", "betray", "cheat"], "ko": "그 무해한 뱀의 밝은 색은 포식자들이 그것을 독이 있다고 여기도록 <mark>속인다</mark>.", "pre": "The bright colors of the harmless snake ", "answer": "deceive", "post": " predators into thinking it is poisonous.", "note": "deceive someone into ~ing 구조도 가능합니다."},
+  {"mode": "hackers", "lesson": "1-1", "key": "1-1/deplete", "word": "deplete", "pos": "동사", "mi": "", "koMean": "고갈시키다, 줄이다", "syn": ["exhaust", "drain", "use up", "reduce"], "ko": "남획은 한때 풍부하던 대구 자원을 <mark>고갈시키기</mark> 시작했다.", "pre": "Overfishing has begun to ", "answer": "deplete", "post": " once-plentiful stocks of cod.", "note": "자원·에너지·산소 등을 써서 줄이는 느낌입니다."},
+  {"mode": "hackers", "lesson": "1-1", "key": "1-1/discreet", "word": "discreet", "pos": "형용사", "mi": "", "koMean": "신중한, 조심스러운", "syn": ["careful", "prudent", "tactful", "cautious"], "ko": "그 상담사는 <mark>신중해서</mark> 학생들이 사적으로 털어놓은 이야기를 절대 발설하지 않았다.", "pre": "The counselor was ", "answer": "discreet", "post": " and never shared what students told her in private.", "note": "discrete와 다릅니다. discreet = 신중한, discrete = 분리된."},
+  {"mode": "hackers", "lesson": "1-1", "key": "1-1/deviate", "word": "deviate", "pos": "동사", "mi": "", "koMean": "벗어나다", "syn": ["depart", "diverge", "vary", "veer"], "ko": "그 조종사는 갑작스러운 폭풍 때문에 예정된 항로에서 <mark>벗어나야</mark> 했다.", "pre": "The pilot was forced to ", "answer": "deviate", "post": " from the planned route because of a sudden storm.", "note": "기준·경로·규범에서 벗어나는 느낌입니다."},
+  {"mode": "hackers", "lesson": "1-1", "key": "1-1/deter", "word": "deter", "pos": "동사", "mi": "", "koMean": "단념하게 하다, 막다", "syn": ["discourage", "prevent", "inhibit"], "ko": "더 높은 벌금은 운전자들이 스쿨존에서 과속하는 것을 <mark>단념시키기</mark> 위한 것이다.", "pre": "Higher fines are meant to ", "answer": "deter", "post": " drivers from speeding in school zones.", "note": "물리적으로 막는 block보다 ‘못 하게 만들다’가 핵심입니다."},
+  {"mode": "hackers", "lesson": "1-1", "key": "1-1/eloquent", "word": "eloquent", "pos": "형용사", "mi": "", "koMean": "유창한, 설득력 있는", "syn": ["expressive", "articulate", "persuasive"], "ko": "그 상원의원은 <mark>설득력 있는</mark> 연설로 가장 강경한 반대자들까지 설득했다.", "pre": "In her ", "answer": "eloquent", "post": " speech, the senator persuaded even her strongest opponents.", "note": "말·글이 힘 있고 잘 전달되는 느낌입니다."},
+  {"mode": "hackers", "lesson": "1-1", "key": "1-1/evade", "word": "evade", "pos": "동사", "mi": "", "koMean": "피하다, 회피하다", "syn": ["avoid", "escape", "elude", "dodge"], "ko": "그 용의자는 거의 일주일 동안 경찰을 <mark>피하는</mark> 데 성공했다.", "pre": "The suspect managed to ", "answer": "evade", "post": " the police for nearly a week.", "note": "질문·책임·세금·추적 등을 피할 때 씁니다."},
+  {"mode": "hackers", "lesson": "1-2", "key": "1-2/exacerbate", "word": "exacerbate", "pos": "동사", "mi": "", "koMean": "악화시키다", "syn": ["worsen", "aggravate", "intensify"], "ko": "숲을 베어 내는 것은 그 지역의 홍수 문제를 <mark>악화시킬</mark> 뿐이다.", "pre": "Cutting down the forest will only ", "answer": "exacerbate", "post": " the region’s flooding problems.", "note": "문제·갈등·통증·상황을 더 나쁘게 만드는 것입니다."},
+  {"mode": "hackers", "lesson": "1-2", "key": "1-2/envision", "word": "envision", "pos": "동사", "mi": "", "koMean": "상상하다, 마음속에 그리다", "syn": ["imagine", "conceive", "foresee", "visualize"], "ko": "그 건축가는 우리에게 자동차가 더 이상 필요 없는 도시를 <mark>상상해</mark> 보라고 했다.", "pre": "The architect asked us to ", "answer": "envision", "post": " a city where cars are no longer necessary.", "note": "vision이 들어가서 ‘그려보다’ 느낌입니다."},
+  {"mode": "hackers", "lesson": "1-2", "key": "1-2/expose", "word": "expose", "pos": "동사", "mi": "", "koMean": "드러내다, 노출시키다, 폭로하다", "syn": ["reveal", "uncover", "disclose"], "ko": "그 조사는 회사 안전 절차의 심각한 결함을 <mark>드러냈다</mark>.", "pre": "The investigation ", "answer": "exposed", "post": " serious flaws in the company’s safety procedures.", "note": "prove보다는 reveal 쪽이 안전합니다."},
+  {"mode": "hackers", "lesson": "1-2", "key": "1-2/finite", "word": "finite", "pos": "형용사", "mi": "", "koMean": "유한한, 한정된", "syn": ["limited", "restricted", "definite"], "ko": "지구에는 화석 연료가 <mark>유한한</mark> 양만 있으므로, 우리는 그것을 신중하게 써야 한다.", "pre": "The Earth has only a ", "answer": "finite", "post": " supply of fossil fuels, so we must use them wisely.", "note": "반대는 infinite. 자원·시간·수량에 자주 씁니다."},
+  {"mode": "hackers", "lesson": "1-2", "key": "1-2/fortify", "word": "fortify", "pos": "동사", "mi": "", "koMean": "강화하다, 방어를 튼튼히 하다", "syn": ["strengthen", "reinforce", "protect", "secure"], "ko": "기술자들은 다음 큰 홍수에 대비해 제방을 <mark>튼튼히 하려고</mark> 애썼다.", "pre": "Engineers worked to ", "answer": "fortify", "post": " the levee before the next big flood.", "note": "성벽·방어·주장·몸을 강화한다는 느낌입니다."},
+  {"mode": "hackers", "lesson": "1-2", "key": "1-2/frivolous", "word": "frivolous", "pos": "형용사", "mi": "", "koMean": "하찮은, 진지하지 않은", "syn": ["trivial", "silly", "petty", "pointless"], "ko": "판사는 그 소송을 <mark>하찮고</mark> 법정의 시간을 낭비하는 것이라며 기각했다.", "pre": "The judge dismissed the lawsuit as ", "answer": "frivolous", "post": " and a waste of the court’s time.", "note": "idiotic은 너무 강합니다. 토플에서는 trivial/not serious로 잡으세요."},
+  {"mode": "hackers", "lesson": "1-2", "key": "1-2/fallible", "word": "fallible", "pos": "형용사", "mi": "", "koMean": "실수할 수 있는, 오류가 있는", "syn": ["imperfect", "flawed", "error-prone"], "ko": "아무리 신중한 과학자라도 <mark>실수할 수 있으므로</mark>, 결과는 거듭 확인되어야 한다.", "pre": "Even the most careful scientists are ", "answer": "fallible", "post": ", so results must be checked repeatedly.", "note": "사람·판단·시스템이 완벽하지 않다는 뜻입니다."},
+  {"mode": "hackers", "lesson": "1-2", "key": "1-2/haphazard", "word": "haphazard", "pos": "형용사", "mi": "", "koMean": "무계획적인, 되는대로의", "syn": ["random", "careless", "arbitrary", "unsystematic"], "ko": "책들이 너무 <mark>되는대로</mark> 쌓여 있어서 아무도 원하는 것을 찾을 수 없었다.", "pre": "The books were stacked in such a ", "answer": "haphazard", "post": " way that no one could find anything.", "note": "체계가 없고 대충 놓인 느낌입니다."},
+  {"mode": "hackers", "lesson": "1-2", "key": "1-2/hindrance", "word": "hindrance", "pos": "명사", "mi": "", "koMean": "방해물, 장애", "syn": ["obstacle", "barrier", "impediment", "interference"], "ko": "깨끗한 물의 부족이 그 마을 성장의 가장 큰 <mark>장애물</mark>이었다.", "pre": "A lack of clean water was the biggest ", "answer": "hindrance", "post": " to the village’s growth.", "note": "hinder = 방해하다. hindrance = 방해물/방해 행위."},
+  {"mode": "hackers", "lesson": "1-2", "key": "1-2/impoverish", "word": "impoverish", "pos": "동사", "mi": "", "koMean": "가난하게 하다, 질을 떨어뜨리다", "syn": ["deplete", "exhaust", "ruin", "bankrupt"], "ko": "수십 년간의 잘못된 경작은 아무것도 자라지 않을 때까지 토양을 <mark>척박하게 만들</mark> 수 있다.", "pre": "Decades of poor farming can ", "answer": "impoverish", "post": " the soil until nothing will grow.", "note": "돈뿐 아니라 토양·문화·자원도 ‘빈약하게 만들다’로 씁니다."},
+  {"mode": "hackers", "lesson": "1-2", "key": "1-2/incessant", "word": "incessant", "pos": "형용사", "mi": "", "koMean": "끊임없는", "syn": ["constant", "continual", "endless", "persistent"], "ko": "공사장에서 나는 <mark>끊임없는</mark> 소음 때문에 집중하기가 어려웠다.", "pre": "The ", "answer": "incessant", "post": " noise from the construction site made it hard to concentrate.", "note": "보통 귀찮거나 부정적인 반복에 자주 씁니다."},
+  {"mode": "hackers", "lesson": "1-2", "key": "1-2/invasive", "word": "invasive", "pos": "형용사", "mi": "", "koMean": "침입하는, 침습적인", "syn": ["intrusive", "encroaching"], "ko": "그 <mark>침입성</mark> 식물은 빠르게 퍼져 토종 식물들을 몰아냈다.", "pre": "The ", "answer": "invasive", "post": " plant spread quickly and crowded out the native species.", "note": "invasive species = 침입종, invasive surgery = 침습적 수술."},
+  {"mode": "hackers", "lesson": "1-2", "key": "1-2/knack", "word": "knack", "pos": "명사", "mi": "", "koMean": "재주, 요령", "syn": ["skill", "talent", "aptitude", "flair"], "ko": "그는 어려운 개념을 쉬운 말로 설명하는 진정한 <mark>재주</mark>가 있다.", "pre": "He has a real ", "answer": "knack", "post": " for explaining difficult ideas in simple terms.", "note": "have a knack for ~ing로 외우는 게 좋습니다."},
+  {"mode": "hackers", "lesson": "1-2", "key": "1-2/lenient", "word": "lenient", "pos": "형용사", "mi": "", "koMean": "관대한, 엄격하지 않은", "syn": ["permissive", "tolerant", "forgiving"], "ko": "일부 학생들은 그 교수가 늦은 과제에 너무 <mark>관대하다고</mark> 느꼈다.", "pre": "Some students felt the professor was too ", "answer": "lenient", "post": " with late assignments.", "note": "strict의 반대. 규칙·처벌·평가가 느슨한 느낌입니다."},
+  {"mode": "hackers", "lesson": "1-2", "key": "1-2/manipulate", "word": "manipulate", "pos": "동사", "mi": "", "koMean": "조작하다, 다루다", "syn": ["handle", "operate", "control", "influence"], "ko": "연구자들은 하나의 변수만 <mark>조작하여</mark> 그것이 결과에 어떤 영향을 주는지 살펴볼 수 있다.", "pre": "Researchers can ", "answer": "manipulate", "post": " a single variable to see how it affects the outcome.", "note": "물건이면 ‘다루다’, 사람·정보면 ‘교묘히 조종하다’입니다."},
+  {"mode": "hackers", "lesson": "1-2", "key": "1-2/nonchalant", "word": "nonchalant", "pos": "형용사", "mi": "", "koMean": "태연한, 아무렇지 않은 듯한", "syn": ["calm", "casual", "unconcerned", "unruffled"], "ko": "그녀는 마감이 다가오는데도 놀랍도록 <mark>태연했다</mark>.", "pre": "She stayed surprisingly ", "answer": "nonchalant", "post": " even as the deadline approached.", "note": "그냥 침착한 것보다 ‘신경 안 쓰는 듯한 태도’입니다."},
+  {"mode": "hackers", "lesson": "1-2", "key": "1-2/partake", "word": "partake", "pos": "동사", "mi": "", "koMean": "참여하다, 먹다/마시다", "syn": ["participate", "engage", "consume"], "ko": "방문객들은 전통 추수 축제에 <mark>참여하도록</mark> 초대된다.", "pre": "Visitors are invited to ", "answer": "partake", "post": " in the traditional harvest festival.", "note": "partake in = 참여하다, partake of = 먹다/마시다."},
+  {"mode": "hackers", "lesson": "1-2", "key": "1-2/prosper", "word": "prosper", "pos": "동사", "mi": "", "koMean": "번영하다, 성공하다", "syn": ["thrive", "flourish", "succeed", "do well"], "ko": "더 나은 관개 시설로 그 농장들은 몇 년 만에 <mark>번영하기</mark> 시작했다.", "pre": "With better irrigation, the farms began to ", "answer": "prosper", "post": " within a few years.", "note": "사업·문명·식물·사람이 잘되는 느낌입니다."},
+  {"mode": "hackers", "lesson": "1-2", "key": "1-2/recede", "word": "recede", "pos": "동사", "mi": "", "koMean": "물러나다, 줄어들다", "syn": ["retreat", "diminish", "decrease", "subside"], "ko": "홍수 물이 <mark>빠지기</mark> 시작하자, 주민들은 집을 살피러 돌아왔다.", "pre": "As the floodwaters began to ", "answer": "recede", "post": ", residents returned to inspect their homes.", "note": "물·통증·영향력이 뒤로 빠지거나 약해지는 느낌입니다."},
+  {"mode": "hackers", "lesson": "1-2", "key": "1-2/supplant", "word": "supplant", "pos": "동사", "mi": "", "koMean": "밀어내고 대체하다", "syn": ["replace", "displace", "supersede"], "ko": "스트리밍 서비스가 전통적인 비디오 대여점을 대체로 <mark>밀어냈다</mark>.", "pre": "Streaming services have largely ", "answer": "supplanted", "post": " the traditional video rental store.", "note": "그냥 바꾸는 것보다 기존 것을 밀어내고 자리를 차지하는 느낌입니다."},
+  {"mode": "hackers", "lesson": "2-1", "key": "2-1/accustomed to", "word": "accustomed to", "pos": "형용사", "mi": "", "koMean": "~에 익숙한", "syn": ["used to", "habituated to"], "ko": "유럽에서 사용되는 다년생 라이그래스는 마모에 강하지만, NFL 선수들이 <mark>익숙해진</mark> 수준의 접지력은 갖추고 있지 않다.", "pre": "The perennial ryegrass used in Europe is resistant to wear, but it also doesn’t have the traction players have become ", "answer": "accustomed to", "post": " in the NFL.", "note": "addicted to는 ‘~에 중독된’이라는 다른 뜻입니다."},
+  {"mode": "hackers", "lesson": "2-1", "key": "2-1/adamant", "word": "adamant", "pos": "형용사", "mi": "", "koMean": "완강한, 뜻을 굽히지 않는", "syn": ["unyielding", "resolute", "uncompromising"], "ko": "위원회의 거듭된 경고에도, 그 연구자는 자신의 원래 데이터가 옳다고 <mark>완강하게</mark> 주장했다.", "pre": "Despite repeated warnings from the committee, the researcher remained ", "answer": "adamant", "post": " that her original data was correct.", "note": "stubborn은 부정적이고, determined는 의미 범위가 더 넓습니다."},
+  {"mode": "hackers", "lesson": "2-1", "key": "2-1/adjacent", "word": "adjacent", "pos": "형용사", "mi": "", "koMean": "~에 인접한, 바로 옆의", "syn": ["adjoining", "contiguous", "neighboring"], "ko": "새 실험실은 학생들이 두 건물 사이를 쉽게 오갈 수 있도록 중앙 도서관 <mark>바로 옆에</mark> 지어졌다.", "pre": "The new laboratory was built ", "answer": "adjacent", "post": " to the main library so that students could move between them easily.", "note": "neighboring은 반드시 경계가 맞닿은 것은 아닙니다."},
+  {"mode": "hackers", "lesson": "2-1", "key": "2-1/ambiguous", "word": "ambiguous", "pos": "형용사", "mi": "", "koMean": "애매한, 여러 방식으로 해석될 수 있는", "syn": ["equivocal", "unclear", "vague"], "ko": "지시 사항이 너무 <mark>애매해서</mark> 반 학생의 절반이 과제를 완전히 다르게 해석했다.", "pre": "The instructions were so ", "answer": "ambiguous", "post": " that half the class interpreted the assignment completely differently.", "note": "vague는 주로 ‘구체적이지 않은’, dubious는 ‘의심스러운’입니다."},
+  {"mode": "hackers", "lesson": "2-1", "key": "2-1/annihilate", "word": "annihilate", "pos": "동사", "mi": "", "koMean": "완전히 파괴하다, 전멸시키다", "syn": ["obliterate", "eradicate", "wipe out"], "ko": "거대한 소행성 하나가 며칠 만에 지구상 대부분의 생명체를 <mark>전멸시킬</mark> 수도 있다.", "pre": "A single large asteroid could ", "answer": "annihilate", "post": " most forms of life on the planet within a matter of days.", "note": "decimate는 큰 피해를 준다는 뜻이지 반드시 전멸은 아닙니다."},
+  {"mode": "hackers", "lesson": "2-1", "key": "2-1/bestow", "word": "bestow", "pos": "동사", "mi": "", "koMean": "상·명예·권리 등을 수여하다", "syn": ["confer", "grant", "award"], "ko": "1967년에 그는 미국프로골프협회 명예의 전당에 헌액되었는데, 이는 협회가 회원이나 골프 홍보대사에게 <mark>수여할</mark> 수 있는 최고의 영예이다.", "pre": "In 1967 he was elected to the PGA of America Hall of Fame — the highest honour it can ", "answer": "bestow", "post": " upon its membership or ambassadors of golf.", "note": "보통 bestow A on/upon B. allot은 몫을 할당하는 것입니다."},
+  {"mode": "hackers", "lesson": "2-1", "key": "2-1/censure", "word": "censure", "pos": "명사", "mi": "", "koMean": "강한 비난, 공식적인 질책", "syn": ["condemnation", "rebuke", "reprimand"], "ko": "헤그세스는 켈리를 상대로 퇴역 계급 결정 절차를 개시하고 공식 <mark>견책</mark>서를 발부하겠다고 발표했다.", "pre": "Hegseth then announced he would open retirement-grade determination proceedings against Kelly and issue a formal letter of ", "answer": "censure", "post": ".", "note": "명사와 동사 모두 가능. 공식적·공개적인 비난에 자주 씁니다."},
+  {"mode": "hackers", "lesson": "2-1", "key": "2-1/compensate", "word": "compensate", "pos": "동사", "mi": "", "koMean": "손실·피해를 보상하다; 부족한 점을 벌충하다", "syn": ["reimburse", "repay"], "ko": "메시의 뛰어난 볼 다루는 능력은 세월이 흐르면서 저하된 운동 능력을 <mark>보완하는</mark> 데 도움이 되었다.", "pre": "Messi’s incredible ability with the ball at his feet has helped ", "answer": "compensate", "post": " for any lost athleticism over the years.", "note": "compensate for = make up for. refund는 환불에 한정됩니다."},
+  {"mode": "hackers", "lesson": "2-1", "key": "2-1/connote", "word": "connote", "pos": "동사", "mi": "", "koMean": "부가적인 의미·감정·이미지를 함축하다", "syn": ["imply", "hint at"], "ko": "금과 신성함의 연관성은 오늘날까지 이어져 왔다. 거의 모든 주요 종교에서는 성스러운 사물과 공간을 <mark>나타내기</mark> 위해 금을 사용한다.", "pre": "Its association with the divine has carried into the present day: nearly every major religion uses gold to ", "answer": "connote", "post": " holy objects and spaces.", "note": "denote는 문자 그대로의 의미를 나타내는 것입니다."},
+  {"mode": "hackers", "lesson": "2-1", "key": "2-1/decipher", "word": "decipher", "pos": "동사", "mi": "", "koMean": "암호·기호·불분명한 정보를 해독하다", "syn": ["decode", "interpret", "unravel"], "ko": "그들의 목표는 여전히 해독되지 않은 기호들을 <mark>해독하는</mark> 것이 아니라, 그 구조적 특성을 측정하는 것이었다.", "pre": "Their goal was not to ", "answer": "decipher", "post": " the symbols, which remain undecoded, but to measure their structural properties.", "note": "analyze는 단순히 분석한다는 더 넓은 뜻입니다."},
+  {"mode": "hackers", "lesson": "2-1", "key": "2-1/deliberate", "word": "deliberate", "pos": "형용사", "mi": "", "koMean": "고의적인, 의도적인", "syn": ["intentional", "calculated", "premeditated"], "ko": "다수 측이 그러한 표현을 사용한 것은 과학적으로 불가피한 결과가 아니라 <mark>의도적인</mark> 선택이다.", "pre": "The majority’s use of such language is a ", "answer": "deliberate", "post": " choice rather than a scientific inevitability.", "note": "premeditated는 범죄·해로운 행동에 자주 씁니다."},
+  {"mode": "hackers", "lesson": "2-1", "key": "2-1/divert", "word": "divert", "pos": "동사", "mi": "", "koMean": "방향·자금·주의를 다른 곳으로 돌리다", "syn": ["redirect", "deflect"], "ko": "두 사람 모두 일부 911 신고 전화를 로스앤젤레스 경찰국이 아닌 비무장 대응 요원들에게 <mark>돌리려는</mark> 방안을 지지한다.", "pre": "Both support the effort to ", "answer": "divert", "post": " some 911 calls away from the Los Angeles Police Department, shifting them to unarmed responders.", "note": "deflect는 옆으로 빗나가게 한다는 뜻이 강합니다."},
+  {"mode": "hackers", "lesson": "2-1", "key": "2-1/epitome", "word": "epitome", "pos": "명사", "mi": "", "koMean": "어떤 특징을 완벽하게 보여 주는 전형", "syn": ["embodiment", "exemplar", "personification"], "ko": "그곳은 10,010제곱피트에 걸쳐 펼쳐져 있으며, 무성한 녹지 덕분에 호화로움의 <mark>극치</mark>를 보여 준다. 또한 유명인이 사생활을 보호하기에 완벽한 장소이다.", "pre": "It sprawls across 10,010 square feet and is the ", "answer": "epitome", "post": " of luxury thanks to its lush greenery, which makes it the perfect place for a star to seek privacy.", "note": "보통 the epitome of ~. essence는 ‘본질’이라 차이가 있습니다."},
+  {"mode": "hackers", "lesson": "2-1", "key": "2-1/edible", "word": "edible", "pos": "형용사", "mi": "", "koMean": "먹을 수 있는, 식용의", "syn": ["eatable", "fit for consumption"], "ko": "종이에 적힌 수학 공식이 의식 있는 존재가 아닌 것은 분명하다. 크루아상 조리법이 <mark>먹을 수 있는</mark> 페이스트리 자체가 아닌 것과 마찬가지다.", "pre": "I think it’s safe to say that a math formula written on a sheet of paper is not a conscious entity — just as a croissant recipe is not an ", "answer": "edible", "post": " pastry.", "note": "tasty는 ‘맛있는’, succulent는 ‘육즙이 풍부한’이라 동의어가 아닙니다."},
+  {"mode": "hackers", "lesson": "2-1", "key": "2-1/expertise", "word": "expertise", "pos": "명사", "mi": "", "koMean": "특정 분야의 전문 지식·기술", "syn": ["proficiency", "mastery"], "ko": "임대 서비스를 이용하면 깊이 있는 기술적 <mark>전문 지식</mark>이 필요하지 않다. 문제가 생기면 제조업체나 임대 플랫폼에 맡기면 된다.", "pre": "A rental also removes the need for deep technical ", "answer": "expertise", "post": " — you can simply take your problems to the manufacturer or rental platform.", "note": "보통 불가산명사. competence는 단순한 업무 수행 능력일 수도 있습니다."},
+  {"mode": "hackers", "lesson": "2-1", "key": "2-1/famine", "word": "famine", "pos": "명사", "mi": "", "koMean": "넓은 지역의 극심한 식량 부족, 기근", "syn": ["starvation"], "ko": "과테말라, 온두라스, 엘살바도르, 니카라과 일부를 포함하는 ‘건조 회랑’ 지역에서는 엘니뇨의 재발로 가뭄에 대한 두려움이 생겼고 <mark>기근</mark>에 대한 우려도 커졌다.", "pre": "In that region known as the “Dry Corridor” — including parts of Guatemala, Honduras, El Salvador and Nicaragua — El Niño’s return has triggered fears of drought and stoked concerns of ", "answer": "famine", "post": ".", "note": "완전한 동의어는 아닙니다. starvation은 굶주리는 상태, famine은 지역적 사태입니다."},
+  {"mode": "hackers", "lesson": "2-1", "key": "2-1/genuine", "word": "genuine", "pos": "형용사", "mi": "", "koMean": "진짜의, 진품인; 진심 어린", "syn": ["authentic", "bona fide"], "ko": "헤나위에 따르면, 첨단 알고리즘은 수천만 개의 천문학적 관측 대상을 조사해, 압도적으로 많은 유사한 별과 은하 사이에서 소수의 <mark>진짜</mark> 퀘이사를 구별할 수 있다.", "pre": "According to Hennawi, advanced algorithms can now examine tens of millions of astronomical sources and separate the few ", "answer": "genuine", "post": " quasars from the overwhelming number of lookalike stars and galaxies.", "note": "쉬운 단어 real은 제외. legitimate는 정당성·합법성 의미가 강합니다."},
+  {"mode": "hackers", "lesson": "2-1", "key": "2-1/hasty", "word": "hasty", "pos": "형용사", "mi": "", "koMean": "지나치게 서두른, 충분히 생각하지 않은", "syn": ["hurried", "ill-advised", "impulsive"], "ko": "EPA의 토양 표본 조사는, <mark>성급한</mark> 연방 정부의 정화 작업이 위험한 화재 잔해를 남겨 두거나 퍼뜨렸다고 주장하는 주민들과 환경운동가들의 압박이 커지는 가운데 이루어지고 있다.", "pre": "The EPA soil sampling comes amid mounting pressure from residents and environmentalists who say that a ", "answer": "hasty", "post": " federal cleanup effort had left behind or spread hazardous fire debris.", "note": "expeditious는 신속하고 효율적이라는 긍정적 표현입니다."},
+  {"mode": "hackers", "lesson": "2-1", "key": "2-1/instigate", "word": "instigate", "pos": "동사", "mi": "", "koMean": "사건·갈등·행동을 부추겨 일으키다", "syn": ["provoke", "incite", "foment"], "ko": "우리는 이란에서 내전을 <mark>부추겨 일으키고</mark> 민족적·종교적 갈등의 틈을 겨냥하는 모든 시나리오에 반대한다.", "pre": "We are against all scenarios that aim to ", "answer": "instigate", "post": " a civil war in Iran and target ethnic or religious fault lines.", "note": "대체로 부정적인 일을 촉발할 때 씁니다. initiate는 중립적입니다."},
+  {"mode": "hackers", "lesson": "2-1", "key": "2-1/inevitable", "word": "inevitable", "pos": "형용사", "mi": "", "koMean": "피할 수 없는, 반드시 일어나는", "syn": ["unavoidable", "inescapable", "inexorable"], "ko": "그녀의 반지에는 작은 타원형 다이아몬드 일곱 개와 물결무늬가 있는데, 그녀는 이것이 인생에서 <mark>피할 수 없이</mark> 겪는 좋은 때와 힘든 때를 나타낸다고 말한다.", "pre": "Her ring has seven small oval diamonds and a wave design which she says illustrate life’s ", "answer": "inevitable", "post": " highs and lows.", "note": "imminent, impending는 ‘곧 닥칠’ 뿐 반드시 발생한다는 뜻은 아닙니다."},
+  /* ── 해커스 보카 Day 1 (65장) ── */
+  {"mode": "hackers", "part": 1, "num": 1, "mi": "", "key": "exploit", "word": "exploit", "pos": "동사", "koMean": "(부당하게) 이용하다", "syn": ["utilize", "use", "make use of", "take advantage of"], "ko": "인권 운동가들은 아동의 노동을 <mark>이용하는</mark> 회사들에 대항하는 시위를 이끌어 왔다.", "pre": "Human rights activists have led protests against companies that ", "answer": "exploit", "post": " child labor.", "note": "exploit는 명사로도 많이 쓰인다. 명사로는 ‘the exploits of brave knights(용감한 기사들의 위업)’처럼 ‘위업, 공적’이라는 뜻으로 주로 쓰이며, 동의어로 accomplishment, feat가 출제될 수 있다.", "bold": 3},
+  {"mode": "hackers", "part": 1, "num": 2, "mi": "①", "key": "account for①", "word": "account for", "pos": "구", "koMean": "(이유 등을) 설명하다", "syn": ["explain", "justify", "give a reason for"], "ko": "그 용의자는 어젯밤 자신의 행방을 <mark>설명할</mark> 수 없었다.", "pre": "The suspect couldn’t ", "answer": "account for", "post": " his whereabouts last night.", "note": "", "bold": 2},
+  {"mode": "hackers", "part": 1, "num": 2, "mi": "②", "key": "account for②", "word": "account for", "pos": "구", "koMean": "(부분·비율을) 차지하다", "syn": ["make up", "comprise", "constitute"], "ko": "커피 수출액은 에티오피아 국민 총생산의 거의 60%를 <mark>차지한다</mark>.", "pre": "Coffee exports ", "answer": "account for", "post": " nearly 60 percent of Ethiopia’s gross national product.", "note": "", "bold": 2},
+  {"mode": "hackers", "part": 1, "num": 2, "mi": "③", "key": "account for③", "word": "account for", "pos": "구", "koMean": "원인이 되다", "syn": ["cause"], "ko": "건축 현장에서의 위험한 작업 환경이 다수의 심각한 부상의 <mark>원인이 되었다</mark>.", "pre": "Unsafe working conditions at the construction site ", "answer": "accounted for", "post": " a number of serious injuries.", "note": "", "bold": 1},
+  {"mode": "hackers", "part": 1, "num": 3, "mi": "", "key": "particular", "word": "particular", "pos": "형용사", "koMean": "특정한; 특별한", "syn": ["specific", "special"], "ko": "갈릴레오는 아리스토텔레스의 <mark>특정한</mark> 진술 하나가 틀렸음을 입증하려고 노력했다.", "pre": "Galileo tried to disprove one ", "answer": "particular", "post": " statement of Aristotle’s.", "note": "", "bold": 2},
+  {"mode": "hackers", "part": 1, "num": 4, "mi": "①", "key": "prominent①", "word": "prominent", "pos": "형용사", "koMean": "눈에 띄는", "syn": ["noticeable", "conspicuous", "outstanding", "remarkable"], "ko": "후지 산은 일본에서 <mark>눈에 띄는</mark> 자연 명소이다.", "pre": "Mt. Fuji is a ", "answer": "prominent", "post": " natural landmark in Japan.", "note": "", "bold": 3},
+  {"mode": "hackers", "part": 1, "num": 4, "mi": "②", "key": "prominent②", "word": "prominent", "pos": "형용사", "koMean": "중요한", "syn": ["important", "leading", "notable"], "ko": "윌리엄 셰익스피어는 영문학사에서 가장 <mark>중요한</mark> 인물 중 한 명이다.", "pre": "William Shakespeare is one of the most ", "answer": "prominent", "post": " figures in the history of English literature.", "note": "", "bold": 2},
+  {"mode": "hackers", "part": 1, "num": 5, "mi": "", "key": "replenish", "word": "replenish", "pos": "동사", "koMean": "보충하다", "syn": ["refill", "restore", "renew"], "ko": "여행객들은 사막을 건너기 전에 물 저장량을 <mark>보충했다</mark>.", "pre": "The travelers ", "answer": "replenished", "post": " their supplies of water before crossing the desert.", "note": "renew는 주로 ‘새롭게 하다’라는 뜻이라 replenish의 동의어가 아니라고 생각할 수 있다. 그러나 ‘renew the supply of groundwater(지하수 공급량을 보충하다)’처럼 renew가 ‘보충하다’라는 뜻으로 쓰일 때는 replenish의 동의어가 될 수 있다.", "bold": 2},
+  {"mode": "hackers", "part": 1, "num": 6, "mi": "", "key": "indigenous", "word": "indigenous", "pos": "형용사", "koMean": "토착의", "syn": ["native", "aboriginal"], "ko": "정부는 <mark>토착</mark> 집단들이 제기한 환경 관련 항의를 무시했다.", "pre": "The government ignored environmental complaints by ", "answer": "indigenous", "post": " groups.", "note": "", "bold": 2},
+  {"mode": "hackers", "part": 1, "num": 7, "mi": "①", "key": "pinpoint①", "word": "pinpoint", "pos": "동사", "koMean": "(위치 등을) 정확히 찾아내다", "syn": ["locate exactly", "clearly identify"], "ko": "GPS 기술을 사용하면 지구 어디에서나 사람의 위치를 <mark>정확히 찾아내는</mark> 것이 가능하다.", "pre": "With GPS technology, it is possible to ", "answer": "pinpoint", "post": " a person’s position anywhere on the planet.", "note": "", "bold": 2},
+  {"mode": "hackers", "part": 1, "num": 7, "mi": "②", "key": "pinpoint②", "word": "pinpoint", "pos": "형용사", "koMean": "정확한", "syn": ["precise", "exact", "accurate"], "ko": "수년간의 훈련 후, 야구 투수들은 공에 대한 <mark>정확한</mark> 통제력을 발전시킨다.", "pre": "After years of training, baseball pitchers develop ", "answer": "pinpoint", "post": " control of the ball.", "note": "", "bold": 2},
+  {"mode": "hackers", "part": 1, "num": 8, "mi": "", "key": "annihilate", "word": "annihilate", "pos": "동사", "koMean": "전멸시키다", "syn": ["destroy", "completely remove", "exterminate"], "ko": "6,550만 년 전의 소행성 충돌은 행성의 모든 생물체를 거의 <mark>전멸시켰다</mark>.", "pre": "An asteroid impact 65.5 million years ago nearly ", "answer": "annihilated", "post": " all living things on the planet.", "note": "", "bold": 2},
+  {"mode": "hackers", "part": 1, "num": 9, "mi": "", "key": "conversely", "word": "conversely", "pos": "부사", "koMean": "반대로", "syn": ["on the other hand", "contrarily"], "ko": "휴대폰 문자 메시지는 통신 수단으로 인기가 더 많아지고 있는 반면에 전화 통화는 <mark>반대로</mark> 덜 흔해지고 있다.", "pre": "Texting is growing more popular as a form of communication, while, ", "answer": "conversely", "post": ", phone calls are becoming less common.", "note": "", "bold": 2},
+  {"mode": "hackers", "part": 1, "num": 10, "mi": "", "key": "investigate", "word": "investigate", "pos": "동사", "koMean": "조사하다", "syn": ["examine", "inquire into", "look into"], "ko": "경찰은 목격자들을 면담한 후에 범죄 현장을 <mark>조사할</mark> 것이다.", "pre": "The police will ", "answer": "investigate", "post": " the crime scene after they interview the witnesses.", "note": "investigate와 발음이 비슷한 instigate는 ‘유발하다(cause, provoke)’라는 뜻이므로 시험에서 혼동하지 않도록 주의하자.", "bold": 2},
+  {"mode": "hackers", "part": 1, "num": 11, "mi": "", "key": "assure", "word": "assure", "pos": "동사", "koMean": "확신시키다; 보장하다", "syn": ["convince", "persuade", "satisfy", "guarantee"], "ko": "그 변호사는 Tim에게 그의 모든 권리는 존중될 것이라고 <mark>확신시켰다</mark>.", "pre": "The lawyer ", "answer": "assured", "post": " Tim that all his rights would be respected.", "note": "", "bold": 3},
+  {"mode": "hackers", "part": 1, "num": 12, "mi": "", "key": "entire", "word": "entire", "pos": "형용사", "koMean": "전체의, 전부의", "syn": ["whole", "total", "complete"], "ko": "화재가 공장 <mark>전체</mark>를 파괴했지만, 소유주는 그것을 다시 지을 계획이다.", "pre": "Fire destroyed the ", "answer": "entire", "post": " factory, but the owner plans to rebuild it.", "note": "", "bold": 2},
+  {"mode": "hackers", "part": 1, "num": 13, "mi": "①", "key": "compensate for①", "word": "compensate for", "pos": "구", "koMean": "~을 보상하다", "syn": ["make up for", "atone for", "make amends for"], "ko": "그 화학 회사는 강을 오염시킨 것을 <mark>보상하기</mark> 위해 수백만 달러를 내도록 명령을 받았다.", "pre": "The chemical company was ordered to pay millions of dollars to ", "answer": "compensate for", "post": " polluting the river.", "note": "", "bold": 2},
+  {"mode": "hackers", "part": 1, "num": 13, "mi": "②", "key": "compensate for②", "word": "compensate for", "pos": "구", "koMean": "상쇄하다", "syn": ["balance", "offset"], "ko": "관리자는 특정 직원에게 더 많은 업무를 맡김으로써 불공평한 업무의 분배를 <mark>상쇄했다</mark>.", "pre": "The manager ", "answer": "compensated for", "post": " the unfair distribution of duties by assigning more work to certain staff.", "note": "", "bold": 2},
+  {"mode": "hackers", "part": 1, "num": 14, "mi": "", "key": "postulate", "word": "postulate", "pos": "동사", "koMean": "(자명한 일로) 가정하다; 주장하다", "syn": ["hypothesize", "suppose", "claim", "propose"], "ko": "아이작 뉴턴은 중력이 물체를 지구 쪽으로 끌어당긴다고 <mark>가정했다</mark>.", "pre": "Isaac Newton ", "answer": "postulated", "post": " that gravity pulls objects toward the Earth.", "note": "", "bold": 3},
+  {"mode": "hackers", "part": 1, "num": 15, "mi": "", "key": "magnify", "word": "magnify", "pos": "동사", "koMean": "확대하다", "syn": ["enlarge", "increase", "amplify", "intensify"], "ko": "현미경은 육안으로는 볼 수 없는 물체를 <mark>확대하는</mark> 데 사용된다.", "pre": "Microscopes are used to ", "answer": "magnify", "post": " objects that are not visible to the naked eye.", "note": "", "bold": 3},
+  {"mode": "hackers", "part": 1, "num": 16, "mi": "", "key": "afford", "word": "afford", "pos": "동사", "koMean": "주다, 제공하다", "syn": ["give", "offer", "provide", "grant"], "ko": "George가 고등학교에서 받은 높은 성적은 그에게 좋은 대학에 입학할 수 있는 많은 기회를 <mark>주었다</mark>.", "pre": "George’s high marks in high school ", "answer": "afforded", "post": " him many opportunities to enter a good university.", "note": "afford의 형용사형인 affordable은 ‘(가격 등이) 적당한’이라는 뜻이며, 동의어로 moderate, budget가 출제될 수 있다.", "bold": 3},
+  {"mode": "hackers", "part": 1, "num": 17, "mi": "", "key": "conclusive", "word": "conclusive", "pos": "형용사", "koMean": "결정적인, 확실한", "syn": ["definitive", "final", "enough to settle the issue", "clear"], "ko": "그 실험은 그 이론의 타당성에 대한 어떠한 <mark>결정적인</mark> 증거도 제공하지 못했다.", "pre": "The experiment failed to provide any ", "answer": "conclusive", "post": " evidence of the theory’s validity.", "note": "", "bold": 3},
+  {"mode": "hackers", "part": 1, "num": 18, "mi": "", "key": "unsophisticated", "word": "unsophisticated", "pos": "형용사", "koMean": "단순한, 복잡하지 않은", "syn": ["simple", "uncomplicated", "not complex"], "ko": "그 발명가는 자신의 비행기에 <mark>단순한</mark> 기술을 사용했고, 그것은 이륙 후 곧 추락했다.", "pre": "The inventor used ", "answer": "unsophisticated", "post": " technology in his flying machine, and it crashed soon after takeoff.", "note": "", "bold": 2},
+  {"mode": "hackers", "part": 1, "num": 19, "mi": "", "key": "justified", "word": "justified", "pos": "형용사", "koMean": "정당한", "syn": ["right", "legitimate", "just", "reasonable"], "ko": "CEO는 그 부정직한 직원을 해고하는 것이 <mark>정당하다</mark>고 느꼈다.", "pre": "The CEO felt ", "answer": "justified", "post": " in firing the dishonest employee.", "note": "", "bold": 2},
+  {"mode": "hackers", "part": 1, "num": 20, "mi": "①", "key": "deliberate①", "word": "deliberate", "pos": "형용사", "koMean": "의도적인, 계획적인", "syn": ["intentional", "designed", "planned"], "ko": "그 영화의 액션 장면들은 특정 관객층의 관심을 끌기 위한 <mark>의도적인</mark> 시도였다.", "pre": "The film’s action scenes were ", "answer": "deliberate", "post": " attempts to grab the attention of a specific audience.", "note": "", "bold": 2},
+  {"mode": "hackers", "part": 1, "num": 20, "mi": "②", "key": "deliberate②", "word": "deliberate", "pos": "형용사", "koMean": "신중한", "syn": ["careful", "cautious", "thoughtful"], "ko": "의회는 적자를 줄이기 위한 <mark>신중한</mark> 노력의 일환으로 여러 프로그램에 대한 재정 지원을 삭감했다.", "pre": "The parliament reduced funding for many programs in a ", "answer": "deliberate", "post": " effort to cut the deficit.", "note": "", "bold": 2},
+  {"mode": "hackers", "part": 2, "num": 21, "mi": "", "key": "depend on", "word": "depend on", "pos": "구", "koMean": "~에 의존하다, 의지하다", "syn": ["rely on", "count on"], "ko": "아기 돌고래들은 그들에게 먹이를 주고 보호해 주는 엄마 돌고래에 <mark>의존한다</mark>.", "pre": "Baby dolphins ", "answer": "depend on", "post": " their mothers to feed and protect them.", "note": "", "bold": 2},
+  {"mode": "hackers", "part": 2, "num": 22, "mi": "", "key": "substantiate", "word": "substantiate", "pos": "동사", "koMean": "입증하다", "syn": ["confirm", "prove", "authenticate", "verify"], "ko": "로버트 피어리는 그가 1909년에 북극에 도달했다는 것을 <mark>입증할</mark> 수 없었다.", "pre": "Robert Peary was unable to ", "answer": "substantiate", "post": " that he had reached the North Pole in 1909.", "note": "", "bold": 3},
+  {"mode": "hackers", "part": 2, "num": 23, "mi": "", "key": "successively", "word": "successively", "pos": "부사", "koMean": "잇따라서", "syn": ["one after another", "sequentially"], "ko": "그 잡지 편집장은 직무에 대한 자질을 논의하기 위해 각 지원자들과 <mark>잇따라</mark> 이야기를 나누었다.", "pre": "The magazine editor spoke with each applicant ", "answer": "successively", "post": " to discuss their qualifications for the job.", "note": "", "bold": 2},
+  {"mode": "hackers", "part": 2, "num": 24, "mi": "", "key": "pervasive", "word": "pervasive", "pos": "형용사", "koMean": "퍼지는, 만연하는", "syn": ["widespread", "prevalent"], "ko": "오늘날의 젊은이들에게 <mark>퍼져 있는</mark> 텔레비전의 영향이 사회에 해를 끼치고 있다고 종종 주장된다.", "pre": "It is often argued that the ", "answer": "pervasive", "post": " influence of television on today’s youth is harming society.", "note": "", "bold": 2},
+  {"mode": "hackers", "part": 2, "num": 25, "mi": "", "key": "strenuous", "word": "strenuous", "pos": "형용사", "koMean": "격렬한, 힘든", "syn": ["intense", "arduous", "laborious"], "ko": "체육관에서의 <mark>격렬한</mark> 운동 후 Gina의 근육은 몹시 아팠다.", "pre": "Gina’s muscles were very sore after her ", "answer": "strenuous", "post": " workout at the gym.", "note": "", "bold": 2},
+  {"mode": "hackers", "part": 2, "num": 26, "mi": "", "key": "sleek", "word": "sleek", "pos": "형용사", "koMean": "매끄러운", "syn": ["smooth", "silky"], "ko": "문어는 평소에는 <mark>매끄러운</mark> 표피를 가지고 있지만, 겁을 먹으면 그것이 거칠어지거나 울퉁불퉁해질 수 있다.", "pre": "Octopuses usually have ", "answer": "sleek", "post": " skin, but it can become rough or bumpy when frightened.", "note": "", "bold": 2},
+  {"mode": "hackers", "part": 2, "num": 27, "mi": "", "key": "invoke", "word": "invoke", "pos": "동사", "koMean": "빌다, 기원하다", "syn": ["call upon", "pray to", "conjure"], "ko": "아즈텍 족은 때때로 신들에게 풍작을 가져다 달라고 <mark>빌었다</mark>.", "pre": "The Aztecs sometimes ", "answer": "invoked", "post": " their gods to bring a good harvest.", "note": "invoke는 ‘invoke the law(법을 적용하다)’처럼 ‘(규칙 등을) 적용하다’라는 뜻으로도 많이 쓰인다. 동의어로 apply, implement가 출제될 수 있다.", "bold": 3},
+  {"mode": "hackers", "part": 2, "num": 28, "mi": "", "key": "impressive", "word": "impressive", "pos": "형용사", "koMean": "인상적인, 대단한", "syn": ["striking", "remarkable"], "ko": "올해 7월 4일에 보스턴 시는 거의 네 시간 동안 지속된 <mark>인상적인</mark> 불꽃놀이를 선보였다.", "pre": "This fourth of July, the city of Boston gave an ", "answer": "impressive", "post": " fireworks show that lasted almost four hours.", "note": "", "bold": 2},
+  {"mode": "hackers", "part": 2, "num": 29, "mi": "", "key": "conjunction", "word": "conjunction", "pos": "명사", "koMean": "결합", "syn": ["combination", "union"], "ko": "남아프리카 근처의 풍부한 해양 생물은 두 개의 주요 해류들의 <mark>결합</mark>에 기인한다.", "pre": "The abundant sea life near South Africa is due to the ", "answer": "conjunction", "post": " of two major ocean currents.", "note": "", "bold": 2},
+  {"mode": "hackers", "part": 2, "num": 30, "mi": "", "key": "astoundingly", "word": "astoundingly", "pos": "부사", "koMean": "몹시 놀랍게도", "syn": ["incredibly", "surprisingly", "shockingly", "astonishingly"], "ko": "산의 가을빛이 <mark>몹시 놀랍게도</mark> 아름답다.", "pre": "The fall colors in the mountains are ", "answer": "astoundingly", "post": " beautiful.", "note": "", "bold": 3},
+  {"mode": "hackers", "part": 2, "num": 31, "mi": "", "key": "aftermath", "word": "aftermath", "pos": "명사", "koMean": "여파, 결과", "syn": ["result", "outcome", "consequence", "aftereffect"], "ko": "많은 국가들이 쓰나미의 <mark>여파</mark>에 대한 반응으로 태국에 원조를 제공했다.", "pre": "Many nations provided aid to Thailand in response to the ", "answer": "aftermath", "post": " of the tsunami.", "note": "", "bold": 3},
+  {"mode": "hackers", "part": 2, "num": 32, "mi": "", "key": "promptly", "word": "promptly", "pos": "부사", "koMean": "신속하게, 즉시", "syn": ["quickly", "instantly", "straightaway"], "ko": "최신 운송 방법 덕분에 사람들은 주문한 후 <mark>신속하게</mark> 소포를 받을 수 있다.", "pre": "With modern shipping methods, people are able to receive packages ", "answer": "promptly", "post": " after placing an order.", "note": "", "bold": 3},
+  {"mode": "hackers", "part": 2, "num": 33, "mi": "", "key": "subdue", "word": "subdue", "pos": "동사", "koMean": "정복하다", "syn": ["defeat", "conquer", "vanquish"], "ko": "서기 530년에 로마 군대는 메소포타미아에서 페르시아 군대를 <mark>정복했다</mark>.", "pre": "In 530 AD, Roman forces ", "answer": "subdued", "post": " the Persian army in Mesopotamia.", "note": "", "bold": 2},
+  {"mode": "hackers", "part": 2, "num": 34, "mi": "", "key": "extant", "word": "extant", "pos": "형용사", "koMean": "현존하는", "syn": ["surviving", "in existence", "existing", "living", "remaining"], "ko": "미국 도시를 그린 가장 오래된 <mark>현존하는</mark> 그림은 1720년의 필라델피아 그림이다.", "pre": "The oldest ", "answer": "extant", "post": " painting of an American city is a portrait of Philadelphia in 1720.", "note": "extant와 철자·발음이 비슷한 extent는 ‘범위(range, scope)’라는 뜻이므로 시험에서 혼동하지 않도록 주의하자.", "bold": 3},
+  {"mode": "hackers", "part": 2, "num": 35, "mi": "", "key": "sedentary", "word": "sedentary", "pos": "형용사", "koMean": "주로 앉아 있는; 정착성의", "syn": ["stationary", "settled"], "ko": "Rosa의 비만은 어느 정도는 <mark>주로 앉아 있는</mark> 직업 때문이다.", "pre": "Rosa’s obesity is partly due to her ", "answer": "sedentary", "post": " occupation.", "note": "", "bold": 2},
+  {"mode": "hackers", "part": 2, "num": 36, "mi": "", "key": "eliminate", "word": "eliminate", "pos": "동사", "koMean": "없애다, 제거하다", "syn": ["get rid of", "remove", "discard"], "ko": "정부는 어린이집에 대한 재정 지원을 <mark>없앴다</mark>.", "pre": "The government ", "answer": "eliminated", "post": " funds for day care centers.", "note": "", "bold": 2},
+  {"mode": "hackers", "part": 2, "num": 37, "mi": "", "key": "perfect", "word": "perfect", "pos": "동사", "koMean": "개선하다, 완벽하게 하다", "syn": ["refine", "improve", "develop"], "ko": "Greg는 중국으로 이주하기 전에 그의 중국어 실력을 <mark>개선하고</mark> 싶어한다.", "pre": "Before moving to China, Greg wants to ", "answer": "perfect", "post": " his Chinese skills.", "note": "", "bold": 2},
+  {"mode": "hackers", "part": 2, "num": 38, "mi": "", "key": "genuine", "word": "genuine", "pos": "형용사", "koMean": "진짜의", "syn": ["true", "real", "authentic"], "ko": "Janet은 항상 사업 계약서의 <mark>진본</mark>을 그녀의 서류철에 보관한다.", "pre": "Janet always keeps a ", "answer": "genuine", "post": " copy of the business contract in her files.", "note": "genuine은 ‘a genuine person(성실한 사람)’처럼 ‘성실한’이라는 뜻으로도 많이 쓰인다. 동의어로 sincere, earnest가 출제될 수 있다.", "bold": 2},
+  {"mode": "hackers", "part": 2, "num": 39, "mi": "", "key": "dominant", "word": "dominant", "pos": "형용사", "koMean": "우세한, 주요한", "syn": ["prevailing", "prominent", "supreme", "chief", "ruling"], "ko": "보건에서의 <mark>우세한</mark> 이론은 비만이 생활 방식 선택에 의해 야기된다는 것이다.", "pre": "The ", "answer": "dominant", "post": " theory in healthcare is that obesity is caused by lifestyle choices.", "note": "", "bold": 4},
+  {"mode": "hackers", "part": 2, "num": 40, "mi": "", "key": "unrivaled", "word": "unrivaled", "pos": "형용사", "koMean": "비할 데 없는", "syn": ["unequaled", "unparalleled", "matchless", "peerless"], "ko": "르네상스 시대 화가들의 솜씨는 심지어 오늘날에도 <mark>비할 데가 없다</mark>.", "pre": "The skill of Renaissance painters is ", "answer": "unrivaled", "post": " even today.", "note": "", "bold": 3},
+  {"mode": "hackers", "part": 3, "num": 41, "mi": "", "key": "paradox", "word": "paradox", "pos": "명사", "koMean": "모순된 말", "syn": ["contradiction", "absurdity"], "ko": "<mark>모순된 말</mark>이긴 하지만 ‘친절하기 위해선 잔인해져야 한다’라는 격언은 많은 상황에서 사실이다.", "pre": "Despite being a ", "answer": "paradox", "post": ", the saying “one must be cruel to be kind” is true in many situations.", "note": "", "bold": 2},
+  {"mode": "hackers", "part": 3, "num": 42, "mi": "①", "key": "neglect①", "word": "neglect", "pos": "동사", "koMean": "무시하다", "syn": ["ignore", "disregard"], "ko": "그 선원은 기상 경보를 <mark>무시했기</mark> 때문에 자기 자신을 위험에 빠뜨렸다.", "pre": "Because the sailor ", "answer": "neglected", "post": " the weather warnings, he put himself in danger.", "note": "", "bold": 2},
+  {"mode": "hackers", "part": 3, "num": 42, "mi": "②", "key": "neglect②", "word": "neglect", "pos": "동사", "koMean": "(해야 할 일을) 하지 않다, 잊다", "syn": ["fail", "forget"], "ko": "그 호랑이는 동물원 직원 한 명이 우리를 <mark>잠그지 않았을</mark> 때 탈출했다.", "pre": "The tiger escaped when one of the zoo workers ", "answer": "neglected", "post": " to lock its cage.", "note": "", "bold": 2},
+  {"mode": "hackers", "part": 3, "num": 43, "mi": "", "key": "recall", "word": "recall", "pos": "동사", "koMean": "상기하다, 생각해내다", "syn": ["remember", "recollect"], "ko": "많은 유명 작가들은 자신들이 과거를 <mark>상기하는</mark> 것에 도움을 줄 일기를 썼다.", "pre": "Many famous writers have kept diaries to help them ", "answer": "recall", "post": " the past.", "note": "", "bold": 2},
+  {"mode": "hackers", "part": 3, "num": 44, "mi": "", "key": "ascend", "word": "ascend", "pos": "동사", "koMean": "올라가다", "syn": ["rise", "climb", "mount", "go up"], "ko": "비행기는 순조롭게 이륙한 뒤 잠시 후에 구름 속으로 신속하게 <mark>올라갔다</mark>.", "pre": "A few moments after the plane made a smooth departure, it swiftly ", "answer": "ascended", "post": " into the clouds.", "note": "ascend의 형용사형인 ascendant는 ‘상승하는’이라는 뜻 외에 ‘우세한’이라는 뜻으로도 많이 쓰이며, 동의어로 dominant, prevailing이 출제될 수 있다.", "bold": 2},
+  {"mode": "hackers", "part": 3, "num": 45, "mi": "", "key": "solid", "word": "solid", "pos": "형용사", "koMean": "확고한, 견고한", "syn": ["substantial", "fixed", "sturdy", "robust"], "ko": "<mark>확고한</mark> 증거가 부족했기 때문에 그 사건은 해결되지 않은 채로 남았다.", "pre": "The case remained unsolved because there was a lack of ", "answer": "solid", "post": " evidence.", "note": "", "bold": 2},
+  {"mode": "hackers", "part": 3, "num": 46, "mi": "", "key": "contour", "word": "contour", "pos": "명사", "koMean": "윤곽, 외형", "syn": ["outline"], "ko": "대서양 해안의 <mark>윤곽</mark>은 매우 들쭉날쭉하다.", "pre": "The ", "answer": "contours", "post": " of the Atlantic coast are very irregular.", "note": "", "bold": 1},
+  {"mode": "hackers", "part": 3, "num": 47, "mi": "", "key": "inhabit", "word": "inhabit", "pos": "동사", "koMean": "거주하다", "syn": ["live in", "occupy", "dwell in"], "ko": "쿠바에 <mark>거주한</mark> 최초의 사람들은 아라와크 족의 친족이자 우호적인 부족이었던 시보네이 족이었다.", "pre": "The first people to ", "answer": "inhabit", "post": " Cuba were the Ciboney, a friendly tribe related to the Arawak.", "note": "", "bold": 2},
+  {"mode": "hackers", "part": 3, "num": 48, "mi": "", "key": "irrevocably", "word": "irrevocably", "pos": "부사", "koMean": "돌이킬 수 없게", "syn": ["permanently", "irreversibly", "irretrievably"], "ko": "제2차 세계대전 동안 런던의 많은 역사적 건물들이 <mark>돌이킬 수 없게</mark> 훼손되었다.", "pre": "During World War II, many historical buildings in London were ", "answer": "irrevocably", "post": " damaged.", "note": "", "bold": 1},
+  {"mode": "hackers", "part": 3, "num": 49, "mi": "", "key": "superficially", "word": "superficially", "pos": "부사", "koMean": "표면적으로", "syn": ["apparently", "not deeply", "externally", "on the surface"], "ko": "팀 빌딩 워크숍은 <mark>표면적으로는</mark> 성공이었지만, 사실 직원들은 여전히 사기가 떨어져 있었다.", "pre": "The team-building workshop was ", "answer": "superficially", "post": " a success, but in reality, the office workers still had low morale.", "note": "", "bold": 3},
+  {"mode": "hackers", "part": 3, "num": 50, "mi": "", "key": "stunted", "word": "stunted", "pos": "형용사", "koMean": "발달이 저해된, 성장을 멈춘", "syn": ["underdeveloped", "hindered", "hampered"], "ko": "<mark>발달이 저해된</mark> 그 나무는 겨우 3피트 크기로 자랐다.", "pre": "The ", "answer": "stunted", "post": " trees had grown to barely three feet high.", "note": "", "bold": 2},
+  {"mode": "hackers", "part": 3, "num": 51, "mi": "", "key": "malleable", "word": "malleable", "pos": "형용사", "koMean": "두들겨 펼 수 있는", "syn": ["flexible"], "ko": "쇠와 강철은 고온으로 가열하면 <mark>두들겨 펼 수 있게</mark> 된다.", "pre": "When heated to high temperatures, iron and steel become ", "answer": "malleable", "post": ".", "note": "", "bold": 1},
+  {"mode": "hackers", "part": 3, "num": 52, "mi": "①", "key": "mean①", "word": "mean", "pos": "동사", "koMean": "의미하다, 나타내다", "syn": ["signify", "express", "indicate"], "ko": "Harold의 발언은 그가 그 기관의 직위로부터 곧 은퇴할 것을 <mark>의미했다</mark>.", "pre": "Harold’s remark ", "answer": "meant", "post": " that he would retire from his position at the agency soon.", "note": "mean은 동사·명사뿐 아니라 형용사로도 많이 쓰인다. 형용사로는 ‘the man’s mean behavior(그 남자의 비열한 행동)’처럼 ‘비열한’이라는 뜻으로 주로 쓰이며, 동의어로 contemptible, despicable이 출제될 수 있다.", "bold": 1},
+  {"mode": "hackers", "part": 3, "num": 52, "mi": "②", "key": "mean②", "word": "mean", "pos": "명사", "koMean": "평균", "syn": ["average"], "ko": "미국의 가계 소득은 각기 다르지만, 2004년도에는 <mark>평균</mark>이 약 6만 달러였다.", "pre": "Household incomes in the US vary, but the ", "answer": "mean", "post": " was around $60,000 in 2004.", "note": "", "bold": 1},
+  {"mode": "hackers", "part": 3, "num": 53, "mi": "", "key": "exclude", "word": "exclude", "pos": "동사", "koMean": "차단하다, 배제하다", "syn": ["keep out", "leave out"], "ko": "어떤 사람들이 가입하도록 하고 다른 사람들은 <mark>차단하는</mark> 것을 허용하는 온라인 토론방을 만드는 것이 가능하다.", "pre": "It’s possible to set up the online forum to allow some people to join and to ", "answer": "exclude", "post": " others.", "note": "", "bold": 2},
+  {"mode": "hackers", "part": 3, "num": 54, "mi": "", "key": "mature", "word": "mature", "pos": "동사", "koMean": "성숙해지다", "syn": ["get older", "grow up", "age"], "ko": "사람들은 <mark>성숙해지</mark>면서 흔히 성격과 관심사가 변한다.", "pre": "As people ", "answer": "mature", "post": ", their personalities and interests often change.", "note": "", "bold": 3},
+  {"mode": "hackers", "part": 3, "num": 55, "mi": "", "key": "pillar", "word": "pillar", "pos": "명사", "koMean": "기둥", "syn": ["column", "post"], "ko": "고대 로마 건축 양식은 건물을 둘러싸는 여러 개의 야외 <mark>기둥</mark>을 특징으로 삼았다.", "pre": "Classical Roman architecture featured several outdoor ", "answer": "pillars", "post": " surrounding a building.", "note": "", "bold": 2},
+  {"mode": "hackers", "part": 3, "num": 56, "mi": "", "key": "encroachment", "word": "encroachment", "pos": "명사", "koMean": "(점진적) 잠식, 침입", "syn": ["gradual invasion", "intrusion"], "ko": "유전자 변형 생물체들이 식량 공급을 <mark>잠식</mark>하는 것은 많은 소비자들을 불안하게 한다.", "pre": "The ", "answer": "encroachment", "post": " of genetically modified organisms into the food supply worries many consumers.", "note": "", "bold": 2},
+  {"mode": "hackers", "part": 3, "num": 57, "mi": "", "key": "no wonder", "word": "no wonder", "pos": "구", "koMean": "놀랄 일이 아닌", "syn": ["unsurprisingly", "unsurprising"], "ko": "8백만이 넘는 사람들이 뉴욕 시에 살고 있기 때문에, 그곳이 붐비는 것은 <mark>놀랄 일이 아니다</mark>.", "pre": "Over eight million people live in New York City, so ", "answer": "no wonder", "post": " it is crowded.", "note": "", "bold": 2},
+];
+CARDS.forEach(c => { if (!c.mode) c.mode = 'sentence'; });
+
+function cardKey(c){ if (c.mode === 'hackers') return 'hk:' + c.key; return (c.mode === 'word' ? c.word : c.answer).toLowerCase(); }
+function norm(s){ return s.trim().toLowerCase().replace(/\s+/g, ' '); }
+function blankNorm(s){ return String(s).toLowerCase().replace(/[^a-z0-9]+/g, ''); }
+
+/* ============================================================
+   기록 저장
+   ============================================================ */
+const STORE_KEY = 'malhaeboca_v3';
+let storageOK = true;
+try { localStorage.setItem('__t__','1'); localStorage.removeItem('__t__'); } catch(e){ storageOK = false; }
+function loadStore(){ try { return JSON.parse(localStorage.getItem(STORE_KEY)) || {words:{},sessions:[]}; } catch(e){ return {words:{},sessions:[]}; } }
+function saveStore(){ try { localStorage.setItem(STORE_KEY, JSON.stringify(store)); } catch(e){} if (typeof window !== 'undefined' && window.__voca_push) window.__voca_push(); }
+let store = loadStore();
+if (!store.words) store.words = {};
+if (!store.sessions) store.sessions = [];
+
+function recordResult(key, correct, hinted){
+  const w = store.words[key] || {seen:0, correct:0, wrong:0, hinted:0};
+  w.seen++; if (correct) w.correct++; else w.wrong++; if (hinted) w.hinted++;
+  w.lastResult = correct ? 'o' : 'x'; w.lastAt = Date.now();
+  store.words[key] = w; saveStore();
+}
+
+/* ── 상태 ── */
+let deck = [], idx = 0, results = [];
+let filter = 'hk:1', shuffle = false, lastFilter = 'hk:1', lastShuffle = false;
+// 문장형
+let sAnswered = false, sHint = 0, sAns = '';
+// 단어형
+let wStage = 1, wResolved = false, wHint = 0, wWord = '', wSlotEls = [], syns = [], synDone = 0;
+
+const $ = id => document.getElementById(id);
+const screens = { start:$('screenStart'), play:$('screenPlay'), result:$('screenResult'), preview:$('screenPreview') };
+function showScreen(name){
+  for (const k in screens) screens[k].classList.toggle('hidden', k !== name);
+  $('topbar').style.visibility = (name === 'play') ? 'visible' : 'hidden';
+  document.querySelector('.brandline').style.visibility = (name === 'play') ? 'visible' : 'hidden';
+  if (name !== 'play'){ const _kb = $('kbd'); if (_kb) _kb.classList.add('hidden'); }
+  if (name === 'start') renderStats();
+}
+function actions(o){
+  o = o || {};
+  $('hintBtn').classList.toggle('hidden', !o.hint);
+  $('checkBtn').classList.toggle('hidden', !o.check);
+  $('nextBtn').classList.toggle('hidden', !o.next);
+  $('retryBtn').classList.toggle('hidden', !o.retry);
+  $('speakBtn').classList.toggle('hidden', !o.speak);
+  $('skipBtn').classList.toggle('hidden', !o.skip);
+}
+
+/* ============================================================
+   시작 화면
+   ============================================================ */
+function weakKeys(){ return Object.keys(store.words).filter(k => store.words[k].lastResult === 'x'); }
+function renderStats(){
+  const keys = Object.keys(store.words);
+  let seen = 0, correct = 0;
+  keys.forEach(k => { seen += store.words[k].seen; correct += store.words[k].correct; });
+  const acc = seen ? Math.round(correct / seen * 100) : 0;
+  if (keys.length){ $('statStudied').textContent = keys.length; $('statAcc').textContent = acc; $('statsBox').classList.remove('hidden'); }
+  else $('statsBox').classList.add('hidden');
+  $('storageWarn').classList.toggle('hidden', storageOK);
+  const weak = weakKeys().length;
+  $('weakN').textContent = weak;
+  $('weakChip').classList.toggle('hidden', weak === 0);
+  $('weakLabel').classList.toggle('hidden', weak === 0);
+  if (weak === 0 && filter === 'weak') selectFilter('hk:1');
+}
+function selectFilter(f){
+  filter = f;
+  document.querySelectorAll('#filterArea .chip').forEach(ch => ch.classList.toggle('on', ch.dataset.filter === f));
+}
+$('filterArea').addEventListener('click', e => { const c = e.target.closest('.chip'); if (c) selectFilter(c.dataset.filter); });
+$('shuffleSwitch').addEventListener('click', () => { shuffle = !shuffle; $('shuffleSwitch').classList.toggle('on', shuffle); });
+
+let resetArmed = false, resetTimer = null;
+$('resetBtn').addEventListener('click', () => {
+  if (!resetArmed){ resetArmed = true; $('resetBtn').textContent = '한 번 더 누르면 삭제'; resetTimer = setTimeout(() => { resetArmed = false; $('resetBtn').textContent = '기록 초기화'; }, 3000); return; }
+  clearTimeout(resetTimer); resetArmed = false; store = {words:{}, sessions:[]}; saveStore(); $('resetBtn').textContent = '기록 초기화'; renderStats();
+});
+
+$('startBtn').addEventListener('click', openPreview);
+$('previewBack').addEventListener('click', () => showScreen('start'));
+$('previewStartBtn').addEventListener('click', () => startSet(filter, shuffle));
+function deckFor(f){
+  const all = CARDS.map((c,i) => ({...c, i}));
+  if (f === 'weak'){ const wk = weakKeys(); return all.filter(c => wk.includes(cardKey(c))); }
+  if (f === 'sent:all') return all.filter(c => c.mode === 'sentence');
+  if (f.indexOf('sent:') === 0){ const set = f.slice(5); return all.filter(c => c.mode === 'sentence' && c.set === set); }
+  if (f === 'voca:all') return all.filter(c => c.mode === 'hackers' && c.lesson);
+  if (f.indexOf('voca:') === 0){ const les = f.slice(5); return all.filter(c => c.mode === 'hackers' && c.lesson === les); }
+  if (f === 'hk:all') return all.filter(c => c.mode === 'hackers' && c.part);
+  if (f.indexOf('hk:') === 0){ const p = +f.slice(3); return all.filter(c => c.mode === 'hackers' && c.part === p); }
+  return [];
+}
+function startSet(f, s){
+  lastFilter = f; lastShuffle = s;
+  deck = deckFor(f);
+  if (!deck.length) return;
+  if (s) deck.sort(() => Math.random() - 0.5);
+  idx = 0; results = [];
+  showScreen('play'); renderCard();
+}
+/* ── 미리 보기(목록) ── */
+function filterLabel(f){
+  const map = { 'sent:all':'문장 복습 · 전체','sent:보존':'문장 복습 · 보존','sent:경제':'문장 복습 · 경제','sent:대화':'문장 복습 · 대화',
+    'voca:1-1':'TOEFL Voca 01 · 레슨 1-1','voca:1-2':'TOEFL Voca 01 · 레슨 1-2','voca:2-1':'TOEFL Voca 01 · 레슨 2-1','voca:all':'TOEFL Voca 01 · 전체',
+    'hk:1':'해커스 Day 1 · 1–20','hk:2':'해커스 Day 1 · 21–40','hk:3':'해커스 Day 1 · 41–57','hk:all':'해커스 Day 1 · 전체','weak':'이전에 틀린 것' };
+  return map[f] || '단어 목록';
+}
+function pvEsc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function pvExample(c){ return pvEsc(c.pre) + '<b>' + pvEsc(c.answer) + '</b>' + pvEsc(c.post); }
+function previewItem(c, n){
+  const el = document.createElement('div'); el.className = 'pv-item';
+  const num = `<span class="pv-num">${n}</span>`;
+  if (c.mode === 'word'){
+    let h = `<div class="pv-head">${num}<span class="pv-word">${pvEsc(c.word)}</span><span class="pv-mean">${pvEsc(c.meaning)}</span></div>`;
+    h += `<div class="pv-syn">${c.synonyms.map(s => pvEsc(s)).join(' · ')}</div>`;
+    if (c.note) h += `<div class="pv-note">※ ${pvEsc(c.note)}</div>`;
+    el.innerHTML = h;
+  } else if (c.mode === 'hackers'){
+    const nb = c.bold || c.syn.length;
+    let h = `<div class="pv-head">${num}<span class="pv-word">${pvEsc(c.word)}${c.mi || ''}</span><span class="pv-pos">${pvEsc(c.pos)}</span><span class="pv-mean">${pvEsc(c.koMean)}</span></div>`;
+    if (c.syn.length) h += `<div class="pv-syn">${c.syn.map((s, i) => i < nb ? `<b>${pvEsc(s)}</b>` : pvEsc(s)).join(' · ')}</div>`;
+    h += `<div class="pv-ex">${pvExample(c)}</div>`;
+    if (c.note) h += `<div class="pv-note">※ ${pvEsc(c.note)}</div>`;
+    el.innerHTML = h;
+  } else {
+    const mean = c.ko.replace(/<\/?mark>/g, '');
+    let h = `<div class="pv-head">${num}<span class="pv-word">${pvEsc(c.answer)}</span></div>`;
+    h += `<div class="pv-krline">${pvEsc(mean)}</div>`;
+    h += `<div class="pv-ex">${pvExample(c)}</div>`;
+    if (c.note) h += `<div class="pv-note">※ ${pvEsc(c.note)}</div>`;
+    el.innerHTML = h;
+  }
+  return el;
+}
+function openPreview(){
+  const list = deckFor(filter);
+  if (!list.length) return;
+  $('previewTitle').textContent = filterLabel(filter);
+  $('previewCount').textContent = list.length + '개';
+  const box = $('previewList'); box.innerHTML = '';
+  list.forEach((c, i) => box.appendChild(previewItem(c, i + 1)));
+  showScreen('preview'); window.scrollTo(0, 0);
+}
+
+/* ============================================================
+   렌더 분기
+   ============================================================ */
+function renderCard(){
+  const c = deck[idx];
+  $('counter').textContent = `${idx+1} / ${deck.length}`;
+  $('barFill').style.width = (idx / deck.length * 100) + '%';
+  $('wNote').classList.add('hidden'); $('hNotePanel').classList.add('hidden');
+  $('cardSentence').classList.add('hidden'); $('cardWord').classList.add('hidden'); $('cardHackers').classList.add('hidden');
+  if (c.mode === 'word'){ $('cardWord').classList.remove('hidden'); renderWord(c); }
+  else if (c.mode === 'hackers'){ $('cardHackers').classList.remove('hidden'); renderHackers(c); }
+  else { $('cardSentence').classList.remove('hidden'); renderSentence(c); }
+  $('blankModeBtn').classList.toggle('hidden', !(c.mode === 'sentence' || c.mode === 'hackers'));
+}
+function setNextLabel(){ $('nextBtn').textContent = (idx === deck.length - 1) ? '결과 보기' : '다음'; }
+function pushResult(c, correct, hinted){ results.push({ i:c.i, correct, hinted }); recordResult(cardKey(c), correct, hinted); }
+
+/* ============================================================
+   문장형 카드
+   ============================================================ */
+let _measure = null;
+function measureEl(){ if (!_measure){ _measure = document.createElement('span'); _measure.style.cssText = 'position:absolute;left:-9999px;top:-9999px;white-space:pre;'; document.body.appendChild(_measure); } return _measure; }
+/* ── 빈칸 표시 모드 (밑줄 슬롯 / 너비) ── */
+let blankMode = 'slots';
+try { const bm = localStorage.getItem('malhaeboca_blankmode'); if (bm === 'width' || bm === 'slots') blankMode = bm; } catch(e){}
+function saveBlankMode(){ try { localStorage.setItem('malhaeboca_blankmode', blankMode); } catch(e){} }
+let sSlotEls = [], hSlotEls = [];
+function letterCount(s){ return (s.match(/[a-zA-Z]/g) || []).length; }
+function nthLetterSlice(str, n){ let c = 0, i = 0; for (; i < str.length && c < n; i++){ if (/[a-zA-Z]/.test(str[i])) c++; } return str.slice(0, i); }
+function buildInlineSlots(box, ans){
+  box.className = 'inline-slots'; box.innerHTML = ''; const slots = [];
+  for (const ch of ans){
+    if (/[a-zA-Z]/.test(ch)){ const sp = document.createElement('span'); sp.className = 'lslot'; box.appendChild(sp); slots.push(sp); }
+    else if (ch === ' '){ const g = document.createElement('span'); g.className = 'lgap'; box.appendChild(g); }
+    else { const sp = document.createElement('span'); sp.className = 'lsep'; sp.textContent = ch; box.appendChild(sp); }
+  }
+  return slots;
+}
+function fillInlineSlots(slots, val){ const ls = (val.match(/[a-zA-Z]/g) || []); slots.forEach((el, i) => { el.textContent = ls[i] || ''; }); }
+function blankEls(which){ return which === 'h' ? { inp:$('hBlank'), slotsBox:$('hBlankSlots') } : { inp:$('blank'), slotsBox:$('blankSlots') }; }
+function setupBlank(which, ans, onType){
+  const { inp, slotsBox } = blankEls(which);
+  inp.value = ''; inp.disabled = false; inp.dataset.hinted = ''; inp.oninput = onType;
+  if (blankMode === 'slots'){ inp.className = 'blank otp'; slotsBox.classList.remove('hidden','ok','bad'); return buildInlineSlots(slotsBox, ans); }
+  inp.className = 'blank'; slotsBox.classList.add('hidden'); slotsBox.innerHTML = ''; fitBlank(inp, ans); return [];
+}
+function reflectBlank(which, ans){ const { inp } = blankEls(which); if (blankMode === 'slots') fillInlineSlots(which === 'h' ? hSlotEls : sSlotEls, inp.value); else fitBlank(inp, ans); }
+function markBlank(which, ans, correct){
+  const { inp, slotsBox } = blankEls(which);
+  if (blankMode === 'slots'){ fillInlineSlots(which === 'h' ? hSlotEls : sSlotEls, ans); slotsBox.classList.remove('ok','bad'); slotsBox.classList.add(correct ? 'ok' : 'bad'); }
+  else { fitBlank(inp, ans); inp.className = 'blank ' + (correct ? 'ok' : 'bad'); }
+}
+function updateBlankModeBtn(){ $('mtA').classList.toggle('on', blankMode === 'slots'); $('mtB').classList.toggle('on', blankMode === 'width'); }
+function toggleBlankMode(){
+  blankMode = (blankMode === 'slots') ? 'width' : 'slots'; saveBlankMode(); updateBlankModeBtn();
+  const c = deck[idx];
+  if (c && !screens.play.classList.contains('hidden')){
+    if (c.mode === 'sentence' && !sAnswered) renderCard();
+    else if (c.mode === 'hackers' && hStage === 1 && !hResolved) renderCard();
+  }
+}
+/* ── 앱 내장 키보드 ── */
+let kbInput = null, kbEnter = null;
+function fireInput(inp){ if (inp && typeof inp.oninput === 'function') inp.oninput(); }
+function kbdKey(ch){ if (!kbInput) return; kbInput.value = (kbInput.value || '') + ch; fireInput(kbInput); }
+function kbdBack(){ if (!kbInput) return; kbInput.value = (kbInput.value || '').slice(0, -1); fireInput(kbInput); }
+function kbdDoEnter(){ if (kbEnter) kbEnter(); }
+function setKbd(inp, enter){
+  kbInput = inp || null; kbEnter = enter || null;
+  const kbd = $('kbd'), wrap = document.querySelector('.wrap');
+  kbd.classList.toggle('hidden', !inp);
+  if (inp){ $('checkBtn').classList.add('hidden'); if (wrap) wrap.style.paddingBottom = (kbd.offsetHeight + 24) + 'px'; }
+  else if (wrap){ wrap.style.paddingBottom = ''; }
+}
+function buildKeyboard(){
+  const rows = [['q','w','e','r','t','y','u','i','o','p'],['a','s','d','f','g','h','j','k','l'],['z','x','c','v','b','n','m']];
+  const kbd = $('kbd'); kbd.innerHTML = '';
+  const mkKey = (label, cls, fn) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'key' + (cls ? ' ' + cls : ''); b.textContent = label; b.addEventListener('mousedown', e => e.preventDefault()); b.addEventListener('click', fn); return b; };
+  rows.forEach((r, ri) => {
+    const row = document.createElement('div'); row.className = 'kbd-row' + (ri === 1 ? ' indent' : '');
+    r.forEach(ch => row.appendChild(mkKey(ch, '', () => kbdKey(ch))));
+    if (ri === 2) row.appendChild(mkKey('⌫', 'kb-back', kbdBack));
+    kbd.appendChild(row);
+  });
+  const r4 = document.createElement('div'); r4.className = 'kbd-row';
+  r4.appendChild(mkKey('space', 'kb-space', () => kbdKey(' ')));
+  r4.appendChild(mkKey('확인', 'kb-enter', kbdDoEnter));
+  kbd.appendChild(r4);
+}
+function fitBlank(inp, ans){
+  const m = measureEl(), cs = getComputedStyle(inp);
+  m.style.fontSize = cs.fontSize; m.style.fontFamily = cs.fontFamily; m.style.fontWeight = cs.fontWeight;
+  m.textContent = ans; const base = m.offsetWidth;
+  m.textContent = inp.value || ''; const typed = m.offsetWidth;
+  inp.style.width = (Math.max(base, typed) + 22) + 'px';
+}
+function sizeBlank(){ fitBlank($('blank'), sAns); }
+function renderSentence(c){
+  sAnswered = false; sHint = 0; sAns = c.answer;
+  $('sLevel').textContent = `${c.set} · ${idx+1}`;
+  $('ko').innerHTML = c.ko;
+  $('note').textContent = c.note ? '※ ' + c.note : ''; $('note').style.display = c.note ? 'block' : 'none';
+  $('pre').textContent = c.pre; $('post').textContent = c.post;
+  $('sSrc').textContent = `출처 · 학습지 · ${c.set}`;
+  sSlotEls = setupBlank('s', c.answer, onTypeSentence);
+  $('sFeedback').textContent = ''; $('sFeedback').className = 'feedback';
+  actions({ hint:true, skip:true, check:true });
+  setKbd($('blank'), submitSentence);
+  setTimeout(() => $('blank').focus(), 30);
+}
+function onTypeSentence(){ reflectBlank('s', sAns); if (sAnswered) return; if (blankNorm($('blank').value) === blankNorm(sAns)) resolveSentence(true); }
+function submitSentence(){
+  if (sAnswered) return;
+  const val = blankNorm($('blank').value);
+  if (!val){ $('sFeedback').textContent = '답을 입력한 뒤 확인을 눌러요. 모르겠으면 “모르겠어요”를 누르세요.'; $('sFeedback').className = 'feedback warn'; $('blank').focus(); return; }
+  if (val === blankNorm(sAns)) resolveSentence(true);
+  else { $('sFeedback').textContent = '틀렸어요. 다시 시도하거나 힌트를 눌러 보세요.'; $('sFeedback').className = 'feedback wrong'; }
+}
+function revealSentence(){ if (!sAnswered) resolveSentence(false); }
+function resolveSentence(correct){
+  if (sAnswered) return;
+  sAnswered = true;
+  const c = deck[idx], hinted = $('blank').dataset.hinted === '1';
+  pushResult(c, correct, correct && hinted);
+  const inp = $('blank'); inp.disabled = true; inp.value = c.answer; markBlank('s', c.answer, correct);
+  if (correct){ $('sFeedback').textContent = hinted ? '정답! (힌트 사용)' : '정답!'; $('sFeedback').className = 'feedback good'; actions({ next:true, speak:true }); }
+  else { $('sFeedback').innerHTML = `정답은 <b>${c.answer}</b>`; $('sFeedback').className = 'feedback wrong'; actions({ next:true, speak:true, retry:true }); }
+  setKbd(null);
+  setNextLabel();
+  $('barFill').style.width = ((idx+1) / deck.length * 100) + '%';
+}
+function hintSentence(){
+  if (sAnswered) return;
+  const c = deck[idx]; sHint = Math.min(sHint + 1, Math.max(1, letterCount(c.answer) - 1));
+  const inp = $('blank'); inp.value = nthLetterSlice(c.answer, sHint); inp.dataset.hinted = '1'; reflectBlank('s', c.answer); inp.focus();
+  if (blankMode !== 'slots'){ const v = inp.value; inp.value = ''; inp.value = v; }
+}
+function retrySentence(){
+  const c = deck[idx];
+  sSlotEls = setupBlank('s', c.answer, null);
+  const inp = $('blank');
+  $('retryBtn').classList.add('hidden');
+  $('sFeedback').innerHTML = `정답 <b>${c.answer}</b> — 직접 한 번 써 볼까요?`; $('sFeedback').className = 'feedback wrong';
+  inp.oninput = () => { reflectBlank('s', c.answer); if (blankNorm(inp.value) === blankNorm(c.answer)){ inp.disabled = true; markBlank('s', c.answer, true); $('sFeedback').textContent = '좋아요, 이렇게 쓰면 돼요.'; $('sFeedback').className = 'feedback good'; inp.oninput = onTypeSentence; } };
+  setKbd($('blank'), () => {});
+  inp.focus();
+}
+
+/* ============================================================
+   단어형 카드 (뜻 → 단어 → 동의어 전부)
+   ============================================================ */
+function renderWord(c){
+  wStage = 1; wResolved = false; wHint = 0; wWord = c.word; synDone = 0;
+  syns = c.synonyms.map(s => ({ text:s, norm:norm(s), prefix:0, state:'empty', el:null }));
+  $('wLevel').textContent = `레슨 ${c.lesson} · ${idx+1}`;
+  $('wMean').textContent = c.meaning;
+  $('wStageLabel').textContent = '단어를 입력하세요';
+  buildWordSlots(c.word);
+  $('wSynArea').classList.add('hidden'); $('wSynRows').innerHTML = '';
+  const inp = $('wInput'); inp.value = ''; inp.disabled = false; inp.className = 'w-input otp'; inp.oninput = onTypeWord;
+  $('wFeedback').textContent = ''; $('wFeedback').className = 'feedback';
+  $('wNote').classList.add('hidden'); $('wNote').innerHTML = '';
+  $('wSrc').textContent = `출처 · TOEFL Voca 01 · 레슨 ${c.lesson}`;
+  actions({ hint:true, skip:true, check:true });
+  setKbd($('wInput'), checkWord);
+  setTimeout(() => inp.focus(), 30);
+}
+function buildWordSlots(word){
+  const box = $('wSlots'); box.className = 'slots'; box.innerHTML = ''; wSlotEls = [];
+  for (let i = 0; i < word.length; i++){ const sp = document.createElement('span'); sp.className = 'slot'; box.appendChild(sp); wSlotEls.push(sp); }
+}
+$('wSlots').addEventListener('click', () => { if (wStage === 1 && !wResolved) $('wInput').focus(); });
+$('blankSlots').addEventListener('click', () => { if (!sAnswered) $('blank').focus(); });
+$('hBlankSlots').addEventListener('click', () => { if (hStage === 1 && !hResolved) $('hBlank').focus(); });
+$('blankModeBtn').addEventListener('click', toggleBlankMode);
+updateBlankModeBtn();
+buildKeyboard();
+
+function onTypeWord(){
+  const inp = $('wInput');
+  if (wStage === 1){
+    const val = inp.value;
+    wSlotEls.forEach((el, i) => { el.textContent = val[i] || ''; });
+    if (!wResolved && norm(val) === norm(wWord)) wordCorrect();
+  } else {
+    tryCheckSyn(inp.value, false);
+  }
+}
+function checkWord(){
+  if (wStage === 1){
+    const val = $('wInput').value;
+    if (norm(val) === norm(wWord)) wordCorrect();
+    else if (!norm(val)) wFeedback('단어를 입력하거나, 모르겠으면 “모르겠어요”를 누르세요.', 'warn');
+    else wFeedback('틀렸어요. 다시 시도하거나 힌트를 눌러 보세요.', 'warn');
+  } else {
+    tryCheckSyn($('wInput').value, true);
+  }
+}
+function hintWord(){
+  if (wStage === 1){
+    if (wResolved) return;
+    wHint = Math.min(wHint + 1, Math.max(1, wWord.length - 1));
+    $('wInput').value = wWord.slice(0, wHint); onTypeWord(); $('wInput').focus();
+  } else {
+    syns.forEach(s => { if (s.state === 'empty'){ const letters = s.text.replace(/[^a-zA-Z]/g,'').length; s.prefix = Math.min(s.prefix + 1, Math.max(1, letters - 1)); renderSynRow(s); } });
+    $('wInput').focus();
+  }
+}
+function wordCorrect(){
+  const c = deck[idx];
+  wResolved = true;
+  wSlotEls.forEach((el, i) => { el.textContent = wWord[i]; }); $('wSlots').className = 'slots ok';
+  pushResult(c, true, wHint > 0);
+  wFeedback('단어 정답!', 'good');
+  openSynStage(c);
+}
+function wordWrong(){
+  const c = deck[idx];
+  wResolved = true;
+  wSlotEls.forEach((el, i) => { el.textContent = wWord[i]; }); $('wSlots').className = 'slots bad';
+  pushResult(c, false, wHint > 0);
+  wFeedback(`정답은 “${wWord}” — 동의어도 채워 보세요`, 'wrong');
+  openSynStage(c);
+}
+function openSynStage(c){
+  wStage = 2;
+  $('wStageLabel').textContent = '단어 완료';
+  $('wSynArea').classList.remove('hidden');
+  const rows = $('wSynRows'); rows.innerHTML = '';
+  syns.forEach(s => { const row = document.createElement('div'); s.el = row; rows.appendChild(row); renderSynRow(s); });
+  updateSynCount();
+  const inp = $('wInput'); inp.className = 'w-input'; inp.value = ''; inp.placeholder = '동의어 입력'; inp.disabled = false; inp.oninput = onTypeWord;
+  actions({ hint:true, skip:true, check:true });
+  setKbd($('wInput'), checkWord);
+  setTimeout(() => inp.focus(), 20);
+}
+function renderSynRow(s){
+  const row = s.el;
+  row.className = 'syn-row' + (s.state === 'done' ? ' done' : s.state === 'revealed' ? ' revealed' : '');
+  row.innerHTML = '';
+  let li = 0;
+  for (const ch of s.text){
+    if (/[a-zA-Z]/.test(ch)){
+      const sp = document.createElement('span'); sp.className = 'slot';
+      sp.textContent = (s.state !== 'empty' || li < s.prefix) ? ch : '';
+      row.appendChild(sp); li++;
+    } else if (ch === ' '){ const g = document.createElement('span'); g.className = 'gap'; row.appendChild(g); }
+    else { const sp = document.createElement('span'); sp.className = 'sep'; sp.textContent = ch; row.appendChild(sp); }
+  }
+}
+function updateSynCount(){ $('wSynCount').textContent = `(${synDone}/${syns.length})`; }
+function tryCheckSyn(val, viaConfirm){
+  const n = norm(val);
+  if (!n){ if (viaConfirm) wFeedback('동의어를 입력하세요', 'warn'); return; }
+  const hit = syns.find(x => x.norm === n);
+  if (hit && hit.state === 'empty'){
+    hit.state = 'done'; renderSynRow(hit); synDone++; updateSynCount();
+    $('wInput').value = '';
+    wFeedback(`좋아요! (${synDone}/${syns.length})`, 'good');
+    if (synDone === syns.length) finishWord();
+    return;
+  }
+  if (viaConfirm){ wFeedback(hit ? '이미 입력한 동의어예요.' : '목록에 없는 동의어예요.', 'warn'); }
+}
+function revealSyns(){
+  syns.forEach(s => { if (s.state === 'empty'){ s.state = 'revealed'; renderSynRow(s); } });
+  synDone = syns.length; updateSynCount();
+  finishWord();
+}
+function finishWord(){
+  const c = deck[idx];
+  const list = c.synonyms.map(s => `<span class="syn-full">${s}</span>`).join(', ');
+  $('wNote').innerHTML = `<div>동의어: ${list}</div>` + (c.note ? `<div style="margin-top:8px">※ ${c.note}</div>` : '');
+  $('wNote').classList.remove('hidden');
+  const inp = $('wInput'); inp.disabled = true; setKbd(null);
+  if ($('wFeedback').className.indexOf('good') < 0) wFeedback('동의어 확인 완료', 'good');
+  actions({ next:true, speak:true });
+  setNextLabel();
+  $('barFill').style.width = ((idx+1) / deck.length * 100) + '%';
+}
+function wFeedback(msg, kind){ $('wFeedback').textContent = msg; $('wFeedback').className = 'feedback ' + (kind || ''); }
+
+/* ============================================================
+   해커스 카드 (예문 빈칸 → 동의어 4지선다)
+   ============================================================ */
+let hStage = 1, hResolved = false, hHint = 0, hAns = '';
+let hWordCorrect = false, hMcqWrong = 0, hMcqHinted = false, hMcqDone = false;
+let hFormat = 'pick', hTargetSyn = '', hShownSyns = [], hWrongSyns = [], hForeign = [];
+
+const HK_STOP = new Set(['a','an','the','to','of','for','on','in','into','up','out','off','be','not','and','one','after','make','give','do','go','it']);
+function hkTokens(arr){
+  const t = new Set();
+  arr.forEach(p => p.toLowerCase().replace(/[()]/g,'').split(/\s+/).forEach(w => { w = w.replace(/[^a-z-]/g,''); if (w && !HK_STOP.has(w)) t.add(w); }));
+  return t;
+}
+function hkFirst(word){ return word.toLowerCase().replace(/[()]/g,'').split(/\s+/)[0].replace(/[^a-z-]/g,''); }
+function hkShuffle(a){ for (let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function pickDistractors(target, pool, n){
+  const tTok = hkTokens(target.syn), tWord = target.word.toLowerCase(), tFirst = hkFirst(target.word);
+  const strict = pool.filter(d => {
+    if (d.key === target.key || d.word.toLowerCase() === tWord) return false;
+    const dTok = hkTokens(d.syn);
+    for (const w of dTok) if (tTok.has(w)) return false;
+    if (tTok.has(hkFirst(d.word))) return false;
+    if (dTok.has(tFirst)) return false;
+    return true;
+  });
+  const seen = new Set(), uniq = [];
+  strict.forEach(d => { const sig = d.syn.join('|'); if (!seen.has(sig)){ seen.add(sig); uniq.push(d); } });
+  hkShuffle(uniq);
+  let picked = uniq.slice(0, n);
+  if (picked.length < n){
+    const sigs = new Set(picked.map(d => d.syn.join('|')));
+    const relax = pool.filter(d => d.word.toLowerCase() !== tWord && !sigs.has(d.syn.join('|')));
+    hkShuffle(relax);
+    for (const d of relax){ if (picked.length >= n) break; const s = d.syn.join('|'); if (!sigs.has(s)){ picked.push(d); sigs.add(s); } }
+  }
+  return picked.slice(0, n);
+}
+function synText(arr){ return arr.join(', '); }
+
+/* 동의어 단위 출제: 볼드 우대 + 로테이션 + 동의어별 기록 */
+function boldCount(c){ return Math.min(c.bold || c.syn.length, c.syn.length); }
+function isBoldSyn(c, s){ const i = c.syn.indexOf(s); return i > -1 && i < boldCount(c); }
+function synStatsOf(c){ const w = store.words[cardKey(c)]; return (w && w.synStats) || {}; }
+function recordSyn(c, syn, ok){
+  const key = cardKey(c);
+  const w = store.words[key] || (store.words[key] = { seen:0, correct:0, wrong:0, hinted:0 });
+  const ss = w.synStats || (w.synStats = {});
+  const e = ss[syn] || (ss[syn] = { s:0, c:0, w:0 });
+  e.s++; if (ok){ e.c++; e.last = 'o'; } else { e.w++; e.last = 'x'; }
+  saveStore();
+}
+function weightedPick(items, weightFn){
+  let tot = 0; const ws = items.map(x => { const w = weightFn(x); tot += w; return w; });
+  let r = Math.random() * tot;
+  for (let i = 0; i < items.length; i++){ r -= ws[i]; if (r <= 0) return items[i]; }
+  return items[items.length - 1];
+}
+function pickTargetSyn(c){
+  const st = synStatsOf(c), syns = c.syn, nb = boldCount(c);
+  const wrong = syns.filter(s => st[s] && st[s].last === 'x');
+  if (wrong.length) return { syn: wrong[Math.floor(Math.random() * wrong.length)], retry: true };
+  const unseenBold = syns.slice(0, nb).filter(s => !st[s]);
+  if (unseenBold.length) return { syn: unseenBold[Math.floor(Math.random() * unseenBold.length)], retry: false };
+  const unseen = syns.filter(s => !st[s]);
+  if (unseen.length) return { syn: unseen[Math.floor(Math.random() * unseen.length)], retry: false };
+  return { syn: weightedPick(syns, s => isBoldSyn(c, s) ? 3 : 1), retry: false };
+}
+function pickSynFrom(card, usedTokens, usedStrings){
+  const nb = boldCount(card);
+  const order = hkShuffle(card.syn.map((s, i) => ({ s, i }))).sort((a, b) => (a.i < nb ? 0 : 1) - (b.i < nb ? 0 : 1));
+  for (const o of order){
+    if (usedStrings.has(o.s.toLowerCase())) continue;
+    let clash = false;
+    for (const t of hkTokens([o.s])) if (usedTokens.has(t)){ clash = true; break; }
+    if (!clash) return o.s;
+  }
+  return null;
+}
+function mcqPool(c){
+  // 오답은 각 카드가 원래 속한 세트(파트/레슨) 안에서만 뽑는다.
+  // 그래야 '이전에 틀린 것'·'전체' 복습이어도 파트가 섞이지 않는다. (각 세트 19장 이상이라 충분)
+  if (c.part != null) return CARDS.filter(x => x.mode === 'hackers' && x.part === c.part);
+  if (c.lesson != null) return CARDS.filter(x => x.mode === 'hackers' && x.lesson === c.lesson);
+  return CARDS.filter(x => x.mode === 'hackers');
+}
+function buildPickOptions(c, target){
+  const pool = mcqPool(c);
+  const words = pickDistractors(c, pool, 6);
+  const usedTokens = hkTokens(c.syn);
+  const usedStrings = new Set([target.toLowerCase()]);
+  const opts = [{ text: target, correct: true }];
+  for (const w of words){
+    if (opts.length >= 4) break;
+    const s = pickSynFrom(w, usedTokens, usedStrings);
+    if (s){ opts.push({ text: s, correct: false, srcWord: w.word, srcMi: w.mi, srcMean: w.koMean }); usedStrings.add(s.toLowerCase()); hkTokens([s]).forEach(t => usedTokens.add(t)); }
+  }
+  if (opts.length < 4){
+    const tTok = hkTokens(c.syn);
+    const relax = hkShuffle(pool.filter(x => x.key !== c.key));
+    for (const w of relax){
+      if (opts.length >= 4) break;
+      for (const s of w.syn){
+        const sl = s.toLowerCase(); if (usedStrings.has(sl)) continue;
+        let clash = false;
+        for (const t of hkTokens([s])) if (tTok.has(t)){ clash = true; break; }
+        if (clash) continue;
+        opts.push({ text: s, correct: false, srcWord: w.word, srcMi: w.mi, srcMean: w.koMean }); usedStrings.add(sl); break;
+      }
+    }
+  }
+  return hkShuffle(opts);
+}
+function buildOddOptions(c){
+  const st = synStatsOf(c), nb = boldCount(c);
+  const trues = c.syn.map((s, i) => ({ s, score: (st[s] ? 2 : 0) + (i < nb ? 0 : 1) + Math.random() * 0.5 }))
+    .sort((a, b) => a.score - b.score).slice(0, 3).map(o => o.s);
+  const pool = mcqPool(c);
+  const dw = pickDistractors(c, pool, 3);
+  const usedTokens = hkTokens(c.syn);
+  const usedStrings = new Set(c.syn.map(s => s.toLowerCase()));
+  let intruder = null, iCard = null;
+  for (const w of dw){ const s = pickSynFrom(w, usedTokens, usedStrings); if (s){ intruder = s; iCard = w; break; } }
+  if (!intruder) return null;
+  const opts = trues.map(s => ({ text: s, correct: false, trueSyn: true }));
+  opts.push({ text: intruder, correct: true, trueSyn: false, srcWord: iCard.word, srcMi: iCard.mi, srcMean: iCard.koMean });
+  return hkShuffle(opts);
+}
+
+function renderHackers(c){
+  hStage = 1; hResolved = false; hHint = 0; hAns = c.answer;
+  hWordCorrect = false; hMcqWrong = 0; hMcqHinted = false; hMcqDone = false;
+  hFormat = 'pick'; hTargetSyn = ''; hShownSyns = []; hWrongSyns = []; hForeign = [];
+  $('hLevel').textContent = c.lesson ? `Voca 01 · 레슨 ${c.lesson}` : `Day 1 · ${c.num}번${c.mi || ''}`;
+  $('hKo').innerHTML = c.ko;
+  $('hPos').textContent = c.pos ? ('※ ' + c.pos + (c.mi ? ' · 뜻 ' + c.mi : '')) : '';
+  $('hPre').textContent = c.pre; $('hPost').textContent = c.post;
+  $('hEnWrap').classList.remove('hidden');
+  hSlotEls = setupBlank('h', hAns, onTypeHackers);
+  $('hMcqArea').classList.add('hidden'); $('hMcqOpts').innerHTML = '';
+  $('hFeedback').textContent = ''; $('hFeedback').className = 'feedback';
+  $('hNotePanel').classList.add('hidden'); $('hNotePanel').innerHTML = '';
+  $('hSrc').textContent = c.lesson ? `출처 · TOEFL Voca 01 · 레슨 ${c.lesson}` : `출처 · 해커스 보카 Day 1 · ${c.num}번`;
+  actions({ hint:true, skip:true, check:true });
+  setKbd($('hBlank'), submitH1);
+  setTimeout(() => $('hBlank').focus(), 30);
+}
+function onTypeHackers(){ reflectBlank('h', hAns); if (hResolved) return; if (blankNorm($('hBlank').value) === blankNorm(hAns)) resolveH1(true); }
+function submitH1(){
+  if (hResolved) return;
+  const val = blankNorm($('hBlank').value);
+  if (!val){ hFeedback('답을 입력한 뒤 확인을 눌러요. 모르겠으면 “모르겠어요”를 누르세요.', 'warn'); $('hBlank').focus(); return; }
+  if (val === blankNorm(hAns)) resolveH1(true);
+  else hFeedback('틀렸어요. 다시 시도하거나 힌트를 눌러 보세요.', 'wrong');
+}
+function hintH1(){
+  if (hResolved) return;
+  hHint = Math.min(hHint + 1, Math.max(1, letterCount(hAns) - 1));
+  const inp = $('hBlank'); inp.value = nthLetterSlice(hAns, hHint); inp.dataset.hinted = '1'; reflectBlank('h', hAns); inp.focus();
+  if (blankMode !== 'slots'){ const v = inp.value; inp.value = ''; inp.value = v; }
+}
+function resolveH1(correct){
+  if (hResolved) return;
+  hResolved = true; hWordCorrect = correct;
+  const c = deck[idx], inp = $('hBlank');
+  inp.disabled = true; inp.value = c.answer; markBlank('h', c.answer, correct);
+  if (correct) hFeedback(inp.dataset.hinted === '1' ? '단어 정답! (힌트 사용) — 이제 동의어를 골라요' : '단어 정답! 이제 동의어를 골라요', 'good');
+  else hFeedback(`단어 정답은 “${c.answer}” — 동의어를 골라 보세요`, 'wrong');
+  if (c.syn && c.syn.length) openMcq(c); else finishNoSyn(c);
+}
+function finishNoSyn(c){
+  if (hMcqDone) return;
+  hMcqDone = true;
+  const hinted = $('hBlank').dataset.hinted === '1';
+  pushResult(c, hWordCorrect, hinted);
+  $('hNotePanel').innerHTML = `<div style="color:var(--muted)">이 단어는 시험에 낼 동의어가 없어요.</div>` + (c.note ? `<div style="margin-top:8px">※ ${c.note}</div>` : '');
+  $('hNotePanel').classList.remove('hidden');
+  hFeedback(hWordCorrect ? '정답!' : `정답은 “${c.answer}” — 복습 목록에 담아둘게요`, hWordCorrect ? 'good' : 'wrong');
+  setKbd(null);
+  actions({ next:true, speak:true });
+  setNextLabel();
+  $('barFill').style.width = ((idx+1) / deck.length * 100) + '%';
+}
+function openMcq(c){
+  if (!c.syn || !c.syn.length){ finishNoSyn(c); return; }
+  hStage = 2; setKbd(null);
+  const t = pickTargetSyn(c);
+  let opts = null; hFormat = 'pick';
+  if (!t.retry && c.syn.length >= 3 && Math.random() < 0.3){
+    const o = buildOddOptions(c);
+    if (o){ hFormat = 'odd'; opts = o; hShownSyns = o.filter(x => x.trueSyn).map(x => x.text); }
+  }
+  if (!opts){ hFormat = 'pick'; hTargetSyn = t.syn; opts = buildPickOptions(c, t.syn); }
+  $('hMcqQ').innerHTML = hFormat === 'odd' ? `“${c.word}”의 동의어가 <u>아닌</u> 것을 고르세요` : `“${c.word}”의 동의어를 고르세요`;
+  hForeign = opts.filter(o => o.srcWord).map(o => ({ text: o.text, word: o.srcWord, mi: o.srcMi, mean: o.srcMean }));
+  const box = $('hMcqOpts'); box.innerHTML = '';
+  opts.forEach((o, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'mcq-opt'; btn.type = 'button'; btn.dataset.correct = o.correct ? '1' : '';
+    btn.innerHTML = `<span class="lab">${'ABCD'[i]}</span><span class="opt-text">${o.text}</span>`;
+    btn.addEventListener('click', () => chooseMcq(btn, o));
+    box.appendChild(btn);
+  });
+  $('hMcqArea').classList.remove('hidden');
+  actions({ hint:true, skip:true });
+}
+function chooseMcq(btn, o){
+  if (hMcqDone) return;
+  if (o.correct){ btn.classList.add('ok'); lockMcq(); finishHackers(false); }
+  else {
+    btn.classList.add('bad','dim'); btn.disabled = true; hMcqWrong++;
+    if (hFormat === 'odd') hWrongSyns.push(o.text);
+    hFeedback(hFormat === 'odd' ? '그건 진짜 동의어예요. 다시 골라 보세요.' : '그건 다른 단어의 동의어예요. 다시 골라 보세요.', 'wrong');
+  }
+}
+function lockMcq(){
+  document.querySelectorAll('#hMcqOpts .mcq-opt').forEach(b => {
+    b.disabled = true;
+    if (b.dataset.correct === '1'){ if (!b.classList.contains('ok')) b.classList.add('ok'); }
+    else if (!b.classList.contains('bad')) b.classList.add('dim');
+  });
+}
+function hintMcq(){
+  const wrongLeft = [...document.querySelectorAll('#hMcqOpts .mcq-opt')].filter(b => !b.disabled && b.dataset.correct !== '1');
+  if (wrongLeft.length <= 1){ hFeedback('더 지울 보기가 없어요.', 'warn'); return; }
+  const pick = wrongLeft[Math.floor(Math.random() * wrongLeft.length)];
+  pick.classList.add('dim'); pick.disabled = true; hMcqHinted = true;
+  hFeedback('보기 하나를 지웠어요.', 'warn');
+}
+function skipMcq(){ if (hMcqDone) return; lockMcq(); finishHackers(true); }
+function finishHackers(skipped){
+  if (hMcqDone) return;
+  hMcqDone = true;
+  const c = deck[idx];
+  const clean = !skipped && hMcqWrong === 0 && !hMcqHinted;
+  if (hFormat === 'pick'){ recordSyn(c, hTargetSyn, clean); }
+  else if (!skipped){ hShownSyns.forEach(s => { if (hWrongSyns.indexOf(s) > -1) recordSyn(c, s, false); else if (clean) recordSyn(c, s, true); }); }
+  const hinted = ($('hBlank').dataset.hinted === '1') || hMcqHinted || hMcqWrong > 0;
+  pushResult(c, hWordCorrect && clean, hinted);
+  const nb = boldCount(c);
+  const list = c.syn.map((s, i) => i < nb ? `<span class="syn-full">${s}</span>` : `<span class="syn-dim">${s}</span>`).join(', ');
+  const boldHint = nb < c.syn.length ? `<span class="syn-hint">굵은 글씨 = 책의 핵심 동의어</span>` : '';
+  let foHtml = '';
+  if (hForeign.length){
+    const rows = hForeign.map(f => `<div class="fo-row"><span class="fo-w">${f.text}</span><span class="fo-m">${f.mean}</span><span class="fo-s">${f.word}${f.mi || ''}</span></div>`).join('');
+    foHtml = `<div class="fo-block"><div class="fo-head">보기에 나온 다른 단어</div>${rows}</div>`;
+  }
+  $('hNotePanel').innerHTML = `<div>동의어: ${list}${boldHint}</div>` + (c.note ? `<div style="margin-top:8px">※ ${c.note}</div>` : '') + foHtml;
+  $('hNotePanel').classList.remove('hidden');
+  if (hWordCorrect && clean) hFeedback('완벽해요!', 'good');
+  else if (hWordCorrect && !clean) hFeedback('단어는 맞았어요. 동의어를 한 번 더 봐 두세요.', 'warn');
+  else if (!hWordCorrect && clean) hFeedback('동의어는 맞았어요. 스펠링을 한 번 더 연습해요.', 'warn');
+  else hFeedback('괜찮아요. 이 단어는 복습 목록에 담아둘게요.', 'wrong');
+  actions({ next:true, speak:true });
+  setNextLabel();
+  $('barFill').style.width = ((idx+1) / deck.length * 100) + '%';
+}
+function hFeedback(msg, kind){ $('hFeedback').textContent = msg; $('hFeedback').className = 'feedback ' + (kind || ''); }
+
+/* ============================================================
+   공용 버튼 (모드에 따라 분기)
+   ============================================================ */
+$('hintBtn').addEventListener('click', () => { const m = deck[idx].mode; if (m === 'word') hintWord(); else if (m === 'hackers'){ hStage === 1 ? hintH1() : hintMcq(); } else hintSentence(); });
+$('checkBtn').addEventListener('click', () => { const m = deck[idx].mode; if (m === 'word') checkWord(); else if (m === 'hackers'){ if (hStage === 1) submitH1(); } else submitSentence(); });
+$('retryBtn').addEventListener('click', retrySentence);
+$('skipBtn').addEventListener('click', skip);
+function skip(){
+  const c = deck[idx];
+  if (c.mode === 'word'){ if (wStage === 1) wordWrong(); else revealSyns(); }
+  else if (c.mode === 'hackers'){ if (hStage === 1) resolveH1(false); else skipMcq(); }
+  else revealSentence();
+}
+$('nextBtn').addEventListener('click', () => { if (idx < deck.length - 1){ idx++; renderCard(); } else showResult(); });
+$('blank').addEventListener('keydown', e => { if (e.key === 'Enter'){ e.preventDefault(); if (!sAnswered) submitSentence(); } });
+$('wInput').addEventListener('keydown', e => { if (e.key === 'Enter'){ e.preventDefault(); checkWord(); } });
+$('hBlank').addEventListener('keydown', e => { if (e.key === 'Enter'){ e.preventDefault(); if (hStage === 1) submitH1(); } });
+document.addEventListener('keydown', e => {
+  if (!kbInput) return;
+  if (e.metaKey || e.ctrlKey || e.altKey) return;
+  const t = e.target;
+  const inField = t && (t === kbInput || t.id === 'blank' || t.id === 'hBlank' || t.id === 'wInput');
+  if (e.key === 'Enter'){ if (!inField){ e.preventDefault(); kbdDoEnter(); } return; }
+  if (e.key === 'Backspace'){ if (!inField){ e.preventDefault(); kbdBack(); } return; }
+  if (e.key === ' ' || e.key === 'Spacebar'){ if (!inField){ e.preventDefault(); kbdKey(' '); } return; }
+  if (e.key.length === 1 && /[a-zA-Z]/.test(e.key)){ if (!inField){ e.preventDefault(); kbdKey(e.key.toLowerCase()); } }
+});
+$('speakBtn').addEventListener('click', () => {
+  const c = deck[idx], text = c.mode === 'word' ? c.word : (c.pre + c.answer + c.post).trim();
+  try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text); u.lang = 'en-US'; u.rate = 0.95; speechSynthesis.speak(u); } catch(e){}
+});
+
+/* ============================================================
+   결과
+   ============================================================ */
+function showResult(){
+  showScreen('result');
+  const total = results.length, right = results.filter(r => r.correct).length;
+  $('scoreNum').innerHTML = `<b>${right}</b> / ${total}`;
+  $('scoreMsg').textContent = right === total ? '완벽해요! 전부 맞혔어요.' : right >= total*0.7 ? '잘했어요. 몇 개만 더 다지면 돼요.' : '괜찮아요. 틀린 것만 다시 보면 금방 잡혀요.';
+  const wrong = results.filter(r => !r.correct), hinted = results.filter(r => r.correct && r.hinted);
+  fillList($('missList'), wrong, true); $('missBlock').classList.toggle('hidden', wrong.length === 0);
+  fillList($('hintList'), hinted, false); $('hintBlock').classList.toggle('hidden', hinted.length === 0);
+  $('retryWrongBtn').classList.toggle('hidden', wrong.length === 0);
+  store.sessions.push({ at:Date.now(), total, correct:right });
+  if (store.sessions.length > 100) store.sessions = store.sessions.slice(-100);
+  saveStore();
+}
+function fillList(container, arr, miss){
+  container.innerHTML = '';
+  arr.forEach(r => {
+    const c = CARDS[r.i];
+    const word = c.mode === 'word' ? c.word : c.mode === 'hackers' ? (c.word + (c.mi || '')) : c.answer;
+    const mean = c.mode === 'word' ? c.meaning : c.mode === 'hackers' ? c.koMean : plainMean(c.ko);
+    const row = document.createElement('div');
+    row.className = 'wrow' + (miss ? ' miss' : '');
+    row.innerHTML = `<span class="w">${word}</span><span class="mean">${mean}</span>` + (!miss && r.hinted ? '<span class="tag">힌트</span>' : '');
+    container.appendChild(row);
+  });
+}
+function plainMean(ko){ const m = ko.match(/<mark>(.*?)<\/mark>/); return m ? m[1] : ''; }
+
+$('retryWrongBtn').addEventListener('click', () => { deck = results.filter(r => !r.correct).map(r => ({ ...CARDS[r.i], i:r.i })); idx = 0; results = []; showScreen('play'); renderCard(); });
+$('againBtn').addEventListener('click', () => startSet(lastFilter, lastShuffle));
+$('homeBtn').addEventListener('click', () => showScreen('start'));
+
+/* ============================================================
+   클라우드 백업 — 로그인 없음(기기별 동기화 코드)
+   · localStorage가 원본, Supabase는 백업 / 기기 간 이어보기.
+   · 테이블 직접접근은 RLS로 차단, RPC(pull/push)로만 접근.
+   · 동기화 코드는 이 기기에서만 생성·저장 → 공개 레포에 안 들어감.
+   ============================================================ */
+const SB_URL = 'https://ihecmsgxpfdiizlkdylv.supabase.co';
+const SB_KEY = 'sb_publishable_0HMfBq89jIDMWqhJLs5neg_FtyNZwgG';
+const SYNC_CODE_KEY = 'malhaeboca_sync_code';
+let cloudReady = false, pushTimer = null;
+
+function genSyncCode(){
+  const a = new Uint8Array(9); crypto.getRandomValues(a);
+  const hex = Array.from(a, b => b.toString(16).padStart(2,'0')).join('');
+  return 'voca-' + hex.slice(0,4) + '-' + hex.slice(4,8) + '-' + hex.slice(8,12);
+}
+function getSyncCode(){
+  let c = null; try { c = localStorage.getItem(SYNC_CODE_KEY); } catch(e){}
+  if (!c){ c = genSyncCode(); try { localStorage.setItem(SYNC_CODE_KEY, c); } catch(e){} }
+  return c;
+}
+function setSyncCode(c){ try { localStorage.setItem(SYNC_CODE_KEY, String(c).trim()); } catch(e){} }
+
+async function sbRpc(fn, body){
+  const r = await fetch(SB_URL + '/rest/v1/rpc/' + fn, {
+    method:'POST',
+    headers:{ apikey:SB_KEY, Authorization:'Bearer '+SB_KEY, 'Content-Type':'application/json' },
+    body: JSON.stringify(body)
+  });
+  if (!r.ok) throw new Error('rpc ' + fn + ' ' + r.status);
+  const t = await r.text(); return t ? JSON.parse(t) : null;
+}
+function cloudPushSoon(){
+  if (!cloudReady) return;
+  if (pushTimer) clearTimeout(pushTimer);
+  pushTimer = setTimeout(cloudPushNow, 1500);
+}
+async function cloudPushNow(){
+  if (typeof navigator === 'undefined' || !navigator.onLine) return;
+  try { await sbRpc('toeflvoca_push', { p_code:getSyncCode(), p_data:store }); } catch(e){}
+}
+/* 단어별로 lastAt(최근 활동)이 더 나중인 기록을 채택 → 어느 기기 진도도 안 잃음 */
+function mergeStores(local, remote){
+  if (!remote || !remote.words) return local;
+  const out = { words:{}, sessions: (local.sessions || []) };
+  const keys = new Set([...Object.keys(local.words||{}), ...Object.keys(remote.words||{})]);
+  keys.forEach(k => {
+    const a = (local.words||{})[k], b = (remote.words||{})[k];
+    if (!a) out.words[k] = b; else if (!b) out.words[k] = a;
+    else out.words[k] = ((a.lastAt||0) >= (b.lastAt||0)) ? a : b;
+  });
+  return out;
+}
+async function cloudInit(){
+  try {
+    const remote = await sbRpc('toeflvoca_pull', { p_code:getSyncCode() });
+    if (remote && remote.words){ store = mergeStores(store, remote); saveStore(); renderStats(); }
+  } catch(e){}
+  cloudReady = true;
+  cloudPushSoon();
+}
+if (typeof window !== 'undefined') window.__voca_push = cloudPushSoon;
+
+/* 브라우저에서만 실행(Node 스모크 테스트에선 스킵) */
+if (typeof window !== 'undefined' && window.addEventListener){
+  // 동기화 UI
+  (function(){
+    const codeEl = $('syncCode'), copyBtn = $('syncCopy'), inEl = $('syncInput'), applyBtn = $('syncApply'), stEl = $('syncStatus');
+    if (!codeEl) return;
+    codeEl.textContent = getSyncCode();
+    copyBtn.addEventListener('click', async () => {
+      try { await navigator.clipboard.writeText(getSyncCode()); stEl.textContent = '코드를 복사했어요.'; }
+      catch(e){ stEl.textContent = '복사 실패 — 코드를 길게 눌러 직접 복사하세요.'; }
+    });
+    applyBtn.addEventListener('click', async () => {
+      const v = (inEl.value || '').trim();
+      if (v.length < 8){ stEl.textContent = '코드가 너무 짧아요.'; return; }
+      setSyncCode(v); codeEl.textContent = getSyncCode(); inEl.value = '';
+      stEl.textContent = '불러오는 중…';
+      try {
+        const remote = await sbRpc('toeflvoca_pull', { p_code:getSyncCode() });
+        if (remote && remote.words){ store = mergeStores(store, remote); saveStore(); renderStats(); stEl.textContent = '진도를 이어받았어요 ✓'; }
+        else { stEl.textContent = '그 코드엔 저장된 진도가 없어요. 이 기기 진도를 이 코드로 백업할게요.'; }
+        cloudReady = true; cloudPushNow();
+      } catch(e){ stEl.textContent = '연결 실패 — 잠시 후 다시 시도하세요.'; }
+    });
+  })();
+
+  // 서비스워커(오프라인 + 홈화면 설치)
+  if ('serviceWorker' in navigator)
+    window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(()=>{}));
+
+  // 부팅 시 클라우드에서 진도 병합
+  cloudInit();
+}
+
+showScreen('start');
+</script>
+</body>
+</html>
