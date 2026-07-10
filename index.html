@@ -884,7 +884,7 @@ function resolveSentence(correct){
   const c = deck[idx], hinted = $('blank').dataset.hinted === '1';
   pushResult(c, correct, correct && hinted);
   const inp = $('blank'); inp.disabled = true; inp.value = c.answer; markBlank('s', c.answer, correct);
-  if (correct){ $('sFeedback').textContent = hinted ? '정답! (힌트 사용)' : '정답!'; $('sFeedback').className = 'feedback good'; actions({ next:true, speak:true }); }
+  if (correct){ $('sFeedback').textContent = hinted ? '정답! (힌트 사용)' : '정답!'; $('sFeedback').className = 'feedback good'; actions({ next:true, speak:true }); speakSentence(c); }
   else { $('sFeedback').innerHTML = `정답은 <b>${c.answer}</b>`; $('sFeedback').className = 'feedback wrong'; actions({ next:true, speak:true, retry:true }); }
   setKbd(null);
   setNextLabel();
@@ -1208,6 +1208,7 @@ function resolveH1(correct){
   inp.disabled = true; inp.value = c.answer; markBlank('h', c.answer, correct);
   if (correct) hFeedback(inp.dataset.hinted === '1' ? '단어 정답! (힌트 사용) — 이제 동의어를 골라요' : '단어 정답! 이제 동의어를 골라요', 'good');
   else hFeedback(`단어 정답은 “${c.answer}” — 동의어를 골라 보세요`, 'wrong');
+  if (correct) speakSentence(c);  // 빈칸 정답 = 예문 완성 → 바로 문장 읽어주기
   if (c.syn && c.syn.length) openMcq(c); else finishNoSyn(c);
 }
 function finishNoSyn(c){
@@ -1326,10 +1327,13 @@ document.addEventListener('keydown', e => {
   if (e.key === ' ' || e.key === 'Spacebar'){ if (!inField){ e.preventDefault(); kbdKey(' '); } return; }
   if (e.key.length === 1 && /[a-zA-Z]/.test(e.key)){ if (!inField){ e.preventDefault(); kbdKey(e.key.toLowerCase()); } }
 });
-$('speakBtn').addEventListener('click', () => {
-  const c = deck[idx], text = c.mode === 'word' ? c.word : (c.pre + c.answer + c.post).trim();
+/* 문장 TTS — 🔊 버튼과 "정답 시 자동재생"이 공유하는 단일 함수 */
+function speakSentence(c){
+  if (!c) return;
+  const text = c.mode === 'word' ? c.word : (c.pre + c.answer + c.post).trim();
   try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text); u.lang = 'en-US'; u.rate = 0.95; speechSynthesis.speak(u); } catch(e){}
-});
+}
+$('speakBtn').addEventListener('click', () => speakSentence(deck[idx]));
 
 /* ============================================================
    결과
