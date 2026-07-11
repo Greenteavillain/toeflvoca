@@ -292,6 +292,54 @@
   .seg button.on{background:var(--card);color:var(--blue-ink);box-shadow:0 1px 3px rgba(0,0,0,.18)}
   .switch.mini{margin-top:0}
   .sheet-foot{margin-top:10px;font-size:.72rem;color:var(--muted);text-align:center}
+
+  /* ── 스피킹 ── */
+  .sp-card{background:var(--card-top);border:1px solid var(--line);border-radius:18px;padding:18px;margin-top:6px}
+  .sp-badges{display:flex;align-items:center;gap:6px}
+  .sp-badge{font-size:.72rem;font-weight:800;color:var(--blue-ink);background:var(--blue-soft);border-radius:7px;padding:3px 8px}
+  .sp-badge.type{color:var(--purple);background:var(--purple-soft)}
+  .sp-tools{margin-left:auto;display:flex;gap:6px}
+  .icon-btn.sm{width:36px;height:36px;font-size:15px}
+  .sp-q{margin-top:12px;font-size:1.18rem;line-height:1.55;font-weight:700;color:var(--ink);word-break:break-word}
+  .sp-rec-zone{margin-top:16px;display:flex;flex-direction:column;align-items:center}
+  .sp-timer{font-size:2rem;font-weight:800;color:var(--blue-ink);font-variant-numeric:tabular-nums;margin-bottom:6px}
+  .sp-timer.over{color:var(--warn-ink)}
+  .sp-meter{width:70%;height:8px;border-radius:99px;background:var(--soft);overflow:hidden;margin-bottom:12px}
+  .sp-meter-fill{height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,var(--green),var(--blue));transition:width .08s linear}
+  .sp-recbtn{width:100%;padding:16px;font-size:1.05rem}
+  .sp-recbtn.rec{background:var(--bad-ink);box-shadow:0 8px 18px rgba(210,71,71,.3)}
+  .sp-after{display:flex;gap:10px;width:100%;margin-top:12px}
+  .sp-after .btn{flex:1;padding:14px}
+  .sp-hint{margin-top:14px;font-size:.8rem;color:var(--muted);line-height:1.55;text-align:center}
+  .iv-head{font-size:1.3rem;font-weight:800}
+  .iv-scenario{margin-top:12px;background:var(--note-bg);border-radius:14px;padding:14px 16px;font-size:.95rem;line-height:1.6;color:var(--ink);font-style:italic}
+  .iv-rules{display:flex;flex-direction:column;gap:7px;margin-top:14px;font-size:.88rem;line-height:1.5;color:var(--ink-soft)}
+  .iv-rules b{color:var(--ink)}
+  .iv-qnum{font-size:.85rem;font-weight:800;color:var(--muted);text-align:center}
+  .iv-stage{display:flex;flex-direction:column;align-items:center;gap:10px;margin-top:16px;text-align:center}
+  .iv-avatar{width:84px;height:84px;border-radius:50%;background:var(--panel2);display:grid;place-items:center;font-size:40px;transition:.2s}
+  .iv-avatar.talking{animation:ivpulse 1.1s ease-in-out infinite}
+  @keyframes ivpulse{0%,100%{box-shadow:0 0 0 0 rgba(63,140,244,.35)}50%{box-shadow:0 0 0 14px rgba(63,140,244,0)}}
+  .iv-avatar.listening{background:var(--ok-bg)}
+  .iv-state{font-size:1rem;font-weight:800;color:var(--ink)}
+  .iv-qtext{font-size:.95rem;color:var(--ink-soft);line-height:1.55;max-width:92%}
+  .iv-ring-wrap{position:relative;width:130px;height:130px;margin:14px auto 4px}
+  .iv-ring{width:100%;height:100%}
+  .ring-bg{fill:none;stroke:var(--soft);stroke-width:9}
+  .ring-fg{fill:none;stroke:var(--blue);stroke-width:9;stroke-linecap:round;stroke-dasharray:326.73;stroke-dashoffset:0;transform:rotate(-90deg);transform-origin:60px 60px}
+  .ring-fg.low{stroke:var(--bad-ink)}
+  .iv-ring-num{position:absolute;inset:0;display:grid;place-items:center;font-size:1.9rem;font-weight:800;color:var(--ink);font-variant-numeric:tabular-nums}
+  .iv-actions{display:flex;flex-direction:column;align-items:center;gap:10px;margin-top:18px}
+  .iv-actions .btn{width:100%;padding:14px}
+  .iv-review-list{display:flex;flex-direction:column;gap:14px;margin-top:16px}
+  .ivr-item{background:var(--row-bg);border-radius:14px;padding:13px 15px}
+  .ivr-q{font-size:.92rem;font-weight:700;color:var(--ink);line-height:1.5}
+  .ivr-meta{display:flex;align-items:center;gap:8px;margin-top:8px}
+  .ivr-dur{font-size:.76rem;font-weight:800;border-radius:7px;padding:3px 8px;background:var(--warn-bg);color:var(--warn-ink)}
+  .ivr-dur.ok{background:var(--ok-bg);color:var(--ok-ink)}
+  .ivr-item audio{width:100%;margin-top:10px}
+  .star-on{color:#f5b301}
+  .iv-showtext{display:flex;align-items:center;gap:8px;margin-top:14px;font-size:.85rem;color:var(--ink-soft);font-weight:700;cursor:pointer;user-select:none}
   :focus-visible{outline:none;box-shadow:0 0 0 3px rgba(63,140,244,.4)}
 </style>
 </head>
@@ -509,6 +557,76 @@
         <button class="btn btn-soft" id="againBtn">이 세트 다시 풀기</button>
         <button class="btn btn-ghost" id="homeBtn" style="justify-content:center">처음으로</button>
       </div>
+    </div>
+  </section>
+
+  <!-- ───────── 스피킹: 한 문제씩 연습 ───────── -->
+  <section id="screenSpeak" class="panel hidden">
+    <div class="pv-top">
+      <button class="pv-back" id="spBack">← 홈</button>
+      <div class="pv-title-wrap"><span class="pv-title">한 문제씩 연습</span><span class="pv-count" id="spCount"></span></div>
+    </div>
+    <div class="sp-card">
+      <div class="sp-badges"><span class="sp-badge" id="spTopicBadge"></span><span class="sp-badge type" id="spTypeBadge"></span><span class="sp-tools"><button class="icon-btn sm" id="spListen" type="button" aria-label="질문 듣기">🔊</button><button class="icon-btn sm" id="spStar" type="button" aria-label="어려운 질문 표시">☆</button></span></div>
+      <div class="sp-q" id="spQuestion"></div>
+    </div>
+    <div class="sp-rec-zone">
+      <div class="sp-timer hidden" id="spTimer">0.0초</div>
+      <div class="sp-meter hidden" id="spMeter"><div class="sp-meter-fill" id="spMeterFill"></div></div>
+      <button class="btn btn-primary sp-recbtn" id="spRecBtn" type="button">⏺ 녹음 시작</button>
+      <audio id="spAudio" controls class="hidden" style="width:100%;margin-top:12px"></audio>
+      <div class="sp-after hidden" id="spAfter">
+        <button class="btn btn-soft" id="spRetryBtn" type="button">다시 녹음</button>
+        <button class="btn btn-primary" id="spNextBtn" type="button">다음 질문</button>
+      </div>
+      <div class="sp-hint" id="spHint">실전은 준비 시간 없이 문항당 45초예요. 45초가 지나면 타이머가 주황색으로 바뀌어요.</div>
+    </div>
+  </section>
+
+  <!-- ───────── 스피킹: 실전 인터뷰 ───────── -->
+  <section id="screenInterview" class="panel hidden">
+    <div id="ivIntro">
+      <div class="iv-head">🎬 실전 인터뷰</div>
+      <div class="iv-scenario" id="ivScenario"></div>
+      <div class="iv-rules">
+        <b>진행 방식</b>
+        <span>· 인터뷰어가 질문을 <b>음성으로만</b> 읽어줘요 — 실전처럼 화면에 표시되지 않아요</span>
+        <span>· 질문이 끝나면 <b>준비 시간 없이 바로 녹음</b>이 시작돼요</span>
+        <span>· 문항당 <b>45초</b> — 시간이 다 되면 자동으로 다음 질문으로 넘어가요</span>
+        <span>· 총 4문항: 일상 2개 → 의견 2개 순서로 어려워져요</span>
+      </div>
+      <label class="iv-showtext"><input type="checkbox" id="ivShowTextCb"> 질문 텍스트도 화면에 보기 <span style="color:var(--muted)">(실전은 음성만)</span></label>
+      <button class="btn btn-primary start-btn" id="ivBegin" type="button">🎙 마이크 켜고 시작하기</button>
+      <div class="sp-hint" id="ivMicHint"></div>
+    </div>
+    <div id="ivRun" class="hidden">
+      <div class="iv-qnum" id="ivQnum">질문 1 / 4</div>
+      <div class="iv-stage">
+        <div class="iv-avatar" id="ivAvatar">🧑‍💼</div>
+        <div class="iv-state" id="ivState">질문을 듣고 있어요…</div>
+        <div class="iv-qtext hidden" id="ivQtext"></div>
+      </div>
+      <div class="iv-ring-wrap hidden" id="ivRingWrap">
+        <svg class="iv-ring" viewBox="0 0 120 120" aria-hidden="true"><circle class="ring-bg" cx="60" cy="60" r="52"/><circle class="ring-fg" id="ivRingFg" cx="60" cy="60" r="52"/></svg>
+        <div class="iv-ring-num" id="ivRingNum">45</div>
+      </div>
+      <div class="sp-meter hidden" id="ivMeter"><div class="sp-meter-fill" id="ivMeterFill"></div></div>
+      <div class="iv-actions">
+        <button class="btn btn-soft hidden" id="ivDoneBtn" type="button">답변 끝내기</button>
+        <button class="reset-link" id="ivAbortBtn" type="button">인터뷰 중단</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ───────── 스피킹: 인터뷰 리뷰 ───────── -->
+  <section id="screenIvReview" class="panel hidden">
+    <div class="iv-head">인터뷰 결과</div>
+    <div class="sp-hint" style="margin-top:4px">목표: <b>40초 이상</b> 말하기 · 답 → 이유/예시 → 마무리 한 줄. 45초에 잘려도 감점은 없어요.</div>
+    <div id="ivReviewList" class="iv-review-list"></div>
+    <div class="result-actions">
+      <button class="btn btn-primary" id="ivAgainBtn" type="button">같은 주제로 다시</button>
+      <button class="btn btn-soft" id="ivNewBtn" type="button">새 인터뷰</button>
+      <button class="btn btn-ghost" id="ivHomeBtn" type="button" style="justify-content:center">처음으로</button>
     </div>
   </section>
 </div>
@@ -767,7 +885,7 @@ let sAnswered = false, sHint = 0, sAns = '';
 let wStage = 1, wResolved = false, wHint = 0, wWord = '', wSlotEls = [], syns = [], synDone = 0;
 
 const $ = id => document.getElementById(id);
-const screens = { start:$('screenStart'), play:$('screenPlay'), result:$('screenResult'), preview:$('screenPreview') };
+const screens = { start:$('screenStart'), play:$('screenPlay'), result:$('screenResult'), preview:$('screenPreview'), speak:$('screenSpeak'), interview:$('screenInterview'), ivreview:$('screenIvReview') };
 let currentScreen = 'start', navFromPop = false;
 function showScreen(name){
   for (const k in screens) screens[k].classList.toggle('hidden', k !== name);
@@ -1689,6 +1807,456 @@ function plainMean(ko){ const m = ko.match(/<mark>(.*?)<\/mark>/); return m ? m[
 $('retryWrongBtn').addEventListener('click', () => { deck = results.filter(r => !r.correct).map(r => ({ ...CARDS[r.i], i:r.i })); idx = 0; results = []; sessionActive = true; sessKey = 'retry'; sessLabel = '틀린 것 다시 풀기'; showScreen('play'); renderCard(); });
 $('againBtn').addEventListener('click', () => startSet(lastFilter, lastShuffle));
 $('homeBtn').addEventListener('click', goHome);
+
+/* ============================================================
+   스피킹 — 2026 신토플 "Take an Interview" 연습
+   실전 규격(ETS 2026 스펙): 한 주제 4문항(일상→의견 순 난이도 상승),
+   질문은 음성으로만 · 준비시간 0초 · 문항당 45초 · 다시듣기 없음.
+   ★ 주제 추가 방법: SPEAKING_TOPICS 배열에 객체 하나만 추가하면 끝
+     { id, title(한글), titleEn, scenario(인트로 문구), personal:[...], opinion:[...] }
+   ============================================================ */
+const SPEAKING_TOPICS = [
+  { id:'living', title:'주거 · 생활 환경', titleEn:'Living Environment',
+    scenario:'You have volunteered to participate in a research study about living environments and city life. You will now have a short interview with a researcher.',
+    personal:[
+      'Do you prefer living in an urban place or a rural place?',
+      'Do you prefer living in a busy urban area or a quiet neighborhood?',
+      'What environmental challenges do you expect when moving from a rural area to a city?',
+      'Can you describe the type of place where you live now?',
+      'What do you like most about your current living space?',
+      'Do you think an apartment is better to live in than a traditional house?',
+      'Do you prefer living in an apartment that is near your workplace but is slightly expensive, or one that is a little far from your workplace but cheaper?',
+      'What place would you most like to visit when you have time?',
+      'What is your favorite park or public space?',
+      'Where is the best place to meet and have fun with your friends?',
+      'What is the most important thing when moving to a new place?',
+      'What environmental features do you pay attention to when choosing a place to live?',
+      'What makes a living space comfortable and healthy?',
+      'What is one thing you would change about your living environment?',
+      'What kind of development would you like to see in your community?',
+      'What environmental habits do you practice at home?',
+      'How has your living environment influenced your daily routines or habits?',
+      'How does your living space influence your ability to study or work?',
+      'How important is it for you to have natural light in your home?',
+      'How important is access to green spaces in your community?',
+      'Do you think having plants at home improves your living space?',
+      'Are public transportation options in your area convenient?'
+    ],
+    opinion:[
+      'Should governments encourage people to use renewable energy at home?',
+      'Many governments encourage people to use energy-efficient appliances. Do you think these programs are effective?',
+      'Do you think people today care more about the environment around their homes than in the past?',
+      'What changes would make a neighborhood more environmentally friendly?',
+      'Is it better for cities to build more housing or to preserve green spaces?',
+      'Do you think it is better to build a company offering more jobs or a park?',
+      'Some cities are replacing parking lots with community gardens. Do you think this change benefits residents?',
+      'Do you think your government should provide shelter for the homeless?',
+      'Do you think your government should spend more money on things like national museums or parks than programs to help the poor?',
+      'Should governments spend more money constructing new buildings rather than maintaining old buildings and historic facilities?',
+      'What environmental problems are common in residential areas, and how should they be addressed?',
+      'How would you respond if your city decided to build a new apartment complex near your home?',
+      'Do you believe people should live in smaller homes to reduce their environmental impact?',
+      'Do you think future homes will be more eco-friendly?',
+      'If your city can improve public transportation in your area, what changes would help the environment?'
+    ] },
+  { id:'career', title:'일 · 커리어', titleEn:'Work & Career',
+    scenario:'You have volunteered to participate in a research study about work and careers. You will now have a short interview with a researcher.',
+    personal:[
+      'Describe your current job or a job you have had in the past. What were your main responsibilities?',
+      'How do you see your career evolving in the next five to ten years?',
+      'What type of work environment helps you perform your best, and why?',
+      'How do you stay motivated during difficult times at work?',
+      'Do you prefer to work from home using a computer or to go to your workplace?',
+      'Is remote work better than working in an office? Provide one advantage and disadvantage.',
+      'What is an interesting career or job that you want to have?',
+      'What motivates you the most when choosing a job: salary, stability, passion, or growth opportunities? Why?',
+      'What qualities do you think are most important for success in your future career?',
+      'What is more important for career success in the future: creativity or technical knowledge?',
+      'Describe a professional skill you have developed recently. How did you learn it?',
+      'Describe a challenge you faced at work or in school and how you handled it.',
+      'Can you provide an example of a successful team project you were involved in? What was your role?',
+      'How do you approach conflicts with colleagues or team members?',
+      'Have you ever worked in a multicultural environment? What did you learn from that experience?',
+      'How do you maintain a healthy work-life balance?'
+    ],
+    opinion:[
+      'What special skills do you think are necessary for a person to be successful in the workplace these days?',
+      'What kind of skill do you think is important for students to have?',
+      'Should universities focus more on practical career preparation or academic knowledge?',
+      'How should schools prepare students for a future where AI plays a major role in every profession?',
+      'What do you think makes a workplace truly inclusive and supportive?',
+      'Do you think cultural differences can impact teamwork and communication in the workplace? Why?',
+      'Do you think it is important to have hobbies outside of work? Why or why not?',
+      'Do you think people should stay in one company for a long time or switch jobs regularly?',
+      'Do you think it is a good idea to forbid employees from using personal cell phones during working hours?',
+      'Robots should replace humans for many jobs with repetitive tasks.',
+      'Some people fear that AI will reduce job opportunities. Others think it will increase productivity and create new careers. What is your opinion?',
+      'How do you think AI will change the kinds of jobs people do in the future?',
+      'Do you think AI could replace leadership roles or jobs that require empathy?',
+      'Do you think employees should learn AI-related skills even if their job is not technical?',
+      'Do you believe humans and AI will collaborate effectively in the workplace?',
+      'How should governments or companies respond to job displacement caused by automation?'
+    ] },
+];
+const IV_ANSWER_SEC = 45;   // ETS 2026: 문항당 45초, 준비시간 0
+
+/* ── 질문 풀 · 인터뷰 세트 구성 ── */
+const STARS_KEY = 'malhaeboca_speak_stars';
+function loadStars(){ try { return new Set(JSON.parse(localStorage.getItem(STARS_KEY)) || []); } catch(e){ return new Set(); } }
+function saveStars(set){ try { localStorage.setItem(STARS_KEY, JSON.stringify([...set])); } catch(e){} }
+function speakingPool(topicFilter, typeFilter){
+  const stars = loadStars(), pool = [];
+  SPEAKING_TOPICS.forEach(t => {
+    if (topicFilter !== 'all' && t.id !== topicFilter) return;
+    ['personal', 'opinion'].forEach(type => {
+      if (typeFilter === 'personal' && type !== 'personal') return;
+      if (typeFilter === 'opinion' && type !== 'opinion') return;
+      t[type].forEach((q, qi) => {
+        const key = t.id + ':' + type + ':' + qi;
+        if (typeFilter === 'star' && !stars.has(key)) return;
+        pool.push({ topic: t, type, qi, q, key });
+      });
+    });
+  });
+  return pool;
+}
+/* 실전 세트: 일상 2 + 의견 2 (각각 랜덤, 원본 순서 유지 → 쉬운 것부터) */
+function pickInterviewQuestions(topic){
+  const pick = (arr, n) => {
+    const idxs = arr.map((_, i) => i);
+    for (let i = idxs.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); const t = idxs[i]; idxs[i] = idxs[j]; idxs[j] = t; }
+    return idxs.slice(0, n).sort((x, y) => x - y).map(i => arr[i]);
+  };
+  return [
+    ...pick(topic.personal, 2).map(q => ({ q, type: '일상' })),
+    ...pick(topic.opinion, 2).map(q => ({ q, type: '의견' })),
+  ];
+}
+
+/* ── 녹음 엔진 (연습·실전 공용) ── */
+let micStream = null, mediaRec = null, recChunks = [], spkAudioCtx = null, meterRAF = null;
+async function ensureMic(){
+  if (micStream && micStream.active) return micStream;
+  micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  return micStream;
+}
+function releaseMic(){ if (micStream){ try { micStream.getTracks().forEach(t => t.stop()); } catch(e){} micStream = null; } }
+function startMeter(fillEl){
+  try {
+    if (!micStream) return;
+    if (!spkAudioCtx) spkAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (spkAudioCtx.state === 'suspended') spkAudioCtx.resume();
+    const src = spkAudioCtx.createMediaStreamSource(micStream);
+    const analyser = spkAudioCtx.createAnalyser(); analyser.fftSize = 256;
+    src.connect(analyser);
+    const data = new Uint8Array(analyser.frequencyBinCount);
+    const tick = () => {
+      analyser.getByteFrequencyData(data);
+      let m = 0; for (let i = 0; i < data.length; i++) if (data[i] > m) m = data[i];
+      if (fillEl && fillEl.style) fillEl.style.width = Math.min(100, Math.round(m / 255 * 135)) + '%';
+      meterRAF = requestAnimationFrame(tick);
+    };
+    tick();
+  } catch(e){}
+}
+function stopMeter(){ if (meterRAF){ cancelAnimationFrame(meterRAF); meterRAF = null; } }
+function recStart(){
+  recChunks = [];
+  const mime = MediaRecorder.isTypeSupported('audio/webm;codecs=opus') ? 'audio/webm;codecs=opus'
+             : MediaRecorder.isTypeSupported('audio/mp4') ? 'audio/mp4' : '';
+  mediaRec = mime ? new MediaRecorder(micStream, { mimeType: mime }) : new MediaRecorder(micStream);
+  mediaRec.ondataavailable = (e) => { if (e.data && e.data.size) recChunks.push(e.data); };
+  mediaRec.start();
+}
+function recStop(){
+  return new Promise((res) => {
+    if (!mediaRec || mediaRec.state === 'inactive') return res(null);
+    mediaRec.onstop = () => res(new Blob(recChunks, { type: (mediaRec.mimeType || 'audio/webm') }));
+    try { mediaRec.stop(); } catch(e){ res(null); }
+  });
+}
+
+/* ── 녹음 보관(IndexedDB, 최근 30개 유지) ── */
+let recDbP = null;
+function recDB(){
+  if (recDbP) return recDbP;
+  recDbP = new Promise((res, rej) => {
+    if (typeof indexedDB === 'undefined') return rej(new Error('no idb'));
+    const req = indexedDB.open('malhaeboca_rec', 1);
+    req.onupgradeneeded = () => { const db = req.result; if (!db.objectStoreNames.contains('recs')) db.createObjectStore('recs', { keyPath: 'id', autoIncrement: true }); };
+    req.onsuccess = () => res(req.result);
+    req.onerror = () => rej(req.error);
+  });
+  return recDbP;
+}
+async function recSave(meta, blob){
+  try {
+    const db = await recDB();
+    await new Promise((res) => { const tx = db.transaction('recs', 'readwrite'); tx.objectStore('recs').add(Object.assign({}, meta, { blob, at: Date.now() })); tx.oncomplete = res; tx.onerror = res; });
+    // 오래된 것 정리
+    const all = await recList(1000);
+    if (all.length > 30){ for (const r of all.slice(30)) await recDelete(r.id); }
+  } catch(e){}
+}
+function recList(limit){
+  return recDB().then(db => new Promise((res) => {
+    const out = [];
+    const cur = db.transaction('recs').objectStore('recs').openCursor(null, 'prev');
+    cur.onsuccess = (e) => { const c = e.target.result; if (c && out.length < (limit || 10)){ out.push(c.value); c.continue(); } else res(out); };
+    cur.onerror = () => res(out);
+  })).catch(() => []);
+}
+async function recDelete(id){
+  try { const db = await recDB(); await new Promise((res) => { const tx = db.transaction('recs', 'readwrite'); tx.objectStore('recs').delete(id); tx.oncomplete = res; tx.onerror = res; }); } catch(e){}
+}
+
+/* ── 질문 TTS (onend 미발화 대비 가드 타이머 내장) ── */
+let ttsGuardT = null;
+function speakText(text, onend){
+  let called = false;
+  const done = () => { if (called) return; called = true; clearTimeout(ttsGuardT); if (onend) onend(); };
+  try {
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'en-US'; u.rate = settings.rate || 0.95;
+    u.onend = done; u.onerror = done;
+    speechSynthesis.speak(u);
+    const est = Math.max(3000, Math.round(text.split(/\s+/).length * 470 / (u.rate || 1)));
+    ttsGuardT = setTimeout(done, est + 1500);
+  } catch(e){ done(); }
+}
+
+/* ── 스피킹 홈(허브 스피킹 팬) ── */
+let spkTopicFilter = 'all', spkTypeFilter = 'all';
+function renderSpeakHome(){
+  const box = $('spkTopicChips'); if (!box || !box.appendChild) return;
+  box.innerHTML = '';
+  const mk = (label, id) => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'chip' + (spkTopicFilter === id ? ' on' : '');
+    b.textContent = label; b.dataset.sptopic = id;
+    b.addEventListener('click', () => { spkTopicFilter = id; renderSpeakHome(); });
+    return b;
+  };
+  box.appendChild(mk('전체', 'all'));
+  SPEAKING_TOPICS.forEach(t => box.appendChild(mk(t.title, t.id)));
+  // 유형 칩 상태
+  document.querySelectorAll('#spkTypeChips .chip').forEach(ch => ch.classList.toggle('on', ch.dataset.sptype === spkTypeFilter));
+  renderRecentRecs();
+}
+$('spkTypeChips').addEventListener('click', (e) => {
+  const b = e.target && e.target.closest ? e.target.closest('.chip') : null;
+  if (!b || !b.dataset.sptype) return;
+  spkTypeFilter = b.dataset.sptype;
+  document.querySelectorAll('#spkTypeChips .chip').forEach(ch => ch.classList.toggle('on', ch.dataset.sptype === spkTypeFilter));
+});
+let recPlayEl = null;
+async function renderRecentRecs(){
+  const list = $('recentRecList'), label = $('recentRecLabel');
+  if (!list || !list.appendChild) return;
+  const recs = await recList(8);
+  if (label && label.classList) label.classList.toggle('hidden', recs.length === 0);
+  list.innerHTML = '';
+  recs.forEach(r => {
+    const item = document.createElement('div'); item.className = 'rec-item';
+    const d = new Date(r.at || 0);
+    const meta = (d.getMonth() + 1) + '/' + d.getDate() + ' · ' + Math.round(r.dur || 0) + '초' + (r.kind === 'interview' ? ' · 실전' : '');
+    item.innerHTML = '<span class="ri-q"></span><span class="ri-meta">' + meta + '</span>';
+    item.querySelector('.ri-q').textContent = r.q || '';
+    const play = document.createElement('button'); play.type = 'button'; play.textContent = '▶';
+    play.addEventListener('click', () => {
+      try {
+        if (!recPlayEl) recPlayEl = new Audio();
+        recPlayEl.src = URL.createObjectURL(r.blob); recPlayEl.play();
+      } catch(e){}
+    });
+    const del = document.createElement('button'); del.type = 'button'; del.textContent = '✕';
+    del.addEventListener('click', async () => { await recDelete(r.id); renderRecentRecs(); });
+    item.appendChild(play); item.appendChild(del);
+    list.appendChild(item);
+  });
+}
+
+/* ── 연습 모드 ── */
+let spPool = [], spPos = -1, spCur = null, spRecording = false, spT0 = 0, spTimerIv = null;
+function openPractice(){
+  spPool = speakingPool(spkTopicFilter, spkTypeFilter);
+  if (!spPool.length){ toast(spkTypeFilter === 'star' ? '⭐ 표시한 질문이 아직 없어요' : '조건에 맞는 질문이 없어요'); return; }
+  for (let i = spPool.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); const t = spPool[i]; spPool[i] = spPool[j]; spPool[j] = t; }
+  spPos = -1;
+  showScreen('speak');
+  spNextQ();
+}
+function spResetUI(){
+  spRecording = false;
+  clearInterval(spTimerIv);
+  stopMeter();
+  const ids = [['spTimer', true], ['spMeter', true], ['spAudio', true], ['spAfter', true]];
+  ids.forEach(([id, hide]) => { const el = $(id); if (el && el.classList) el.classList.toggle('hidden', hide); });
+  const rb = $('spRecBtn'); if (rb){ rb.textContent = '⏺ 녹음 시작'; if (rb.classList) rb.classList.remove('rec'); }
+  const t = $('spTimer'); if (t && t.classList) t.classList.remove('over');
+}
+function spNextQ(){
+  spResetUI();
+  spPos = (spPos + 1) % spPool.length;
+  spCur = spPool[spPos];
+  $('spQuestion').textContent = spCur.q;
+  $('spTopicBadge').textContent = spCur.topic.title;
+  $('spTypeBadge').textContent = spCur.type === 'personal' ? '일상 · 개인' : '의견';
+  $('spCount').textContent = (spPos + 1) + ' / ' + spPool.length;
+  spRenderStar();
+}
+function spRenderStar(){
+  const b = $('spStar'); if (!b || !spCur) return;
+  const on = loadStars().has(spCur.key);
+  b.textContent = on ? '★' : '☆';
+  if (b.classList) b.classList.toggle('star-on', on);
+}
+$('spStar').addEventListener('click', () => {
+  if (!spCur) return;
+  const stars = loadStars();
+  if (stars.has(spCur.key)) stars.delete(spCur.key); else stars.add(spCur.key);
+  saveStars(stars); spRenderStar();
+});
+$('spListen').addEventListener('click', () => { if (spCur) speakText(spCur.q); });
+$('spRecBtn').addEventListener('click', async () => {
+  if (!spRecording){
+    try { await ensureMic(); } catch(e){ toast('마이크 권한이 필요해요 — 브라우저 설정에서 허용해 주세요'); return; }
+    spRecording = true; spT0 = Date.now();
+    recStart();
+    const rb = $('spRecBtn'); rb.textContent = '⏹ 녹음 끝내기'; if (rb.classList) rb.classList.add('rec');
+    $('spTimer').classList.remove('hidden'); $('spMeter').classList.remove('hidden');
+    $('spAudio').classList.add('hidden'); $('spAfter').classList.add('hidden');
+    startMeter($('spMeterFill'));
+    spTimerIv = setInterval(() => {
+      const sec = (Date.now() - spT0) / 1000;
+      const t = $('spTimer'); t.textContent = sec.toFixed(1) + '초';
+      if (t.classList) t.classList.toggle('over', sec > IV_ANSWER_SEC);
+    }, 100);
+  } else {
+    spRecording = false;
+    clearInterval(spTimerIv); stopMeter();
+    const dur = (Date.now() - spT0) / 1000;
+    const blob = await recStop();
+    const rb = $('spRecBtn'); rb.textContent = '⏺ 녹음 시작'; if (rb.classList) rb.classList.remove('rec');
+    if (blob){
+      const au = $('spAudio');
+      try { au.src = URL.createObjectURL(blob); } catch(e){}
+      au.classList.remove('hidden'); $('spAfter').classList.remove('hidden');
+      recSave({ kind: 'practice', q: spCur.q, topic: spCur.topic.id, dur: Math.round(dur) }, blob);
+    }
+  }
+});
+$('spRetryBtn').addEventListener('click', () => { spResetUI(); });
+$('spNextBtn').addEventListener('click', () => spNextQ());
+$('spBack').addEventListener('click', goHome);
+$('practiceStartBtn').addEventListener('click', openPractice);
+
+/* ── 실전 인터뷰 모드 ── */
+let iv = null, ivCountIv = null;
+const IV_ACKS = ['I see. Thank you.', 'Thank you. That makes sense.', 'Interesting, thank you.', 'Okay, I see.'];
+function openInterview(){
+  const cands = SPEAKING_TOPICS.filter(t => spkTopicFilter === 'all' || t.id === spkTopicFilter);
+  const topic = cands[Math.floor(Math.random() * cands.length)] || SPEAKING_TOPICS[0];
+  iv = { topic, qs: pickInterviewQuestions(topic), pos: -1, answers: [] };
+  $('ivScenario').textContent = topic.scenario;
+  $('ivIntro').classList.remove('hidden'); $('ivRun').classList.add('hidden');
+  $('ivMicHint').textContent = '';
+  const cb = $('ivShowTextCb'); if (cb) cb.checked = settings.ivShowText === true;
+  showScreen('interview');
+}
+$('ivShowTextCb').addEventListener('change', (e) => { settings.ivShowText = !!(e.target && e.target.checked); saveSettings(); });
+$('ivBegin').addEventListener('click', async () => {
+  try { await ensureMic(); } catch(e){ $('ivMicHint').textContent = '마이크 권한이 거부됐어요. 브라우저(또는 앱) 설정에서 마이크를 허용한 뒤 다시 시도해 주세요.'; return; }
+  $('ivIntro').classList.add('hidden'); $('ivRun').classList.remove('hidden');
+  ivNextQ();
+});
+function ivSetState(txt){ const el = $('ivState'); if (el) el.textContent = txt; }
+function ivNextQ(){
+  if (!iv) return;
+  iv.pos++;
+  if (iv.pos >= iv.qs.length){ ivFinish(); return; }
+  const cur = iv.qs[iv.pos];
+  $('ivQnum').textContent = '질문 ' + (iv.pos + 1) + ' / ' + iv.qs.length + ' · ' + cur.type;
+  const av = $('ivAvatar'); if (av && av.classList){ av.classList.add('talking'); av.classList.remove('listening'); }
+  ivSetState('질문을 듣고 있어요…');
+  $('ivRingWrap').classList.add('hidden'); $('ivMeter').classList.add('hidden'); $('ivDoneBtn').classList.add('hidden');
+  const qt = $('ivQtext');
+  if (qt && qt.classList){ qt.textContent = cur.q; qt.classList.toggle('hidden', settings.ivShowText !== true); }
+  speakText(cur.q, () => ivAnswerPhase());
+}
+function ivAnswerPhase(){
+  if (!iv || currentScreen !== 'interview') return;
+  const av = $('ivAvatar'); if (av && av.classList){ av.classList.remove('talking'); av.classList.add('listening'); }
+  ivSetState('지금 답변하세요');
+  $('ivRingWrap').classList.remove('hidden'); $('ivMeter').classList.remove('hidden'); $('ivDoneBtn').classList.remove('hidden');
+  recStart(); startMeter($('ivMeterFill'));
+  const t0 = Date.now(), CIRC = 326.73;
+  const fg = $('ivRingFg');
+  if (fg && fg.classList) fg.classList.remove('low');
+  clearInterval(ivCountIv);
+  ivCountIv = setInterval(() => {
+    const left = IV_ANSWER_SEC - (Date.now() - t0) / 1000;
+    const num = $('ivRingNum'); if (num) num.textContent = Math.max(0, Math.ceil(left));
+    if (fg){
+      if (fg.style) fg.style.strokeDashoffset = String(CIRC * (1 - Math.max(0, left) / IV_ANSWER_SEC));
+      if (fg.classList) fg.classList.toggle('low', left <= 10);
+    }
+    if (left <= 0) ivFinishAnswer(t0);
+  }, 100);
+}
+async function ivFinishAnswer(t0){
+  if (!iv) return;
+  clearInterval(ivCountIv); ivCountIv = null;
+  stopMeter();
+  const dur = (Date.now() - t0) / 1000;
+  const blob = await recStop();
+  const cur = iv.qs[iv.pos];
+  let url = '';
+  try { url = blob ? URL.createObjectURL(blob) : ''; } catch(e){}
+  iv.answers.push({ q: cur.q, type: cur.type, blob, url, dur: Math.min(dur, IV_ANSWER_SEC) });
+  if (blob) recSave({ kind: 'interview', q: cur.q, topic: iv.topic.id, dur: Math.round(Math.min(dur, IV_ANSWER_SEC)) }, blob);
+  $('ivRingWrap').classList.add('hidden'); $('ivMeter').classList.add('hidden'); $('ivDoneBtn').classList.add('hidden');
+  const av = $('ivAvatar'); if (av && av.classList){ av.classList.add('talking'); av.classList.remove('listening'); }
+  if (iv.pos < iv.qs.length - 1){
+    ivSetState('…');
+    speakText(IV_ACKS[Math.floor(Math.random() * IV_ACKS.length)], () => ivNextQ());
+  } else {
+    speakText('Thank you. That is the end of the interview.', () => ivNextQ());
+  }
+}
+let ivDoneT0 = null;
+$('ivDoneBtn').addEventListener('click', () => { if (ivCountIv){ /* t0 재구성: 링 숫자에서 역산 */ const numEl = $('ivRingNum'); const left = numEl ? parseInt(numEl.textContent, 10) || 0 : 0; ivFinishAnswer(Date.now() - (IV_ANSWER_SEC - left) * 1000); } });
+$('ivAbortBtn').addEventListener('click', () => { stopSpeakingAll(); toast('인터뷰를 중단했어요'); goHome(); });
+function ivFinish(){
+  const list = $('ivReviewList'); if (!list || !list.appendChild){ goHome(); return; }
+  list.innerHTML = '';
+  iv.answers.forEach((a, i) => {
+    const item = document.createElement('div'); item.className = 'ivr-item';
+    const ok = a.dur >= 40;
+    item.innerHTML = '<div class="ivr-q">Q' + (i + 1) + '. <span></span></div>'
+      + '<div class="ivr-meta"><span class="ivr-dur' + (ok ? ' ok' : '') + '">' + Math.round(a.dur) + '초 답변' + (ok ? ' · 좋아요' : ' · 40초 이상 채워보기') + '</span>'
+      + '<span class="sp-badge type">' + a.type + '</span></div>';
+    item.querySelector('.ivr-q span').textContent = a.q;
+    if (a.url){ const au = document.createElement('audio'); au.controls = true; au.src = a.url; item.appendChild(au); }
+    list.appendChild(item);
+  });
+  showScreen('ivreview');
+}
+$('ivAgainBtn').addEventListener('click', () => { if (iv){ const t = iv.topic; iv = { topic: t, qs: pickInterviewQuestions(t), pos: -1, answers: [] }; $('ivScenario').textContent = t.scenario; $('ivIntro').classList.remove('hidden'); $('ivRun').classList.add('hidden'); showScreen('interview'); } });
+$('ivNewBtn').addEventListener('click', () => openInterview());
+$('ivHomeBtn').addEventListener('click', goHome);
+$('interviewStartBtn').addEventListener('click', openInterview);
+
+/* 홈 복귀·화면 이탈 시 스피킹 리소스 일괄 정리 */
+function stopSpeakingAll(){
+  clearInterval(spTimerIv); clearInterval(ivCountIv); ivCountIv = null;
+  spRecording = false;
+  stopMeter();
+  try { if (mediaRec && mediaRec.state !== 'inactive') mediaRec.stop(); } catch(e){}
+  releaseMic();
+  try { speechSynthesis.cancel(); } catch(e){}
+}
 
 /* ============================================================
    클라우드 자동 동기화 — 로그인 없음, 단일 사용자용 고정 저장소
