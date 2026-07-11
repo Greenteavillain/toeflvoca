@@ -144,6 +144,7 @@
   /* 해커스 4지선다 */
   .hk-mcq{margin-top:22px;padding-top:16px;border-top:1px solid var(--line)}
   .mcq-q{font-size:.86rem;font-weight:800;color:var(--ink-soft)}
+  .odd-badge{display:inline-block;background:var(--bad-bg);color:var(--bad-ink);border-radius:7px;padding:2px 8px;font-size:.72rem;font-weight:800;margin-right:7px;vertical-align:1px}
   .mcq-q u{text-decoration-thickness:2px;text-underline-offset:3px;color:var(--bad-ink);font-weight:900}
   .mcq-options{display:flex;flex-direction:column;gap:10px;margin-top:12px}
   .mcq-opt{display:flex;align-items:center;gap:12px;width:100%;text-align:left;border:1.5px solid var(--line);background:var(--card);border-radius:14px;padding:14px 15px;cursor:pointer;font:inherit;font-size:1.02rem;font-weight:600;color:var(--ink);transition:.15s;word-break:break-word}
@@ -202,6 +203,9 @@
   .pv-count{font-size:.85rem;color:var(--muted);font-weight:700}
   .pv-hint{font-size:.82rem;color:var(--muted);margin:2px 0 4px}
   .pv-list{display:flex;flex-direction:column;gap:10px}
+  .pv-list.hidemean .pv-item:not(.reveal) .pv-mean,.pv-list.hidemean .pv-item:not(.reveal) .pv-syn,
+  .pv-list.hidemean .pv-item:not(.reveal) .pv-krline,.pv-list.hidemean .pv-item:not(.reveal) .pv-ex,
+  .pv-list.hidemean .pv-item:not(.reveal) .pv-note{filter:blur(5px);user-select:none}
   /* 시작 버튼을 화면 하단에 고정 — 긴 목록을 다 스크롤하지 않아도 시작 가능 */
   .pv-cta{position:sticky;bottom:0;display:flex;flex-direction:column;gap:8px;padding:14px 0 6px;background:linear-gradient(180deg,transparent,var(--card) 38%)}
   .pv-cta .btn-secondary{background:var(--soft);color:var(--ink-soft);box-shadow:none}
@@ -226,6 +230,13 @@
 
   /* 결과 화면 */
   .result-head{text-align:center}
+  .result-head .rset{font-size:.85rem;font-weight:800;color:var(--muted);margin-bottom:6px}
+  .result-head .cmp{margin-top:8px;font-size:.86rem;font-weight:700;color:var(--blue-ink);min-height:1em}
+  .wrow{cursor:pointer;flex-wrap:wrap}
+  .wrow-detail{width:100%;font-size:.85rem;color:var(--ink-soft);line-height:1.6;padding-top:8px}
+  .wrow-detail b{color:var(--ink)}
+  .wd-syn{margin-top:4px}
+  .wd-speak{margin-top:8px;border:none;background:var(--soft);border-radius:8px;padding:6px 10px;font:inherit;font-size:.78rem;font-weight:700;color:var(--ink-soft);cursor:pointer}
   .result-head .big{font-size:2.6rem;font-weight:800;letter-spacing:-.02em} .result-head .big b{color:var(--blue)}
   .result-head .msg{margin-top:6px;color:var(--ink-soft);font-weight:600}
   .group-title{margin:22px 0 12px;font-size:.85rem;font-weight:800;color:var(--muted);letter-spacing:.03em}
@@ -350,7 +361,7 @@
     <button class="trophy" id="quitBtn" type="button" aria-label="홈으로 (진행 상황 저장됨)">🏠</button>
     <div class="bar"><div class="bar-fill" id="barFill"></div></div>
     <div class="counter" id="counter">0 / 0</div>
-    <button class="mode-toggle hidden" id="blankModeBtn" type="button" title="빈칸 표시 방식 전환"><span id="mtA">밑줄</span><span class="mt-sep">/</span><span id="mtB">너비</span></button>
+    <button class="mode-toggle hidden" id="blankModeBtn" type="button" title="빈칸 표시 방식 전환"><span id="mtA">글자칸</span><span class="mt-sep">/</span><span id="mtB">자유입력</span></button>
   </div>
   <div class="brandline">말해보카식 복습</div>
 
@@ -449,6 +460,7 @@
     <div class="pv-top">
       <button class="pv-back" id="previewBack">← 뒤로</button>
       <div class="pv-title-wrap"><span class="pv-title" id="previewTitle">목록</span><span class="pv-count" id="previewCount"></span></div>
+      <button class="mode-toggle" id="pvHideBtn" type="button" style="margin-left:auto">뜻 가리기</button>
     </div>
     <div class="pv-hint" id="previewHint">시작 전에 훑어보세요. 굵은 파란 글씨는 교재에서 강조한 핵심 동의어예요. (다의어는 뜻마다 카드가 나뉘어요)</div>
     <div class="pv-list" id="previewList"></div>
@@ -527,9 +539,9 @@
 
     <div class="actions">
       <button class="btn btn-ghost" id="hintBtn"><span class="q">?</span>힌트 보기</button>
+      <button class="btn btn-soft hidden" id="skipBtn">모르겠어요</button>
       <div class="spacer"></div>
       <button class="icon-btn hidden" id="speakBtn" aria-label="듣기">🔊</button>
-      <button class="btn btn-soft hidden" id="skipBtn">모르겠어요</button>
       <button class="btn btn-soft hidden" id="retryBtn">다시 입력</button>
       <button class="btn btn-primary" id="checkBtn">확인</button>
       <button class="btn btn-primary hidden" id="nextBtn">다음</button>
@@ -541,11 +553,13 @@
   <section id="screenResult" class="hidden">
     <div class="panel">
       <div class="result-head">
+        <div class="rset" id="resultSet"></div>
         <div class="big" id="scoreNum">0 / 0</div>
         <div class="msg" id="scoreMsg"></div>
+        <div class="cmp" id="resultCmp"></div>
       </div>
       <div id="missBlock" class="hidden">
-        <div class="group-title">다시 볼 것</div>
+        <div class="group-title">틀린 단어 <span class="fl-sub">탭하면 예문·동의어</span></div>
         <div class="wordlist" id="missList"></div>
       </div>
       <div id="hintBlock" class="hidden">
@@ -889,8 +903,8 @@ const screens = { start:$('screenStart'), play:$('screenPlay'), result:$('screen
 let currentScreen = 'start', navFromPop = false;
 function showScreen(name){
   for (const k in screens) screens[k].classList.toggle('hidden', k !== name);
-  $('topbar').style.visibility = (name === 'play') ? 'visible' : 'hidden';
-  document.querySelector('.brandline').style.visibility = (name === 'play') ? 'visible' : 'hidden';
+  $('topbar').classList.toggle('hidden', name !== 'play');
+  const bl = document.querySelector('.brandline'); if (bl && bl.classList) bl.classList.toggle('hidden', name !== 'play');
   if (name !== 'play'){ const _kb = $('kbd'); if (_kb) _kb.classList.add('hidden'); }
   if (name === 'start'){ renderStats(); updateResumeBanner(); }
   currentScreen = name;
@@ -1020,7 +1034,9 @@ function selectFilter(f){
   const sb = $('startBtn'); if (sb) sb.textContent = '시작하기 · ' + filterLabel(f);
 }
 $('filterArea').addEventListener('click', e => { const c = e.target.closest('.chip'); if (c) selectFilter(c.dataset.filter); });
-$('shuffleSwitch').addEventListener('click', () => { shuffle = !shuffle; $('shuffleSwitch').classList.toggle('on', shuffle); });
+try { shuffle = localStorage.getItem('malhaeboca_shuffle') === '1'; } catch(e){}
+if (shuffle) $('shuffleSwitch').classList.add('on');
+$('shuffleSwitch').addEventListener('click', () => { shuffle = !shuffle; $('shuffleSwitch').classList.toggle('on', shuffle); try { localStorage.setItem('malhaeboca_shuffle', shuffle ? '1' : '0'); } catch(e){} });
 
 let resetArmed = false, resetTimer = null;
 $('resetBtn').addEventListener('click', () => {
@@ -1119,6 +1135,19 @@ function openPreview(){
   showScreen('preview'); window.scrollTo(0, 0);
 }
 $('previewResumeBtn').addEventListener('click', () => resumeSession(filter));
+/* 뜻 가리기(셀프 테스트): 목록 전체 블러, 항목을 탭하면 그것만 공개 */
+$('pvHideBtn').addEventListener('click', () => {
+  const list = $('previewList'); if (!list || !list.classList) return;
+  const on = list.classList.toggle('hidemean');
+  $('pvHideBtn').textContent = on ? '뜻 보이기' : '뜻 가리기';
+  if (!on) document.querySelectorAll('#previewList .pv-item.reveal').forEach(el => el.classList.remove('reveal'));
+});
+$('previewList').addEventListener('click', (e) => {
+  const list = $('previewList');
+  if (!list || !list.classList || !list.classList.contains('hidemean')) return;
+  const item = e.target && e.target.closest ? e.target.closest('.pv-item') : null;
+  if (item) item.classList.toggle('reveal');
+});
 
 /* ============================================================
    렌더 분기
@@ -1136,7 +1165,15 @@ function renderCard(){
   saveSession();   // 카드가 바뀔 때마다 현재 위치 저장 → 껐다 켜도 이어풀기
 }
 function setNextLabel(){ $('nextBtn').textContent = (idx === deck.length - 1) ? '결과 보기' : '다음'; }
-function pushResult(c, correct, hinted){ results.push({ i:c.i, correct, hinted }); recordResult(cardKey(c), correct, hinted); }
+function pushResult(c, correct, hinted){
+  results.push({ i:c.i, correct, hinted }); recordResult(cardKey(c), correct, hinted);
+  // 답이 확정된 순간 세션을 다음 카드 위치로 저장 → "다음"을 안 누르고 꺼도
+  // 재개 시 같은 카드를 다시 풀지 않는다(기록 이중 카운트 방지)
+  if (sessionActive && sessKey){
+    if (idx + 1 < deck.length) saveSession(idx + 1);
+    else clearSession();
+  }
+}
 
 /* ============================================================
    진행 중 세션 저장/복원 v2 — 세트(필터)별 "이어서 풀기"
@@ -1156,10 +1193,10 @@ function persistSessions(o){ try { localStorage.setItem(SESSIONS_KEY, JSON.strin
   localStorage.removeItem('malhaeboca_session_v1');
 } catch(e){} })();
 
-function saveSession(){
+function saveSession(atIdx){
   if (!sessionActive || !deck.length || !sessKey) return;
   const all = loadSessions();
-  all[sessKey] = { d: deck.map(c => c.i), k: deck.map(c => cardKey(c)), i: idx, r: results,
+  all[sessKey] = { d: deck.map(c => c.i), k: deck.map(c => cardKey(c)), i: (typeof atIdx === 'number' ? atIdx : idx), r: results,
                    f: lastFilter, s: lastShuffle, label: sessLabel, at: Date.now() };
   persistSessions(all);
 }
@@ -1252,8 +1289,9 @@ function toggleBlankMode(){
   blankMode = (blankMode === 'slots') ? 'width' : 'slots'; saveBlankMode(); updateBlankModeBtn();
   const c = deck[idx];
   if (c && !screens.play.classList.contains('hidden')){
-    if (c.mode === 'sentence' && !sAnswered) renderCard();
-    else if (c.mode === 'hackers' && hStage === 1 && !hResolved) renderCard();
+    // 입력하던 글자를 보존한 채 렌더만 갱신
+    if (c.mode === 'sentence' && !sAnswered){ const v = $('blank').value; renderCard(); $('blank').value = v; reflectBlank('s', sAns); }
+    else if (c.mode === 'hackers' && hStage === 1 && !hResolved){ const v = $('hBlank').value; renderCard(); $('hBlank').value = v; reflectBlank('h', hAns); }
   }
 }
 /* ── 앱 내장 키보드 ── */
@@ -1262,11 +1300,12 @@ function fireInput(inp){ if (inp && typeof inp.oninput === 'function') inp.oninp
 function kbdKey(ch){ if (!kbInput) return; kbInput.value = (kbInput.value || '') + ch; fireInput(kbInput); }
 function kbdBack(){ if (!kbInput) return; kbInput.value = (kbInput.value || '').slice(0, -1); fireInput(kbInput); }
 function kbdDoEnter(){ if (kbEnter) kbEnter(); }
+const FINE_POINTER = (typeof matchMedia === 'function') && matchMedia('(hover:hover) and (pointer:fine)').matches;
 function setKbd(inp, enter){
   kbInput = inp || null; kbEnter = enter || null;
   const kbd = $('kbd'), wrap = document.querySelector('.wrap');
-  kbd.classList.toggle('hidden', !inp);
-  if (inp){ $('checkBtn').classList.add('hidden'); if (wrap) wrap.style.paddingBottom = (kbd.offsetHeight + 24) + 'px'; }
+  kbd.classList.toggle('hidden', !inp || FINE_POINTER);   // 마우스+물리키보드 환경은 내장 키보드 생략
+  if (inp && !FINE_POINTER){ $('checkBtn').classList.add('hidden'); if (wrap) wrap.style.paddingBottom = (kbd.offsetHeight + 24) + 'px'; }
   else if (wrap){ wrap.style.paddingBottom = ''; }
 }
 function buildKeyboard(){
@@ -1652,9 +1691,9 @@ function finishNoSyn(c){
   hMcqDone = true;
   const hinted = $('hBlank').dataset.hinted === '1';
   pushResult(c, hWordCorrect, hinted);
-  $('hNotePanel').innerHTML = `<div style="color:var(--muted)">이 단어는 시험에 낼 동의어가 없어요.</div>` + (c.note ? `<div style="margin-top:8px">※ ${c.note}</div>` : '');
+  $('hNotePanel').innerHTML = `<div style="color:var(--muted)">이 단어는 함께 외울 동의어가 없어요.</div>` + (c.note ? `<div style="margin-top:8px">※ ${c.note}</div>` : '');
   $('hNotePanel').classList.remove('hidden');
-  hFeedback(hWordCorrect ? '정답!' : `정답은 “${c.answer}” — 복습 목록에 담아둘게요`, hWordCorrect ? 'good' : 'wrong');
+  hFeedback(hWordCorrect ? '정답!' : `정답은 “${c.answer}” — 틀린 단어에 담아둘게요`, hWordCorrect ? 'good' : 'wrong');
   setKbd(null);
   actions({ next:true, speak:true });
   setNextLabel();
@@ -1670,7 +1709,7 @@ function openMcq(c){
     if (o){ hFormat = 'odd'; opts = o; hShownSyns = o.filter(x => x.trueSyn).map(x => x.text); }
   }
   if (!opts){ hFormat = 'pick'; hTargetSyn = t.syn; opts = buildPickOptions(c, t.syn); }
-  $('hMcqQ').innerHTML = hFormat === 'odd' ? `“${c.word}”의 동의어가 <u>아닌</u> 것을 고르세요` : `“${c.word}”의 동의어를 고르세요`;
+  $('hMcqQ').innerHTML = hFormat === 'odd' ? `<span class="odd-badge">반대로!</span>“${c.word}”의 동의어가 <u>아닌</u> 것을 고르세요` : `“${c.word}”의 동의어를 고르세요`;
   hForeign = opts.filter(o => o.srcWord).map(o => ({ text: o.text, word: o.srcWord, mi: o.srcMi, mean: o.srcMean }));
   const box = $('hMcqOpts'); box.innerHTML = '';
   opts.forEach((o, i) => {
@@ -1729,7 +1768,7 @@ function finishHackers(skipped){
   if (hWordCorrect && clean) hFeedback('완벽해요!', 'good');
   else if (hWordCorrect && !clean) hFeedback('단어는 맞았어요. 동의어를 한 번 더 봐 두세요.', 'warn');
   else if (!hWordCorrect && clean) hFeedback('동의어는 맞았어요. 스펠링을 한 번 더 연습해요.', 'warn');
-  else hFeedback('괜찮아요. 이 단어는 복습 목록에 담아둘게요.', 'wrong');
+  else hFeedback('괜찮아요. 이 단어는 틀린 단어에 담아둘게요.', 'wrong');
   actions({ next:true, speak:true });
   setNextLabel();
   $('barFill').style.width = ((idx+1) / deck.length * 100) + '%';
@@ -1780,13 +1819,20 @@ function showResult(){
   clearSession();   // 세트 완료 → 이어풀기 세션 종료
   showScreen('result');
   const total = results.length, right = results.filter(r => r.correct).length;
+  $('resultSet').textContent = sessLabel || filterLabel(lastFilter);
   $('scoreNum').innerHTML = `<b>${right}</b> / ${total}`;
+  // 같은 세트의 지난 기록과 비교(이번 기록을 저장하기 전에 조회)
+  { const prev = [...store.sessions].reverse().find(s0 => s0.f === lastFilter);
+    const cmpEl = $('resultCmp');
+    if (cmpEl) cmpEl.textContent = (prev && prev.total)
+      ? '지난번 ' + prev.correct + '/' + prev.total + ' → 이번 ' + right + '/' + total + ((right / total) > (prev.correct / prev.total) ? ' 📈' : '')
+      : ''; }
   $('scoreMsg').textContent = right === total ? '완벽해요! 전부 맞혔어요.' : right >= total*0.7 ? '잘했어요. 몇 개만 더 다지면 돼요.' : '괜찮아요. 틀린 것만 다시 보면 금방 잡혀요.';
   const wrong = results.filter(r => !r.correct), hinted = results.filter(r => r.correct && r.hinted);
   fillList($('missList'), wrong, true); $('missBlock').classList.toggle('hidden', wrong.length === 0);
   fillList($('hintList'), hinted, false); $('hintBlock').classList.toggle('hidden', hinted.length === 0);
   $('retryWrongBtn').classList.toggle('hidden', wrong.length === 0);
-  store.sessions.push({ at:Date.now(), total, correct:right });
+  store.sessions.push({ at:Date.now(), total, correct:right, f:lastFilter });
   if (store.sessions.length > 100) store.sessions = store.sessions.slice(-100);
   saveStore();
 }
@@ -1799,6 +1845,20 @@ function fillList(container, arr, miss){
     const row = document.createElement('div');
     row.className = 'wrow' + (miss ? ' miss' : '');
     row.innerHTML = `<span class="w">${word}</span><span class="mean">${mean}</span>` + (!miss && r.hinted ? '<span class="tag">힌트</span>' : '');
+    // 탭하면 예문·동의어 펼침 + 🔊 (결과 화면에서 바로 복습)
+    row.addEventListener('click', () => {
+      const old = row.querySelector('.wrow-detail');
+      if (old){ old.remove(); return; }
+      const d = document.createElement('div'); d.className = 'wrow-detail';
+      let h = '';
+      if (c.pre !== undefined) h += '<div class="wd-ex">' + pvExample(c) + '</div>';
+      if (c.mode === 'hackers' && c.syn && c.syn.length) h += '<div class="wd-syn">동의어 · ' + c.syn.map(pvEsc).join(' · ') + '</div>';
+      d.innerHTML = h;
+      const sp = document.createElement('button'); sp.type = 'button'; sp.className = 'wd-speak'; sp.textContent = '🔊 예문 듣기';
+      sp.addEventListener('click', (ev) => { ev.stopPropagation(); speakSentence(c); });
+      d.appendChild(sp);
+      row.appendChild(d);
+    });
     container.appendChild(row);
   });
 }
