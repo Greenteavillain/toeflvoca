@@ -40,7 +40,11 @@
 
   /* 상단 진행 */
   .top{display:flex;align-items:center;gap:12px}
-  .trophy{width:44px;height:44px;flex:0 0 auto;border-radius:50%;background:var(--blue);display:grid;place-items:center;font-size:20px;box-shadow:0 6px 14px rgba(63,140,244,.35)}
+  .trophy{width:44px;height:44px;flex:0 0 auto;border:none;cursor:pointer;border-radius:50%;background:var(--blue);display:grid;place-items:center;font-size:20px;box-shadow:0 6px 14px rgba(63,140,244,.35);color:#fff}
+  .trophy:active{transform:translateY(1px)}
+  /* 토스트 */
+  .toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);max-width:88%;background:rgba(32,48,63,.94);color:#fff;font-size:.86rem;font-weight:700;padding:10px 16px;border-radius:12px;z-index:80;opacity:0;pointer-events:none;transition:opacity .25s;text-align:center}
+  .toast.show{opacity:1}
   .bar{flex:1;height:14px;border-radius:99px;background:#cfe1f4;overflow:hidden}
   .bar-fill{height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,#63a8ee,#3f8cf4);transition:width .35s ease}
   .counter{flex:0 0 auto;font-size:.82rem;font-weight:700;color:var(--ink-soft);min-width:46px;text-align:right}
@@ -51,6 +55,8 @@
   .kbd{position:fixed;left:0;right:0;bottom:0;margin:0 auto;max-width:600px;padding:10px 12px calc(10px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:7px;user-select:none;background:#e9f1fb;border-top:1px solid #d3e3f5;box-shadow:0 -8px 24px rgba(50,95,150,.18);z-index:60}
   .kbd-row{display:flex;gap:6px;justify-content:center}
   .kbd-row.indent{padding:0 4.5%}
+  /* 실물 QWERTY 스태거: q→a→z가 각각 오른쪽 아래로 이어지도록 z열은 왼쪽만 더 들여쓴다 */
+  .kbd-row.indent2{padding-left:9.5%}
   .key{flex:1 1 0;min-width:0;height:47px;border:none;border-radius:9px;background:#fff;box-shadow:0 1px 2px rgba(50,95,150,.2);font:inherit;font-size:1.1rem;font-weight:700;color:var(--ink);cursor:pointer;display:grid;place-items:center;padding:0}
   .key:active{background:#e3edfb;transform:translateY(1px)}
   .key.kb-back{background:#e7edf4;flex:1.4 1 0;font-size:1.16rem}
@@ -224,7 +230,7 @@
 <div class="wrap">
 
   <div class="top" id="topbar">
-    <div class="trophy">🏆</div>
+    <button class="trophy" id="quitBtn" type="button" aria-label="홈으로 (진행 상황 저장됨)">🏠</button>
     <div class="bar"><div class="bar-fill" id="barFill"></div></div>
     <div class="counter" id="counter">0 / 0</div>
     <button class="mode-toggle hidden" id="blankModeBtn" type="button" title="빈칸 표시 방식 전환"><span id="mtA">밑줄</span><span class="mt-sep">/</span><span id="mtB">너비</span></button>
@@ -399,6 +405,7 @@
     </div>
   </section>
 </div>
+<div class="toast" id="toast"></div>
 
 <script>
 /* ============================================================
@@ -625,12 +632,42 @@ let wStage = 1, wResolved = false, wHint = 0, wWord = '', wSlotEls = [], syns = 
 
 const $ = id => document.getElementById(id);
 const screens = { start:$('screenStart'), play:$('screenPlay'), result:$('screenResult'), preview:$('screenPreview') };
+let currentScreen = 'start', navFromPop = false;
 function showScreen(name){
   for (const k in screens) screens[k].classList.toggle('hidden', k !== name);
   $('topbar').style.visibility = (name === 'play') ? 'visible' : 'hidden';
   document.querySelector('.brandline').style.visibility = (name === 'play') ? 'visible' : 'hidden';
   if (name !== 'play'){ const _kb = $('kbd'); if (_kb) _kb.classList.add('hidden'); }
   if (name === 'start'){ renderStats(); updateResumeBanner(); }
+  currentScreen = name;
+  syncHistory(name);
+}
+/* ── 안드로이드(TWA) 뒤로가기 지원 ──
+   start = 히스토리 베이스, 그 외 화면 = 1단계 push. 뒤로가기는 항상 홈으로,
+   홈에서 한 번 더 누르면 앱 종료(OS 기본). 이게 없으면 뒤로가기가 앱을 바로 꺼버렸다. */
+function canHist(){ return typeof history !== 'undefined' && !!history.pushState; }
+function syncHistory(name){
+  if (!canHist() || navFromPop || name === 'start') return;
+  const cur = (history.state && history.state.scr) || 'start';
+  if (cur === 'start') history.pushState({scr:name}, '');
+  else history.replaceState({scr:name}, '');
+}
+function goHome(){
+  if (canHist() && history.state && history.state.scr && history.state.scr !== 'start') history.back();
+  else showScreen('start');
+}
+/* 홈 복귀 시 화면별 뒷정리(퀴즈=세션 저장, 스피킹=녹음/음성 중지) */
+function leaveCurrentScreen(){
+  if (currentScreen === 'play') saveSession();
+  if (typeof speechSynthesis !== 'undefined'){ try { speechSynthesis.cancel(); } catch(e){} }
+  if (typeof stopSpeakingAll === 'function') stopSpeakingAll();
+}
+/* ── 토스트 ── */
+let toastTimer = null;
+function toast(msg){
+  const t = $('toast'); if (!t || !t.classList) return;
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
 }
 function actions(o){
   o = o || {};
@@ -669,12 +706,21 @@ $('shuffleSwitch').addEventListener('click', () => { shuffle = !shuffle; $('shuf
 
 let resetArmed = false, resetTimer = null;
 $('resetBtn').addEventListener('click', () => {
-  if (!resetArmed){ resetArmed = true; $('resetBtn').textContent = '한 번 더 누르면 삭제'; resetTimer = setTimeout(() => { resetArmed = false; $('resetBtn').textContent = '기록 초기화'; }, 3000); return; }
-  clearTimeout(resetTimer); resetArmed = false; store = {words:{}, sessions:[]}; saveStore(); $('resetBtn').textContent = '기록 초기화'; renderStats();
+  if (!resetArmed){ resetArmed = true; $('resetBtn').textContent = '한 번 더 누르면 모든 기기에서 삭제'; resetTimer = setTimeout(() => { resetArmed = false; $('resetBtn').textContent = '기록 초기화'; }, 3000); return; }
+  clearTimeout(resetTimer); resetArmed = false;
+  // clearedAt: 이 시각 이전 기록은 클라우드 병합에서도 버려진다(부활 방지, 전 기기 전파)
+  store = {words:{}, sessions:[], clearedAt: Date.now()}; saveStore();
+  clearSession(); if (typeof updateResumeBanner === 'function') updateResumeBanner();
+  if (typeof cloudPushNow === 'function') cloudPushNow();   // 디바운스 없이 즉시 클라우드 반영
+  $('resetBtn').textContent = '기록 초기화'; renderStats();
 });
 
 $('startBtn').addEventListener('click', openPreview);
-$('previewBack').addEventListener('click', () => showScreen('start'));
+$('previewBack').addEventListener('click', goHome);
+$('quitBtn').addEventListener('click', () => {
+  if (currentScreen === 'play'){ saveSession(); toast('진행 상황이 저장됐어요 — 홈에서 이어서 풀 수 있어요'); }
+  goHome();
+});
 $('previewStartBtn').addEventListener('click', () => startSet(filter, shuffle));
 function deckFor(f){
   const all = CARDS.map((c,i) => ({...c, i}));
@@ -857,7 +903,7 @@ function buildKeyboard(){
   const kbd = $('kbd'); kbd.innerHTML = '';
   const mkKey = (label, cls, fn) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'key' + (cls ? ' ' + cls : ''); b.textContent = label; b.addEventListener('mousedown', e => e.preventDefault()); b.addEventListener('click', fn); return b; };
   rows.forEach((r, ri) => {
-    const row = document.createElement('div'); row.className = 'kbd-row' + (ri === 1 ? ' indent' : '');
+    const row = document.createElement('div'); row.className = 'kbd-row' + (ri === 1 ? ' indent' : ri === 2 ? ' indent2' : '');
     r.forEach(ch => row.appendChild(mkKey(ch, '', () => kbdKey(ch))));
     if (ri === 2) row.appendChild(mkKey('⌫', 'kb-back', kbdBack));
     kbd.appendChild(row);
@@ -1387,7 +1433,7 @@ function plainMean(ko){ const m = ko.match(/<mark>(.*?)<\/mark>/); return m ? m[
 
 $('retryWrongBtn').addEventListener('click', () => { deck = results.filter(r => !r.correct).map(r => ({ ...CARDS[r.i], i:r.i })); idx = 0; results = []; sessionActive = true; showScreen('play'); renderCard(); });
 $('againBtn').addEventListener('click', () => startSet(lastFilter, lastShuffle));
-$('homeBtn').addEventListener('click', () => showScreen('start'));
+$('homeBtn').addEventListener('click', goHome);
 
 /* ============================================================
    클라우드 자동 동기화 — 로그인 없음, 단일 사용자용 고정 저장소
@@ -1424,15 +1470,20 @@ async function cloudPushNow(){
     await sbRpc('toeflvoca_push', { p_code:CLOUD_KEY, p_data:store });
   } catch(e){}
 }
-/* 단어별로 lastAt(최근 활동)이 더 나중인 기록을 채택 → 어느 기기 진도도 안 잃음 */
+/* 단어별로 lastAt(최근 활동)이 더 나중인 기록을 채택 → 어느 기기 진도도 안 잃음.
+   clearedAt = "기록 초기화" 시각. 이게 없으면 초기화 후 클라우드 병합이 지운 기록을
+   되살리는 버그가 있었음(빈 로컬 + 클라우드 원본 → 원본 부활). 초기화보다 오래된
+   기록은 어느 쪽에 있든 버린다 → 모든 기기에서 초기화가 전파된다. */
 function mergeStores(local, remote){
   if (!remote || !remote.words) return local;
+  const cleared = Math.max(local.clearedAt || 0, remote.clearedAt || 0);
   const out = { words:{}, sessions: (local.sessions || []) };
+  if (cleared) out.clearedAt = cleared;
   const keys = new Set([...Object.keys(local.words||{}), ...Object.keys(remote.words||{})]);
   keys.forEach(k => {
     const a = (local.words||{})[k], b = (remote.words||{})[k];
-    if (!a) out.words[k] = b; else if (!b) out.words[k] = a;
-    else out.words[k] = ((a.lastAt||0) >= (b.lastAt||0)) ? a : b;
+    const w = (!a) ? b : (!b) ? a : ((a.lastAt||0) >= (b.lastAt||0)) ? a : b;
+    if (w && (!cleared || (w.lastAt||0) > cleared)) out.words[k] = w;
   });
   return out;
 }
@@ -1451,6 +1502,18 @@ if (typeof window !== 'undefined' && window.addEventListener){
   // 서비스워커(오프라인 + 홈화면 설치)
   if ('serviceWorker' in navigator)
     window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(()=>{}));
+
+  // 뒤로가기(popstate) — 어느 화면에서든 홈으로, 홈에서는 앱 종료(OS 기본)
+  if (canHist()){
+    history.replaceState({scr:'start'}, '');
+    window.addEventListener('popstate', (e) => {
+      const scr = (e.state && e.state.scr) || 'start';
+      navFromPop = true;
+      if (scr === 'start'){ leaveCurrentScreen(); showScreen('start'); }
+      else showScreen(scr);
+      navFromPop = false;
+    });
+  }
 
   // 부팅 시 클라우드에서 진도 병합
   cloudInit();
