@@ -59,12 +59,12 @@ let api = null;
 global.__EXPORT__ = (o) => { api = o; };
 try {
   // eslint-disable-next-line no-eval
-  eval(scriptText + '\n;__EXPORT__({ CARDS, deckFor, mcqPool, blankNorm, cardKey });');
+  eval(scriptText + '\n;__EXPORT__({ CARDS, deckFor, mcqPool, blankNorm, cardKey, SPEAKING_TOPICS, mergeStores, pickInterviewQuestions, speakingPool });');
 } catch (e) {
   console.error('앱 초기화 중 오류(모크 부족 가능):', e.message);
   process.exit(1);
 }
-const { CARDS, deckFor, mcqPool, blankNorm, cardKey } = api;
+const { CARDS, deckFor, mcqPool, blankNorm, cardKey, SPEAKING_TOPICS, mergeStores, pickInterviewQuestions, speakingPool } = api;
 
 /* ---------- 단언 ---------- */
 let fail = 0;
@@ -101,6 +101,32 @@ console.log('blankNorm — 영숫자만, 공백/nbsp 무시');
 ok(blankNorm('E x P l O i T') === 'exploit', '공백 섞여도 정규화');
 ok(blankNorm('account for') === blankNorm('accountfor'), '두 단어 공백 유무 동일');
 ok(blankNorm('famine\u00A0') === 'famine', 'nbsp 제거');
+
+console.log('스피킹 질문 뱅크');
+ok(SPEAKING_TOPICS.length === 2, '주제 2개 (' + SPEAKING_TOPICS.length + ')');
+const [liv, car] = SPEAKING_TOPICS;
+ok(liv.personal.length === 22 && liv.opinion.length === 15, '주거 22+15 (' + liv.personal.length + '/' + liv.opinion.length + ')');
+ok(car.personal.length === 16 && car.opinion.length === 16, '커리어 16+16 (' + car.personal.length + '/' + car.opinion.length + ')');
+ok(SPEAKING_TOPICS.every(t => t.id && t.title && t.scenario && [...t.personal, ...t.opinion].every(q => typeof q === 'string' && q.length > 10)), '모든 질문이 유효한 문자열');
+ok(speakingPool('all', 'all').length === 69, '전체 풀 69문항');
+
+console.log('실전 인터뷰 세트 구성 (일상2 → 의견2)');
+for (let t = 0; t < 20; t++){
+  const set = pickInterviewQuestions(liv);
+  if (!(set.length === 4 && set[0].type === '일상' && set[1].type === '일상' && set[2].type === '의견' && set[3].type === '의견')){ ok(false, '4문항 일상2→의견2 구성 (시도 ' + t + ')'); break; }
+  if (new Set(set.map(x => x.q)).size !== 4){ ok(false, '질문 중복 없음 (시도 ' + t + ')'); break; }
+  if (t === 19) ok(true, '20회 반복 모두 4문항 · 일상2→의견2 · 중복 없음');
+}
+
+console.log('클라우드 병합 — 초기화(clearedAt) 의미론');
+const mA = mergeStores({ words:{}, sessions:[], clearedAt:2000 }, { words:{ old:{ seen:5, lastAt:1500 } } });
+ok(Object.keys(mA.words).length === 0, '초기화 후 원격 기록 부활 차단');
+const mB = mergeStores({ words:{ fresh:{ seen:1, lastAt:2500 } }, sessions:[], clearedAt:2000 }, { words:{ old:{ seen:5, lastAt:1500 } } });
+ok(Object.keys(mB.words).join(',') === 'fresh', '초기화 이후 새 기록은 유지');
+const mC = mergeStores({ words:{ old:{ seen:5, lastAt:1500 } }, sessions:[] }, { words:{}, sessions:[], clearedAt:2000 });
+ok(Object.keys(mC.words).length === 0, '초기화가 다른 기기로 전파');
+const mD = mergeStores({ words:{ a:{ seen:1, lastAt:100 } }, sessions:[] }, { words:{ a:{ seen:9, lastAt:200 }, b:{ seen:2, lastAt:50 } } });
+ok(mD.words.a.seen === 9 && !!mD.words.b, 'clearedAt 없으면 lastAt 최신 병합(기존 동작 유지)');
 
 console.log(fail === 0 ? '\n✅ 전부 통과' : '\n❌ 실패 ' + fail + '개');
 process.exit(fail === 0 ? 0 : 1);
