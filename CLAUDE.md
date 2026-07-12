@@ -80,6 +80,12 @@ malhaeboca/
 
 해커스 계열(hackers) 총 125장.
 
+### (D) 해커스형 확장 — `book` 판별자 (2026-07-12)
+Day 2·경선식은 `part`/`lesson` 대신 **`book`** 필드로 구분(그래야 `hk:all`(part)·`voca:all`(lesson)에 안 섞임).
+- **해커스 Day 2**: `book:'hk2'` + `seg:1/2/3`(1–20/21–40/41–56). 필터 `hk2:1/2/3/all`. 다의어는 Day1처럼 `mi`. 63장(56단어).
+- **경선식 영단어**: `book:'ks1'/'ks2'`(Lecture 01/02). 필터 `ks:1/2`. **`syn:[]` → 단일 스테이지**(빈칸만, `finishNoSyn`이 book=ks*면 "동의어 없어요" 대신 `note`(경선식 암기 이미지)만 💡로 표시). 밑줄=모르는 단어만 수록(각 9).
+- `deckFor`/`mcqPool`/`collapseMeanings`/미리보기 카운트 그룹키 모두 `book` 분기 추가. mcqPool은 book 내에서만 오답.
+
 ### 키 규칙 (중요)
 ```js
 cardKey(c) = (c.mode === 'hackers') ? 'hk:' + c.key

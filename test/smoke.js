@@ -73,7 +73,7 @@ const ok = (cond, msg) => { if (!cond) { console.log('  ✗', msg); fail++; } el
 console.log('데이터/카운트');
 const H = CARDS.filter(c => c.mode === 'hackers');
 ok(Array.isArray(CARDS) && CARDS.length > 0, 'CARDS 로드됨 (' + CARDS.length + '장)');
-ok(H.length === 125, '해커스 총 125장 (' + H.length + ')');
+ok(H.length === 206, '해커스 총 206장 (Day1·Voca 125 + Day2 63 + 경선식 18) (' + H.length + ')');
 ok(deckFor('sent:all').length === 17, '문장 전체 17');
 ok(deckFor('voca:all').length === 60, 'Voca 전체 60');
 ok(deckFor('voca:1-1').length === 20 && deckFor('voca:1-2').length === 20 && deckFor('voca:2-1').length === 20, 'Voca 레슨 각 20');
@@ -117,6 +117,16 @@ for (let t = 0; t < 20; t++){
   if (new Set(set.map(x => x.q)).size !== 4){ ok(false, '질문 중복 없음 (시도 ' + t + ')'); break; }
   if (t === 19) ok(true, '20회 반복 모두 4문항 · 일상2→의견2 · 중복 없음');
 }
+
+console.log('Day 2 · 경선식 추가분');
+ok(deckFor('hk2:all').length === 63, 'Day2 전체 63장(다의어 포함) (' + deckFor('hk2:all').length + ')');
+ok(collapseMeanings(deckFor('hk2:all')).length === 56, 'Day2 접으면 56단어');
+ok(deckFor('hk2:1').length === 24 && deckFor('hk2:2').length === 22 && deckFor('hk2:3').length === 17, 'Day2 seg 카드수 24/22/17');
+ok(collapseMeanings(deckFor('hk2:1')).length === 20 && collapseMeanings(deckFor('hk2:2')).length === 20 && collapseMeanings(deckFor('hk2:3')).length === 16, 'Day2 seg 단어수 20/20/16');
+ok(deckFor('ks:1').length === 9 && deckFor('ks:2').length === 9, '경선식 Lecture 01·02 각 9');
+ok(deckFor('ks:1').every(c => c.syn.length === 0), '경선식은 동의어 없음(단일 스테이지)');
+{ const hk = CARDS.filter(c => c.mode === 'hackers'); const keys = hk.map(c => 'hk:' + c.key); ok(new Set(keys).size === keys.length, '전체 해커스 key 유일(Day2·경선식 포함)'); }
+{ const c = deckFor('hk2:1').find(x => x.word === 'decline'); ok(mcqPool(c).every(x => x.book === 'hk2'), 'Day2 오답풀은 Day2 안에서만'); }
 
 console.log('다의어 접기 — 한 판에 한 뜻(랜덤)');
 {
