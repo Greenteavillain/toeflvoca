@@ -401,13 +401,13 @@
           <button class="chip hidden" data-filter="weak" id="weakChip">틀린 단어 다시 풀기<span class="n" id="weakN">0</span></button>
         </div>
 
-        <div class="field-label">학습지 문장 <span class="fl-sub">빈칸 채우기</span></div>
+        <div class="field-label">학습지 문장</div>
         <div class="chips">
           <button class="chip" data-filter="sent:all">전체<span class="n">17</span></button>
           <button class="chip" data-filter="sent:1">Day 1<span class="n">17</span></button>
         </div>
 
-        <div class="field-label">TOEFL Voca 01 <span class="fl-sub">빈칸 + 동의어 고르기</span></div>
+        <div class="field-label">TOEFL Voca 01</div>
         <div class="chips">
           <button class="chip" data-filter="voca:all">전체<span class="n">60</span></button>
           <button class="chip" data-filter="voca:1-1">레슨 1-1<span class="n">20</span></button>
@@ -415,23 +415,23 @@
           <button class="chip" data-filter="voca:2-1">레슨 2-1<span class="n">20</span></button>
         </div>
 
-        <div class="field-label">해커스 보카 Day 1 <span class="fl-sub">빈칸 + 동의어 고르기</span></div>
+        <div class="field-label">해커스 보카 Day 1</div>
         <div class="chips">
           <button class="chip on" data-filter="hk:all">전체<span class="n">57</span></button>
-          <button class="chip" data-filter="hk:1">Part 1 · 1–20<span class="n">20</span></button>
-          <button class="chip" data-filter="hk:2">Part 2 · 21–40<span class="n">20</span></button>
-          <button class="chip" data-filter="hk:3">Part 3 · 41–57<span class="n">17</span></button>
+          <button class="chip" data-filter="hk:1">1<span class="n">20</span></button>
+          <button class="chip" data-filter="hk:2">2<span class="n">20</span></button>
+          <button class="chip" data-filter="hk:3">3<span class="n">17</span></button>
         </div>
 
-        <div class="field-label">해커스 보카 Day 2 <span class="fl-sub">빈칸 + 동의어 고르기</span></div>
+        <div class="field-label">해커스 보카 Day 2</div>
         <div class="chips">
           <button class="chip" data-filter="hk2:all">전체<span class="n">56</span></button>
-          <button class="chip" data-filter="hk2:1">1–20<span class="n">20</span></button>
-          <button class="chip" data-filter="hk2:2">21–40<span class="n">20</span></button>
-          <button class="chip" data-filter="hk2:3">41–56<span class="n">16</span></button>
+          <button class="chip" data-filter="hk2:1">1<span class="n">20</span></button>
+          <button class="chip" data-filter="hk2:2">2<span class="n">20</span></button>
+          <button class="chip" data-filter="hk2:3">3<span class="n">16</span></button>
         </div>
 
-        <div class="field-label">경선식 영단어 <span class="fl-sub">빈칸 채우기 · 밑줄(모르는 단어)만</span></div>
+        <div class="field-label">경선식 영단어</div>
         <div class="chips">
           <button class="chip" data-filter="ks:all">전체<span class="n">18</span></button>
           <button class="chip" data-filter="ks:1">Lecture 01<span class="n">9</span></button>
@@ -1209,8 +1209,8 @@ function collapseMeanings(list){
 function filterLabel(f){
   const map = { 'sent:all':'학습지 문장 · 전체','sent:1':'학습지 문장 · Day 1',
     'voca:1-1':'TOEFL Voca 01 · 레슨 1-1','voca:1-2':'TOEFL Voca 01 · 레슨 1-2','voca:2-1':'TOEFL Voca 01 · 레슨 2-1','voca:all':'TOEFL Voca 01 · 전체',
-    'hk:1':'해커스 Day 1 · Part 1','hk:2':'해커스 Day 1 · Part 2','hk:3':'해커스 Day 1 · Part 3','hk:all':'해커스 Day 1 · 전체',
-    'hk2:1':'해커스 Day 2 · 1–20','hk2:2':'해커스 Day 2 · 21–40','hk2:3':'해커스 Day 2 · 41–56','hk2:all':'해커스 Day 2 · 전체',
+    'hk:1':'해커스 Day 1 · 1','hk:2':'해커스 Day 1 · 2','hk:3':'해커스 Day 1 · 3','hk:all':'해커스 Day 1 · 전체',
+    'hk2:1':'해커스 Day 2 · 1','hk2:2':'해커스 Day 2 · 2','hk2:3':'해커스 Day 2 · 3','hk2:all':'해커스 Day 2 · 전체',
     'ks:all':'경선식 · 전체','ks:1':'경선식 · Lecture 01','ks:2':'경선식 · Lecture 02','weak':'틀린 단어' };
   return map[f] || '단어 목록';
 }
