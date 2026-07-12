@@ -1036,7 +1036,7 @@ function selectFilter(f){
   const sb = $('startBtn'); if (sb) sb.textContent = '시작하기 · ' + filterLabel(f);
 }
 $('filterArea').addEventListener('click', e => { const c = e.target.closest('.chip'); if (c) selectFilter(c.dataset.filter); });
-try { shuffle = localStorage.getItem('malhaeboca_shuffle') === '1'; } catch(e){}
+try { const sv = localStorage.getItem('malhaeboca_shuffle'); shuffle = (sv === null) ? true : (sv === '1'); } catch(e){ shuffle = true; }  // 기본 켜짐(저장된 설정 있으면 존중)
 if (shuffle) $('shuffleSwitch').classList.add('on');
 $('shuffleSwitch').addEventListener('click', () => { shuffle = !shuffle; $('shuffleSwitch').classList.toggle('on', shuffle); try { localStorage.setItem('malhaeboca_shuffle', shuffle ? '1' : '0'); } catch(e){} });
 
