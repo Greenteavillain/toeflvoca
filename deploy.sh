@@ -1,26 +1,10 @@
 #!/usr/bin/env bash
-# toeflvoca 라이브 배포 — Netlify CLI 직접 배포(빌드 없음 → 무료 빌드분 0 소모).
-# 앱 파일만 임시 스테이징해서 올린다(.git / *.zip / 문서 / test 제외).
-# 인증 토큰은 레포 밖(~/.config/toeflvoca/netlify_token)에서 읽는다.
-#
-# 사용: 레포 루트에서  bash deploy.sh
+# toeflvoca 배포 — GitHub Pages(공개 레포). git push하면 Pages가 자동 재빌드한다.
+# (Netlify는 2026-07 무료 배포 한도 소진으로 이전함. netlify_token/site는 미사용.)
 set -euo pipefail
-
-SITE_ID="e348d1cb-d755-4e6a-a290-c3fabfc2d91c"   # netlify 사이트 id (비밀 아님)
-TOKEN_FILE="$HOME/.config/toeflvoca/netlify_token"
-PROJ="$(cd "$(dirname "$0")" && pwd)"
-
-if [ ! -f "$TOKEN_FILE" ]; then
-  echo "토큰 파일 없음: $TOKEN_FILE" >&2
-  echo "https://app.netlify.com/user/applications 에서 발급 후 저장하세요." >&2
-  exit 1
-fi
-
-STAGE="$(mktemp -d)"
-trap 'rm -rf "$STAGE"' EXIT
-cp "$PROJ/index.html" "$PROJ/manifest.json" "$PROJ/sw.js" "$STAGE/"
-cp -R "$PROJ/icons" "$STAGE/"
-cp -R "$PROJ/.well-known" "$STAGE/"   # TWA(APK) 도메인 검증 assetlinks.json
-
-NETLIFY_AUTH_TOKEN="$(cat "$TOKEN_FILE")" npx -y netlify-cli@latest deploy \
-  --dir "$STAGE" --prod --site "$SITE_ID"
+cd "$(dirname "$0")"
+git add -A
+git commit -m "deploy: ${1:-update}" || echo "(변경 없음)"
+git push origin main
+echo "✅ 푸시 완료 → GitHub Pages가 1~2분 내 재빌드합니다."
+echo "   라이브: https://greenteavillain.github.io/toeflvoca/"
