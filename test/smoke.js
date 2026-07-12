@@ -59,12 +59,12 @@ let api = null;
 global.__EXPORT__ = (o) => { api = o; };
 try {
   // eslint-disable-next-line no-eval
-  eval(scriptText + '\n;__EXPORT__({ CARDS, deckFor, mcqPool, blankNorm, cardKey, SPEAKING_TOPICS, mergeStores, pickInterviewQuestions, speakingPool });');
+  eval(scriptText + '\n;__EXPORT__({ CARDS, deckFor, mcqPool, blankNorm, cardKey, SPEAKING_TOPICS, mergeStores, pickInterviewQuestions, speakingPool, collapseMeanings });');
 } catch (e) {
   console.error('앱 초기화 중 오류(모크 부족 가능):', e.message);
   process.exit(1);
 }
-const { CARDS, deckFor, mcqPool, blankNorm, cardKey, SPEAKING_TOPICS, mergeStores, pickInterviewQuestions, speakingPool } = api;
+const { CARDS, deckFor, mcqPool, blankNorm, cardKey, SPEAKING_TOPICS, mergeStores, pickInterviewQuestions, speakingPool, collapseMeanings } = api;
 
 /* ---------- 단언 ---------- */
 let fail = 0;
@@ -116,6 +116,26 @@ for (let t = 0; t < 20; t++){
   if (!(set.length === 4 && set[0].type === '일상' && set[1].type === '일상' && set[2].type === '의견' && set[3].type === '의견')){ ok(false, '4문항 일상2→의견2 구성 (시도 ' + t + ')'); break; }
   if (new Set(set.map(x => x.q)).size !== 4){ ok(false, '질문 중복 없음 (시도 ' + t + ')'); break; }
   if (t === 19) ok(true, '20회 반복 모두 4문항 · 일상2→의견2 · 중복 없음');
+}
+
+console.log('다의어 접기 — 한 판에 한 뜻(랜덤)');
+{
+  const full = deckFor('hk:1');
+  const col = collapseMeanings(full);
+  ok(full.length === 26 && col.length === 20, 'hk:1 26장 → 20단어 (' + col.length + ')');
+  const words = col.map(c => c.word);
+  ok(new Set(words).size === words.length, '접은 덱에 같은 단어 중복 없음');
+  ok(col.every(c => full.includes(c)), '전부 원본 카드(합성 카드 아님)');
+  ok(collapseMeanings(deckFor('hk:all')).length === 57, 'hk:all 65장 → 57단어');
+  ok(collapseMeanings(deckFor('voca:all')).length === 60, 'Voca는 다의어 없음 → 60 유지');
+  ok(collapseMeanings(deckFor('sent:all')).length === 17, '문장형 영향 없음 → 17 유지');
+  // 100회 반복 시 account for의 세 뜻이 모두 등장(랜덤 커버리지)
+  const seen = new Set();
+  for (let t = 0; t < 100; t++){
+    const pick = collapseMeanings(full).find(c => c.word === 'account for');
+    seen.add(pick.mi);
+  }
+  ok(seen.size === 3, 'account for ①②③가 회차에 따라 모두 출제됨 (' + [...seen].join('') + ')');
 }
 
 console.log('클라우드 병합 — 초기화(clearedAt) 의미론');
