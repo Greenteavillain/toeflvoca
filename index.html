@@ -310,6 +310,11 @@
   .seg button{border:none;background:transparent;font:inherit;font-size:.8rem;font-weight:700;color:var(--ink-soft);padding:7px 10px;border-radius:8px;cursor:pointer}
   .seg button.on{background:var(--card);color:var(--blue-ink);box-shadow:0 1px 3px rgba(0,0,0,.18)}
   .switch.mini{margin-top:0}
+  .vol-range{flex:0 0 auto;width:140px;height:26px;-webkit-appearance:none;appearance:none;background:transparent;cursor:pointer}
+  .vol-range::-webkit-slider-runnable-track{height:6px;border-radius:99px;background:var(--soft)}
+  .vol-range::-moz-range-track{height:6px;border-radius:99px;background:var(--soft)}
+  .vol-range::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:20px;height:20px;border-radius:50%;background:var(--blue);border:none;margin-top:-7px;box-shadow:0 2px 6px rgba(63,140,244,.4)}
+  .vol-range::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:var(--blue);border:none;box-shadow:0 2px 6px rgba(63,140,244,.4)}
   .sheet-foot{margin-top:10px;font-size:.72rem;color:var(--muted);text-align:center}
 
   /* ── 스피킹 ── */
@@ -691,6 +696,9 @@
       <button type="button" data-v="0.8">느리게</button><button type="button" data-v="0.95">보통</button><button type="button" data-v="1.1">빠르게</button>
     </div>
   </div>
+  <div class="set-row"><span>발음 볼륨</span>
+    <input type="range" id="volRange" class="vol-range" min="0" max="1" step="0.05" value="1" aria-label="발음 볼륨">
+  </div>
   <div class="set-row"><span>글자 크기</span>
     <div class="seg" id="segFont">
       <button type="button" data-v="md">보통</button><button type="button" data-v="lg">크게</button><button type="button" data-v="xl">아주 크게</button>
@@ -1050,7 +1058,7 @@ function toast(msg){
    설정 — 테마 · 발음 자동재생 · 발음 속도 · 글자 크기
    ============================================================ */
 const SETTINGS_KEY = 'malhaeboca_settings';
-let settings = { theme:'system', autoSpeak:true, rate:0.95, font:'md', mode:'voca' };
+let settings = { theme:'system', autoSpeak:true, rate:0.95, volume:1, font:'md', mode:'voca' };
 try { Object.assign(settings, JSON.parse(localStorage.getItem(SETTINGS_KEY)) || {}); } catch(e){}
 function saveSettings(){ try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); } catch(e){} }
 function applySettings(){
@@ -1068,6 +1076,7 @@ function renderSettingsUI(){
     seg.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.v === val));
   });
   const sw = $('autoSpeakSw'); if (sw && sw.classList) sw.classList.toggle('on', settings.autoSpeak !== false);
+  const vr = $('volRange'); if (vr) vr.value = (settings.volume == null ? 1 : settings.volume);
 }
 function openSettings(){ $('settingsSheet').classList.remove('hidden'); $('sheetVeil').classList.remove('hidden'); renderSettingsUI(); }
 function closeSettings(){ $('settingsSheet').classList.add('hidden'); $('sheetVeil').classList.add('hidden'); }
@@ -1083,6 +1092,11 @@ $('sheetVeil').addEventListener('click', closeSettings);
 $('autoSpeakSw').addEventListener('click', () => {
   settings.autoSpeak = settings.autoSpeak === false; saveSettings(); renderSettingsUI();
   toast(settings.autoSpeak ? '정답을 맞히면 발음을 자동으로 읽어줘요' : '자동 발음을 껐어요 — 🔊 버튼으로는 언제든 들을 수 있어요');
+});
+// 발음 볼륨 — 드래그하는 동안 값 반영, 손 떼면 그 볼륨으로 미리듣기
+$('volRange').addEventListener('input', (e) => { settings.volume = parseFloat(e.target.value); saveSettings(); });
+$('volRange').addEventListener('change', () => {
+  try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance('volume'); u.lang = 'en-US'; u.rate = settings.rate || 0.95; u.volume = settings.volume; speechSynthesis.speak(u); } catch(e){}
 });
 
 /* ── 홈 허브: 단어 / 스피킹 모드 탭 ── */
@@ -2005,7 +2019,7 @@ function speakSentence(c, opts){
   if (!c) return;
   if (opts && opts.auto && settings.autoSpeak === false) return;
   const text = c.mode === 'word' ? c.word : (c.pre + c.answer + c.post).trim();
-  try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text); u.lang = 'en-US'; u.rate = settings.rate || 0.95; speechSynthesis.speak(u); } catch(e){}
+  try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text); u.lang = 'en-US'; u.rate = settings.rate || 0.95; u.volume = (settings.volume == null ? 1 : settings.volume); speechSynthesis.speak(u); } catch(e){}
 }
 $('speakBtn').addEventListener('click', () => speakSentence(deck[idx]));
 
@@ -2290,7 +2304,7 @@ function speakText(text, onend){
   try {
     speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(text);
-    u.lang = 'en-US'; u.rate = settings.rate || 0.95;
+    u.lang = 'en-US'; u.rate = settings.rate || 0.95; u.volume = (settings.volume == null ? 1 : settings.volume);
     u.onend = done; u.onerror = done;
     speechSynthesis.speak(u);
     const est = Math.max(3000, Math.round(text.split(/\s+/).length * 470 / (u.rate || 1)));
