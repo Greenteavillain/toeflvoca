@@ -75,6 +75,8 @@ const H = CARDS.filter(c => c.mode === 'hackers');
 ok(Array.isArray(CARDS) && CARDS.length > 0, 'CARDS 로드됨 (' + CARDS.length + '장)');
 ok(H.length === 206, '해커스 총 206장 (Day1·Voca 125 + Day2 63 + 경선식 18) (' + H.length + ')');
 ok(deckFor('sent:all').length === 17, '문장 전체 17');
+ok(deckFor('sent:1').length === 17, '문장 Day 1 = 17(토픽 통합)');
+ok(deckFor('ks:all').length === 18, '경선식 전체 18');
 ok(deckFor('voca:all').length === 60, 'Voca 전체 60');
 ok(deckFor('voca:1-1').length === 20 && deckFor('voca:1-2').length === 20 && deckFor('voca:2-1').length === 20, 'Voca 레슨 각 20');
 ok(deckFor('hk:all').length === 65, 'Day1 전체 65');

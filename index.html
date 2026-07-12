@@ -404,37 +404,36 @@
         <div class="field-label">학습지 문장 <span class="fl-sub">빈칸 채우기</span></div>
         <div class="chips">
           <button class="chip" data-filter="sent:all">전체<span class="n">17</span></button>
-          <button class="chip" data-filter="sent:보존">보존<span class="n">5</span></button>
-          <button class="chip" data-filter="sent:경제">경제<span class="n">10</span></button>
-          <button class="chip" data-filter="sent:대화">대화<span class="n">2</span></button>
+          <button class="chip" data-filter="sent:1">Day 1<span class="n">17</span></button>
         </div>
 
         <div class="field-label">TOEFL Voca 01 <span class="fl-sub">빈칸 + 동의어 고르기</span></div>
         <div class="chips">
+          <button class="chip" data-filter="voca:all">전체<span class="n">60</span></button>
           <button class="chip" data-filter="voca:1-1">레슨 1-1<span class="n">20</span></button>
           <button class="chip" data-filter="voca:1-2">레슨 1-2<span class="n">20</span></button>
           <button class="chip" data-filter="voca:2-1">레슨 2-1<span class="n">20</span></button>
-          <button class="chip" data-filter="voca:all">전체<span class="n">60</span></button>
         </div>
 
         <div class="field-label">해커스 보카 Day 1 <span class="fl-sub">빈칸 + 동의어 고르기</span></div>
         <div class="chips">
-          <button class="chip on" data-filter="hk:1">Part 1 · 1–20<span class="n">20</span></button>
+          <button class="chip on" data-filter="hk:all">전체<span class="n">57</span></button>
+          <button class="chip" data-filter="hk:1">Part 1 · 1–20<span class="n">20</span></button>
           <button class="chip" data-filter="hk:2">Part 2 · 21–40<span class="n">20</span></button>
           <button class="chip" data-filter="hk:3">Part 3 · 41–57<span class="n">17</span></button>
-          <button class="chip" data-filter="hk:all">전체<span class="n">57</span></button>
         </div>
 
         <div class="field-label">해커스 보카 Day 2 <span class="fl-sub">빈칸 + 동의어 고르기</span></div>
         <div class="chips">
+          <button class="chip" data-filter="hk2:all">전체<span class="n">56</span></button>
           <button class="chip" data-filter="hk2:1">1–20<span class="n">20</span></button>
           <button class="chip" data-filter="hk2:2">21–40<span class="n">20</span></button>
           <button class="chip" data-filter="hk2:3">41–56<span class="n">16</span></button>
-          <button class="chip" data-filter="hk2:all">전체<span class="n">56</span></button>
         </div>
 
         <div class="field-label">경선식 영단어 <span class="fl-sub">빈칸 채우기 · 밑줄(모르는 단어)만</span></div>
         <div class="chips">
+          <button class="chip" data-filter="ks:all">전체<span class="n">18</span></button>
           <button class="chip" data-filter="ks:1">Lecture 01<span class="n">9</span></button>
           <button class="chip" data-filter="ks:2">Lecture 02<span class="n">9</span></button>
         </div>
@@ -710,57 +709,57 @@
    - 단어형(mode:'word'): lesson / word / meaning / synonyms[] / note
    ============================================================ */
 const CARDS = [
-  { set:'보존', ko:'<mark>보존</mark>은 인간의 활동으로 위협받는 멸종 위기의 동식물을 지키는 일을 포함한다.',
+  { set:'1', ko:'<mark>보존</mark>은 인간의 활동으로 위협받는 멸종 위기의 동식물을 지키는 일을 포함한다.',
     note:'', pre:'', answer:'Conservation',
     post:' involves safeguarding endangered plants and animals threatened by human actions.' },
-  { set:'보존', ko:'보존은 인간의 활동으로 위협받는 <mark>멸종 위기에 처한</mark> 동식물을 지키는 일을 포함한다.',
+  { set:'1', ko:'보존은 인간의 활동으로 위협받는 <mark>멸종 위기에 처한</mark> 동식물을 지키는 일을 포함한다.',
     note:'', pre:'Conservation involves safeguarding ', answer:'endangered',
     post:' plants and animals threatened by human actions.' },
-  { set:'보존', ko:'보존은 인간의 활동으로 <mark>위협받는</mark> 멸종 위기의 동식물을 지키는 일을 포함한다.',
+  { set:'1', ko:'보존은 인간의 활동으로 <mark>위협받는</mark> 멸종 위기의 동식물을 지키는 일을 포함한다.',
     note:'', pre:'Conservation involves safeguarding endangered plants and animals ', answer:'threatened',
     post:' by human actions.' },
-  { set:'보존', ko:'보존론자들은 안전한 <mark>서식지</mark>를 조성하고 자연 보존의 가치에 대한 인식을 높임으로써 이 종들을 보호하려 노력한다.',
+  { set:'1', ko:'보존론자들은 안전한 <mark>서식지</mark>를 조성하고 자연 보존의 가치에 대한 인식을 높임으로써 이 종들을 보호하려 노력한다.',
     note:'복수형', pre:'Conservationists work to protect these species by establishing secure ', answer:'habitats',
     post:' and raising awareness about the value of preserving nature.' },
-  { set:'보존', ko:'자연을 <mark>책임감 있게</mark> 돌봄으로써, 보존론자들은 다음 세대를 위한 더 건강한 지구에 기여한다.',
+  { set:'1', ko:'자연을 <mark>책임감 있게</mark> 돌봄으로써, 보존론자들은 다음 세대를 위한 더 건강한 지구에 기여한다.',
     note:'부사', pre:'By ', answer:'responsibly',
     post:' caring for our natural world, conservationists contribute to a healthier planet for generations to come.' },
 
-  { set:'경제', ko:'<mark>경제학</mark>은 사회가 자원을 관리·분배하고 생산·유통·소비 과정을 결정하는 방식을 탐구한다.',
+  { set:'1', ko:'<mark>경제학</mark>은 사회가 자원을 관리·분배하고 생산·유통·소비 과정을 결정하는 방식을 탐구한다.',
     note:'', pre:'', answer:'Economics',
     post:' explores how societies manage and distribute resources and determine processes of production, distribution, and consumption.' },
-  { set:'경제', ko:'경제학은 사회가 자원을 관리하고 <mark>분배하며</mark> 생산·유통·소비 과정을 결정하는 방식을 탐구한다.',
+  { set:'1', ko:'경제학은 사회가 자원을 관리하고 <mark>분배하며</mark> 생산·유통·소비 과정을 결정하는 방식을 탐구한다.',
     note:'동사', pre:'Economics explores how societies manage and ', answer:'distribute',
     post:' resources and determine processes of production, distribution, and consumption.' },
-  { set:'경제', ko:'경제학은 사회가 자원을 관리·분배하고 생산·유통·소비 과정을 <mark>결정하는</mark> 방식을 탐구한다.',
+  { set:'1', ko:'경제학은 사회가 자원을 관리·분배하고 생산·유통·소비 과정을 <mark>결정하는</mark> 방식을 탐구한다.',
     note:'', pre:'Economics explores how societies manage and distribute resources and ', answer:'determine',
     post:' processes of production, distribution, and consumption.' },
-  { set:'경제', ko:'이 학문은 시장 체계 안에서 <mark>정부</mark>, 기업, 개인의 행동을 분석한다.',
+  { set:'1', ko:'이 학문은 시장 체계 안에서 <mark>정부</mark>, 기업, 개인의 행동을 분석한다.',
     note:'복수형', pre:'It analyzes the actions of ', answer:'governments',
     post:', businesses, and individuals within market systems.' },
-  { set:'경제', ko:'경제학의 영역은 전문 경제학자나 금융 전문가로서의 경력을 <mark>추구하는</mark> 사람들의 훈련을 넘어서며, 폭넓은 대중에게 필수적인 분석 도구를 제공한다.',
+  { set:'1', ko:'경제학의 영역은 전문 경제학자나 금융 전문가로서의 경력을 <mark>추구하는</mark> 사람들의 훈련을 넘어서며, 폭넓은 대중에게 필수적인 분석 도구를 제공한다.',
     note:'', pre:'The state of economics extends beyond the training of those who ', answer:'pursue',
     post:' careers as professional economists or financial specialists; it provides essential analytical tools for a broad audience.' },
-  { set:'경제', ko:'공급과 수요, 인플레이션 메커니즘, 노동 시장 작동과 같은 핵심 경제 원리에 대한 <mark>기초적인</mark> 이해는 개인이 합리적인 선택을 하도록 한다.',
+  { set:'1', ko:'공급과 수요, 인플레이션 메커니즘, 노동 시장 작동과 같은 핵심 경제 원리에 대한 <mark>기초적인</mark> 이해는 개인이 합리적인 선택을 하도록 한다.',
     note:'', pre:'A ', answer:'foundational',
     post:' comprehension of core economic principles, such as supply and demand, inflationary mechanisms, and labor market functioning, empowers individuals to make reasoned choices.' },
-  { set:'경제', ko:'공급과 수요, 인플레이션 메커니즘, 노동 시장 작동과 같은 핵심 경제 원리에 대한 기초적인 <mark>이해</mark>는 개인이 합리적인 선택을 하도록 한다.',
+  { set:'1', ko:'공급과 수요, 인플레이션 메커니즘, 노동 시장 작동과 같은 핵심 경제 원리에 대한 기초적인 <mark>이해</mark>는 개인이 합리적인 선택을 하도록 한다.',
     note:'명사 · comprehend(이해하다)와 구분', pre:'A foundational ', answer:'comprehension',
     post:' of core economic principles, such as supply and demand, inflationary mechanisms, and labor market functioning, empowers individuals to make reasoned choices.' },
-  { set:'경제', ko:'공급과 <mark>수요</mark>, 인플레이션 메커니즘, 노동 시장 작동과 같은 핵심 경제 원리에 대한 기초적인 이해는 개인이 합리적인 선택을 하도록 한다.',
+  { set:'1', ko:'공급과 <mark>수요</mark>, 인플레이션 메커니즘, 노동 시장 작동과 같은 핵심 경제 원리에 대한 기초적인 이해는 개인이 합리적인 선택을 하도록 한다.',
     note:'', pre:'A foundational comprehension of core economic principles, such as supply and ', answer:'demand',
     post:', inflationary mechanisms, and labor market functioning, empowers individuals to make reasoned choices.' },
-  { set:'경제', ko:'공급과 수요, <mark>물가 상승의(인플레이션)</mark> 메커니즘, 노동 시장 작동과 같은 핵심 경제 원리에 대한 기초적인 이해는 개인이 합리적인 선택을 하도록 한다.',
+  { set:'1', ko:'공급과 수요, <mark>물가 상승의(인플레이션)</mark> 메커니즘, 노동 시장 작동과 같은 핵심 경제 원리에 대한 기초적인 이해는 개인이 합리적인 선택을 하도록 한다.',
     note:'형용사', pre:'A foundational comprehension of core economic principles, such as supply and demand, ', answer:'inflationary',
     post:' mechanisms, and labor market functioning, empowers individuals to make reasoned choices.' },
-  { set:'경제', ko:'이러한 이해는 사람들이 더 나은 결정을 내리고 일상에 영향을 미치는 더 큰 경제적 요인을 <mark>이해(파악)하도록</mark> 한다.',
+  { set:'1', ko:'이러한 이해는 사람들이 더 나은 결정을 내리고 일상에 영향을 미치는 더 큰 경제적 요인을 <mark>이해(파악)하도록</mark> 한다.',
     note:'동사 · comprehension(이해)과 구분', pre:'This understanding enables people to make better decisions and ', answer:'comprehend',
     post:' the larger economic factors influencing everyday life.' },
 
-  { set:'대화', ko:'그건 <mark>재고 정리 할인</mark> 중이라 아마 안 될 거예요.',
+  { set:'1', ko:'그건 <mark>재고 정리 할인</mark> 중이라 아마 안 될 거예요.',
     note:'', pre:'Probably not since it’s on ', answer:'clearance',
     post:'.' },
-  { set:'대화', ko:'그 가게는 단지 물건이 맞지 않거나 마음이 바뀌었다는 이유만으로 환불해 줄 <mark>의무가 있는</mark> 것은 아니에요.',
+  { set:'1', ko:'그 가게는 단지 물건이 맞지 않거나 마음이 바뀌었다는 이유만으로 환불해 줄 <mark>의무가 있는</mark> 것은 아니에요.',
     note:'형용사', pre:'The store isn’t ', answer:'obligated',
     post:' to give you a refund simply because the item doesn’t fit or you had a change of heart.' },
 
@@ -1001,7 +1000,7 @@ function recordResult(key, correct, hinted){
 
 /* ── 상태 ── */
 let deck = [], idx = 0, results = [], sessionActive = false;
-let filter = 'hk:1', shuffle = false, lastFilter = 'hk:1', lastShuffle = false;
+let filter = 'hk:all', shuffle = false, lastFilter = 'hk:all', lastShuffle = false;
 // 문장형
 let sAnswered = false, sHint = 0, sAns = '';
 // 단어형
@@ -1125,7 +1124,7 @@ function renderStats(){
   $('weakN').textContent = weak;
   $('weakChip').classList.toggle('hidden', weak === 0);
   $('weakLabel').classList.toggle('hidden', weak === 0);
-  if (weak === 0 && filter === 'weak') selectFilter('hk:1');
+  if (weak === 0 && filter === 'weak') selectFilter('hk:all');
   // 칩별 정복률(한 번이라도 맞힌 카드 비율) — 하단 게이지로 표시
   document.querySelectorAll('#filterArea .chip').forEach(ch => {
     const f = ch.dataset ? ch.dataset.filter : null;
@@ -1177,6 +1176,7 @@ function deckFor(f){
   if (f.indexOf('hk:') === 0){ const p = +f.slice(3); return all.filter(c => c.mode === 'hackers' && c.part === p); }
   if (f === 'hk2:all') return all.filter(c => c.book === 'hk2');
   if (f.indexOf('hk2:') === 0){ const seg = +f.slice(4); return all.filter(c => c.book === 'hk2' && c.seg === seg); }
+  if (f === 'ks:all') return all.filter(c => c.book === 'ks1' || c.book === 'ks2');
   if (f.indexOf('ks:') === 0){ const l = f.slice(3); return all.filter(c => c.book === 'ks' + l); }
   return [];
 }
@@ -1207,11 +1207,11 @@ function collapseMeanings(list){
 
 /* ── 미리 보기(목록) ── */
 function filterLabel(f){
-  const map = { 'sent:all':'학습지 문장 · 전체','sent:보존':'학습지 문장 · 보존','sent:경제':'학습지 문장 · 경제','sent:대화':'학습지 문장 · 대화',
+  const map = { 'sent:all':'학습지 문장 · 전체','sent:1':'학습지 문장 · Day 1',
     'voca:1-1':'TOEFL Voca 01 · 레슨 1-1','voca:1-2':'TOEFL Voca 01 · 레슨 1-2','voca:2-1':'TOEFL Voca 01 · 레슨 2-1','voca:all':'TOEFL Voca 01 · 전체',
     'hk:1':'해커스 Day 1 · Part 1','hk:2':'해커스 Day 1 · Part 2','hk:3':'해커스 Day 1 · Part 3','hk:all':'해커스 Day 1 · 전체',
     'hk2:1':'해커스 Day 2 · 1–20','hk2:2':'해커스 Day 2 · 21–40','hk2:3':'해커스 Day 2 · 41–56','hk2:all':'해커스 Day 2 · 전체',
-    'ks:1':'경선식 · Lecture 01','ks:2':'경선식 · Lecture 02','weak':'틀린 단어' };
+    'ks:all':'경선식 · 전체','ks:1':'경선식 · Lecture 01','ks:2':'경선식 · Lecture 02','weak':'틀린 단어' };
   return map[f] || '단어 목록';
 }
 function pvEsc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
@@ -1513,11 +1513,11 @@ function fitBlank(inp, ans){
 function sizeBlank(){ fitBlank($('blank'), sAns); }
 function renderSentence(c){
   sAnswered = false; sHint = 0; sAns = c.answer;
-  $('sLevel').textContent = `${c.set} · ${idx+1}`;
+  $('sLevel').textContent = `학습지 Day ${c.set} · ${idx+1}`;
   $('ko').innerHTML = c.ko;
   $('note').textContent = c.note ? '※ ' + c.note : ''; $('note').style.display = c.note ? 'block' : 'none';
   $('pre').textContent = c.pre; $('post').textContent = c.post;
-  $('sSrc').textContent = `출처 · 학습지 · ${c.set}`;
+  $('sSrc').textContent = `출처 · 학습지 · Day ${c.set}`;
   sSlotEls = setupBlank('s', c.answer, onTypeSentence);
   $('sFeedback').textContent = ''; $('sFeedback').className = 'feedback';
   actions({ hint:true, skip:true, check:true });
