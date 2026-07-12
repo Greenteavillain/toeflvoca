@@ -156,6 +156,10 @@ hk:{part}  → 해당 part
 - 미리보기·정복률 게이지·deckFor 자체는 **전체 뜻 기준 유지**(미리보기 카운트는 "단어 20 · 뜻 26" 병기). 칩 숫자는 단어 수(20/20/17/57).
 - 기록은 여전히 뜻별(cardKey에 ①②③) — 회차 반복으로 모든 뜻이 결국 커버되고, 틀린 뜻만 '틀린 단어'에 남는다. 스모크에 26→20·중복없음·100회 커버리지 단언 있음.
 
+### 7.4c 미리보기 페이지네이션 + 정답 복사 (2026-07-12)
+- 미리보기 목록은 `PV_PER`(=10)개씩 페이지(`renderPreviewPage`, `pvList`/`pvPage`, `#pvPager`). 뜻 가리기 클래스는 부모(`#previewList`)에 있어 페이지 넘겨도 유지.
+- **정답 공개 후 문장 속 단어를 탭하면 클립보드 복사**(`makeAnswerCopyable`/`copyText`, 슬롯·너비 공용). ⚠️ 너비 모드 입력창은 `disabled`면 click이 안 떠서 **`readOnly`로** 둔다(`clearCopyable`이 다음 카드에서 해제). 피드백의 정답(`.copy-b`)도 위임 클릭으로 복사. `hFeedbackHTML`은 hFeedback의 innerHTML 버전.
+
 ### 7.5 미리보기(preview)
 - `openPreview` → `deckFor(filter)`로 목록 렌더. `previewItem`이 카드 3종을 분기(단어·품사·뜻·동의어[핵심 볼드]·예문·노트). 문장형은 `<mark>` 제거 후 한국어+예문.
 
