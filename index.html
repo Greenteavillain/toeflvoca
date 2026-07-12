@@ -590,6 +590,7 @@
       <button class="btn btn-primary sp-recbtn" id="spRecBtn" type="button">⏺ 녹음 시작</button>
       <audio id="spAudio" controls class="hidden" style="width:100%;margin-top:12px"></audio>
       <div class="sp-after hidden" id="spAfter">
+        <button class="btn btn-soft" id="spDownloadBtn" type="button">⬇ 저장</button>
         <button class="btn btn-soft" id="spRetryBtn" type="button">다시 녹음</button>
         <button class="btn btn-primary" id="spNextBtn" type="button">다음 질문</button>
       </div>
@@ -992,6 +993,7 @@ $('modeTabs').addEventListener('click', (e) => {
 function actions(o){
   o = o || {};
   $('hintBtn').classList.toggle('hidden', !o.hint);
+  if (o.hint) $('hintBtn').innerHTML = '<span class="q">?</span>힌트 보기';
   $('checkBtn').classList.toggle('hidden', !o.check);
   $('nextBtn').classList.toggle('hidden', !o.next);
   $('retryBtn').classList.toggle('hidden', !o.retry);
@@ -1359,17 +1361,24 @@ function resolveSentence(correct){
   const c = deck[idx], hinted = $('blank').dataset.hinted === '1';
   pushResult(c, correct, correct && hinted);
   const inp = $('blank'); inp.disabled = true; inp.value = c.answer; markBlank('s', c.answer, correct);
-  if (correct){ $('sFeedback').textContent = hinted ? '정답! (힌트 사용)' : '정답!'; $('sFeedback').className = 'feedback good'; actions({ next:true, speak:true }); speakSentence(c, {auto:true}); }
+  if (correct){ $('sFeedback').textContent = hinted ? '정답! (힌트 사용)' : '정답!'; $('sFeedback').className = 'feedback good'; actions({ next:true, speak:true }); }
   else { $('sFeedback').innerHTML = `정답은 <b>${c.answer}</b>`; $('sFeedback').className = 'feedback wrong'; actions({ next:true, speak:true, retry:true }); }
+  speakSentence(c, {auto:true});   // 정답이든 오답이든 완성된 예문을 읽어준다
   setKbd(null);
   setNextLabel();
   $('barFill').style.width = ((idx+1) / deck.length * 100) + '%';
 }
+const HINT_MAX = 3;   // 힌트 3번째 = 정답 공개(포기)
+function updateHintLabel(used){ const b = $('hintBtn'); if (!b) return; b.innerHTML = (used >= HINT_MAX - 1) ? '<span class="q">?</span>정답 보기' : '<span class="q">?</span>힌트 보기'; }
 function hintSentence(){
   if (sAnswered) return;
-  const c = deck[idx]; sHint = Math.min(sHint + 1, Math.max(1, letterCount(c.answer) - 1));
-  const inp = $('blank'); inp.value = nthLetterSlice(c.answer, sHint); inp.dataset.hinted = '1'; reflectBlank('s', c.answer); inp.focus();
+  const c = deck[idx], n = letterCount(c.answer);
+  sHint++;
+  if (sHint >= HINT_MAX || sHint >= n){ revealSentence(); return; }   // 3번(또는 마지막 글자 전) → 정답 공개
+  const show = Math.max(1, Math.ceil(n * sHint / HINT_MAX));
+  const inp = $('blank'); inp.value = nthLetterSlice(c.answer, show); inp.dataset.hinted = '1'; reflectBlank('s', c.answer); inp.focus();
   if (blankMode !== 'slots'){ const v = inp.value; inp.value = ''; inp.value = v; }
+  updateHintLabel(sHint);
 }
 function retrySentence(){
   const c = deck[idx];
@@ -1672,9 +1681,13 @@ function submitH1(){
 }
 function hintH1(){
   if (hResolved) return;
-  hHint = Math.min(hHint + 1, Math.max(1, letterCount(hAns) - 1));
-  const inp = $('hBlank'); inp.value = nthLetterSlice(hAns, hHint); inp.dataset.hinted = '1'; reflectBlank('h', hAns); inp.focus();
+  const n = letterCount(hAns);
+  hHint++;
+  if (hHint >= HINT_MAX || hHint >= n){ resolveH1(false); return; }   // 3번 → 정답 공개
+  const show = Math.max(1, Math.ceil(n * hHint / HINT_MAX));
+  const inp = $('hBlank'); inp.value = nthLetterSlice(hAns, show); inp.dataset.hinted = '1'; reflectBlank('h', hAns); inp.focus();
   if (blankMode !== 'slots'){ const v = inp.value; inp.value = ''; inp.value = v; }
+  updateHintLabel(hHint);
 }
 function resolveH1(correct){
   if (hResolved) return;
@@ -1683,7 +1696,7 @@ function resolveH1(correct){
   inp.disabled = true; inp.value = c.answer; markBlank('h', c.answer, correct);
   if (correct) hFeedback(inp.dataset.hinted === '1' ? '단어 정답! (힌트 사용) — 이제 동의어를 골라요' : '단어 정답! 이제 동의어를 골라요', 'good');
   else hFeedback(`단어 정답은 “${c.answer}” — 동의어를 골라 보세요`, 'wrong');
-  if (correct) speakSentence(c, {auto:true});  // 빈칸 정답 = 예문 완성 → 바로 문장 읽어주기
+  speakSentence(c, {auto:true});  // 정답/오답 모두 완성된 예문을 읽어준다
   if (c.syn && c.syn.length) openMcq(c); else finishNoSyn(c);
 }
 function finishNoSyn(c){
@@ -2069,6 +2082,21 @@ function recList(limit){
 async function recDelete(id){
   try { const db = await recDB(); await new Promise((res) => { const tx = db.transaction('recs', 'readwrite'); tx.objectStore('recs').delete(id); tx.oncomplete = res; tx.onerror = res; }); } catch(e){}
 }
+/* 녹음 파일 다운로드 — 학원 제출 등에 저장 */
+function recExt(blob){ const t = (blob && blob.type) || ''; return t.indexOf('mp4') >= 0 ? 'm4a' : t.indexOf('ogg') >= 0 ? 'ogg' : 'webm'; }
+function recFileName(q, blob){
+  const slug = (q || 'answer').replace(/[^A-Za-z0-9 ]/g, '').trim().slice(0, 40).replace(/\s+/g, '-') || 'answer';
+  return 'TOEFL-speaking_' + slug + '.' + recExt(blob);
+}
+function downloadBlob(blob, name){
+  if (!blob){ toast('저장할 녹음이 없어요'); return; }
+  try {
+    const url = URL.createObjectURL(blob), a = document.createElement('a');
+    a.href = url; a.download = name; document.body.appendChild(a); a.click();
+    setTimeout(() => { a.remove(); URL.revokeObjectURL(url); }, 1500);
+    toast('녹음을 저장했어요 · 다운로드 폴더를 확인하세요');
+  } catch(e){ toast('다운로드에 실패했어요'); }
+}
 
 /* ── 질문 TTS (onend 미발화 대비 가드 타이머 내장) ── */
 let ttsGuardT = null;
@@ -2130,15 +2158,17 @@ async function renderRecentRecs(){
         recPlayEl.src = URL.createObjectURL(r.blob); recPlayEl.play();
       } catch(e){}
     });
+    const dl = document.createElement('button'); dl.type = 'button'; dl.textContent = '⬇'; dl.setAttribute('aria-label', '녹음 저장');
+    dl.addEventListener('click', () => downloadBlob(r.blob, recFileName(r.q, r.blob)));
     const del = document.createElement('button'); del.type = 'button'; del.textContent = '✕';
     del.addEventListener('click', async () => { await recDelete(r.id); renderRecentRecs(); });
-    item.appendChild(play); item.appendChild(del);
+    item.appendChild(play); item.appendChild(dl); item.appendChild(del);
     list.appendChild(item);
   });
 }
 
 /* ── 연습 모드 ── */
-let spPool = [], spPos = -1, spCur = null, spRecording = false, spT0 = 0, spTimerIv = null;
+let spPool = [], spPos = -1, spCur = null, spRecording = false, spT0 = 0, spTimerIv = null, spLastBlob = null, spLastQ = '';
 function openPractice(){
   spPool = speakingPool(spkTopicFilter, spkTypeFilter);
   if (!spPool.length){ toast(spkTypeFilter === 'star' ? '⭐ 표시한 질문이 아직 없어요' : '조건에 맞는 질문이 없어요'); return; }
@@ -2203,10 +2233,12 @@ $('spRecBtn').addEventListener('click', async () => {
       const au = $('spAudio');
       try { au.src = URL.createObjectURL(blob); } catch(e){}
       au.classList.remove('hidden'); $('spAfter').classList.remove('hidden');
+      spLastBlob = blob; spLastQ = spCur.q;
       recSave({ kind: 'practice', q: spCur.q, topic: spCur.topic.id, dur: Math.round(dur) }, blob);
     }
   }
 });
+$('spDownloadBtn').addEventListener('click', () => downloadBlob(spLastBlob, recFileName(spLastQ, spLastBlob)));
 $('spRetryBtn').addEventListener('click', () => { spResetUI(); });
 $('spNextBtn').addEventListener('click', () => spNextQ());
 $('spBack').addEventListener('click', goHome);
@@ -2299,6 +2331,7 @@ function ivFinish(){
       + '<span class="sp-badge type">' + a.type + '</span></div>';
     item.querySelector('.ivr-q span').textContent = a.q;
     if (a.url){ const au = document.createElement('audio'); au.controls = true; au.src = a.url; item.appendChild(au); }
+    if (a.blob){ const dl = document.createElement('button'); dl.type = 'button'; dl.className = 'wd-speak'; dl.textContent = '⬇ 이 답변 저장'; dl.addEventListener('click', () => downloadBlob(a.blob, recFileName('Q' + (i + 1) + '-' + a.q, a.blob))); item.appendChild(dl); }
     list.appendChild(item);
   });
   showScreen('ivreview');
