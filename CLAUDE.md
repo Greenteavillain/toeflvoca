@@ -183,7 +183,7 @@ hk:{part}  → 해당 part
 5. `ko`는 대상 의미에 `<mark>`. `answer`는 굴절형 가능(`exposed`, `supplanted`)하되 `word`/`syn`은 기본형(4지선다 질문은 `word`를 씀).
 6. **Dead code**: `mode:'word'`(구 암기짱형 — `renderWord`/`buildWordSlots`/동의어 스테이지 등)는 현재 미사용이나 무해하게 남겨둠. 되살리려면 `deckFor`의 `voca:*`가 지금은 해커스형을 가리킨다는 점에 유의.
 7. 데이터 편집 시 JSON 따옴표/중괄호 균형 주의(카드 한 줄이 길다).
-8. **힌트는 `HINT_MAX`(=3)번째에 정답 자동 공개**(포기=오답 처리). 1·2번은 글자를 3등분 비례로 보여주고, 다음 누르면 공개될 차례엔 버튼이 "정답 보기"로 바뀐다(`updateHintLabel`, `actions()`가 카드마다 리셋).
+8. **힌트는 누를 때마다 한 글자씩**(`nthLetterSlice(ans, sHint)`). 최대 `hintCap=min(HINT_MAX(3), n-1)`글자(마지막 글자는 안 보여줌). cap까지 채우면 버튼이 **"정답 보기"**로 바뀌고, 그 뒤 누르면 정답 공개(`reveal/resolveH1(false)`). `updateHintLabel(used,cap)`, `actions()`가 카드마다 "힌트 보기"로 리셋. ⚠️여러 글자씩(비례) 보여주는 방식으로 되돌리지 말 것.
 9. **정답/오답 모두** `resolveSentence`·`resolveH1`에서 완성된 예문을 `speakSentence(c,{auto:true})`로 읽어준다(설정 autoSpeak 존중). 오답이어도 소리로 교정하려는 의도 — 한쪽만 읽던 회귀 금지.
 
 ## 9. 테스트 워크플로 (회귀 방지)

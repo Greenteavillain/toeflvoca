@@ -1547,17 +1547,17 @@ function resolveSentence(correct){
   setNextLabel();
   $('barFill').style.width = ((idx+1) / deck.length * 100) + '%';
 }
-const HINT_MAX = 3;   // 힌트 3번째 = 정답 공개(포기)
-function updateHintLabel(used){ const b = $('hintBtn'); if (!b) return; b.innerHTML = (used >= HINT_MAX - 1) ? '<span class="q">?</span>정답 보기' : '<span class="q">?</span>힌트 보기'; }
+const HINT_MAX = 3;   // 힌트 최대 글자 수(한 번 누를 때마다 한 글자). 다 쓰면 버튼이 "정답 보기"로 바뀜
+function hintCap(n){ return Math.min(HINT_MAX, n - 1); }   // 마지막 글자는 안 보여줌
+function updateHintLabel(used, cap){ const b = $('hintBtn'); if (!b) return; b.innerHTML = (used >= cap) ? '<span class="q">?</span>정답 보기' : '<span class="q">?</span>힌트 보기'; }
 function hintSentence(){
   if (sAnswered) return;
-  const c = deck[idx], n = letterCount(c.answer);
-  sHint++;
-  if (sHint >= HINT_MAX || sHint >= n){ revealSentence(); return; }   // 3번(또는 마지막 글자 전) → 정답 공개
-  const show = Math.max(1, Math.ceil(n * sHint / HINT_MAX));
-  const inp = $('blank'); inp.value = nthLetterSlice(c.answer, show); inp.dataset.hinted = '1'; reflectBlank('s', c.answer); inp.focus();
+  const c = deck[idx], cap = hintCap(letterCount(c.answer));
+  if (sHint >= cap){ revealSentence(); return; }   // 힌트 다 쓴 뒤 또 누름(="정답 보기") → 공개
+  sHint++;                                          // 한 번에 한 글자
+  const inp = $('blank'); inp.value = nthLetterSlice(c.answer, sHint); inp.dataset.hinted = '1'; reflectBlank('s', c.answer); inp.focus();
   if (blankMode !== 'slots'){ const v = inp.value; inp.value = ''; inp.value = v; }
-  updateHintLabel(sHint);
+  updateHintLabel(sHint, cap);
 }
 function retrySentence(){
   const c = deck[idx];
@@ -1861,13 +1861,12 @@ function submitH1(){
 }
 function hintH1(){
   if (hResolved) return;
-  const n = letterCount(hAns);
-  hHint++;
-  if (hHint >= HINT_MAX || hHint >= n){ resolveH1(false); return; }   // 3번 → 정답 공개
-  const show = Math.max(1, Math.ceil(n * hHint / HINT_MAX));
-  const inp = $('hBlank'); inp.value = nthLetterSlice(hAns, show); inp.dataset.hinted = '1'; reflectBlank('h', hAns); inp.focus();
+  const cap = hintCap(letterCount(hAns));
+  if (hHint >= cap){ resolveH1(false); return; }   // 힌트 다 쓴 뒤 또 누름(="정답 보기") → 공개
+  hHint++;                                          // 한 번에 한 글자
+  const inp = $('hBlank'); inp.value = nthLetterSlice(hAns, hHint); inp.dataset.hinted = '1'; reflectBlank('h', hAns); inp.focus();
   if (blankMode !== 'slots'){ const v = inp.value; inp.value = ''; inp.value = v; }
-  updateHintLabel(hHint);
+  updateHintLabel(hHint, cap);
 }
 function resolveH1(correct){
   if (hResolved) return;
