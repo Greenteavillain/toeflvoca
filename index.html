@@ -195,6 +195,8 @@
   .chip.prog::after{content:'';position:absolute;left:0;bottom:0;height:3px;width:var(--prog,0%);background:var(--blue);border-radius:0 2px 2px 0}
   .chip.done::after{background:var(--green)}
   .chip .n{color:var(--muted);font-weight:700;margin-left:5px}
+  .chip-set{display:inline-block;background:var(--blue-soft);color:var(--blue-ink);font-size:.7rem;font-weight:800;border-radius:6px;padding:1px 6px;margin-right:6px;vertical-align:middle}
+  .chip.on .chip-set{background:var(--card)}
   .chip.on{border-color:var(--blue);background:var(--panel2);color:var(--blue-ink)}
   .chip.on .n{color:var(--blue)}
   .chip[data-filter="weak"]{border-color:var(--weak-line);color:var(--bad-ink)}
@@ -2545,6 +2547,8 @@ function spkSrcLabel(topicId, type, qi){
   const num = (type === 'opinion' ? personalCount : 0) + qi + 1;
   return 'Set ' + set + ' · Q' + String(num).padStart(2, '0');
 }
+// 주제의 Set 대표번호(기술=3 … 지역사회=8). 교재 없는 구 주제(living/career)는 null.
+function spkTopicSetNo(id){ const t = SPK_SETS[id]; return (t && t.personal && t.personal[0]) ? String(t.personal[0][0]).split('-')[0] : null; }
 function speakingPool(topicFilter, typeFilter){
   const stars = loadStars(), pool = [];
   SPEAKING_TOPICS.forEach(t => {
@@ -2709,7 +2713,10 @@ function renderSpeakHome(){
   const mk = (label, id) => {
     const b = document.createElement('button');
     b.type = 'button'; b.className = 'chip' + (spkTopicFilter === id ? ' on' : '');
-    b.textContent = label; b.dataset.sptopic = id;
+    const setNo = spkTopicSetNo(id);   // 교재 Set 번호를 미니 배지로 앞에 표시
+    if (setNo) b.innerHTML = '<span class="chip-set">Set ' + setNo + '</span>' + String(label).replace(/&/g, '&amp;').replace(/</g, '&lt;');
+    else b.textContent = label;
+    b.dataset.sptopic = id;
     b.addEventListener('click', () => { spkTopicFilter = id; renderSpeakHome(); });
     return b;
   };
