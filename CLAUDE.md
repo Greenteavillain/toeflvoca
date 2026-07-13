@@ -172,8 +172,14 @@ hk:{part}  → 해당 part
 ### 7.6 저장(storage)
 - `STORE_KEY = 'malhaeboca_v3'`. **버전 올리지 말 것** — 사용자의 기존 기록이 날아간다.
 - **이어풀기 세션**: 통계와 별개로 `SESSION_KEY = 'malhaeboca_session_v1'`에 지금 풀던 **덱(원본 인덱스 배열)·idx·results·filter**를 저장. `saveSession`(renderCard마다)·`clearSession`(showResult 완료 시)·시작화면 `updateResumeBanner`→"이어서 풀기" 배너. 앱 껐다 켜도(TWA 재로드) 복귀. CARDS 순서가 바뀌면 인덱스 검증 실패 시 세션 자동 폐기.
-- `store = { words:{ [cardKey]: { seen, correct, synStats, … } }, sessions:[] }`.
-- `weakKeys()`: 정답률 낮은 카드 key 목록 → `weak` 필터.
+- `store = { words:{ [cardKey]: { seen, correct, wrong, hinted, lastResult, lastAt, synStats, … } }, sessions:[] }`.
+- `weakKeys()`: `lastResult === 'x'`인 카드 key 목록 → `weak`('틀린 단어') 필터. `lastResult`는 `recordResult`가 **`isWeak(correct, hinted)`** 로 정한다(§8-10).
+
+### 7.7 발음(TTS) — 미리 구운 MP3 (2026-07-12)
+- 예문 음성은 **미리 구운 `audio/<hash>.mp3`** 재생(`speakSentence`). 기기마다 목소리가 다른 `speechSynthesis`를 대체 → **모든 기기 동일 목소리**(edge-tts `en-US-AriaNeural`). 파일 없거나 로드 실패면 `speakFallback`(speechSynthesis)로 폴백.
+- 파일명 = **재생 텍스트**(`(pre+answer+post).trim()`)의 `ttsHash`(FNV-1a 32bit·UTF-8). 내용 바뀌면 해시가 바뀌어 자동 무효화. 속도=`audio.playbackRate`(설정 rate), 볼륨=`audio.volume`(설정 volume).
+- 생성 파이프라인 = **`tools/tts/build.sh`**(`extract.js`→`manifest.json`→`generate.py`). **단어/예문 추가·수정 후 반드시 재실행**해야 새 문장이 파일로 생김(안 하면 그 문장만 브라우저 TTS로 폴백). `audio/*.mp3`는 레포에 커밋(현재 216개·7.2MB), `.venv`·`manifest.json`은 gitignore.
+- 오프라인: `sw.js`가 `.mp3`를 **들은 즉시 캐시**(Range 무시 전체 200 저장). 정적 자산 아님 → 전용 분기.
 
 ## 8. 지켜야 할 규칙 & 함정 요약
 1. **정답 비교는 `blankNorm`** (영숫자만). `trim().toLowerCase()` 직접 비교로 회귀 금지.
@@ -185,6 +191,9 @@ hk:{part}  → 해당 part
 7. 데이터 편집 시 JSON 따옴표/중괄호 균형 주의(카드 한 줄이 길다).
 8. **힌트는 누를 때마다 한 글자씩**(`nthLetterSlice(ans, sHint)`). 최대 `hintCap=min(HINT_MAX(3), n-1)`글자(마지막 글자는 안 보여줌). cap까지 채우면 버튼이 **"정답 보기"**로 바뀌고, 그 뒤 누르면 정답 공개(`reveal/resolveH1(false)`). `updateHintLabel(used,cap)`, `actions()`가 카드마다 "힌트 보기"로 리셋. ⚠️여러 글자씩(비례) 보여주는 방식으로 되돌리지 말 것.
 9. **정답/오답 모두** `resolveSentence`·`resolveH1`에서 완성된 예문을 `speakSentence(c,{auto:true})`로 읽어준다(설정 autoSpeak 존중). 오답이어도 소리로 교정하려는 의도 — 한쪽만 읽던 회귀 금지.
+10. **'틀린 단어' 판정은 `isWeak(correct, hinted) = !correct || hinted` 하나로만**(유저 요청 2026-07-12). 담는 조건 = ①단어 스펠링 오답 ②힌트 쓰고 맞힘. **동의어 고르기(MCQ)는 절대 관여 X**. 그래서 각 모드는 `pushResult`에 **단어 스펠링의 정오/힌트만** 넘긴다 — 해커스 `finishHackers`는 `pushResult(c, hWordCorrect, spellHinted)`(옛 `hWordCorrect && clean` 금지), `clean`은 동의어 학습 피드백/`recordSyn` 타겟팅 전용. 결과 화면 '틀린 단어' 목록·"틀린 것만 다시 풀기"·`recordResult`가 모두 `isWeak`를 쓴다(단일 진실). 점수(X/Y)는 여전히 스펠링 정답 수라 힌트로 맞힌 건 점수엔 정답·복습엔 틀린 단어(이중처리, 의도됨). 스모크에 4-케이스 + '옛 clean 결합 없음' 단언.
+11. **이전 단어 다시 보기(`openReview`/`renderReview`, 상단바 `← 이전`)는 읽기 전용**. 지금 덱의 지나온 카드(`0..idx-1`)를 시트로 보여주고 🔊만 재생 — `recordResult`/`pushResult`/`saveStore` 절대 호출 금지(기록·정복률 오염). `sheetVeil`은 설정·리뷰 두 시트 공용(닫기 로직이 서로를 안 가리게 주의). `prevWordBtn`은 `renderCard`에서 `idx>0`일 때만 노출.
+12. **예문 발음은 미리 구운 MP3(§7.7)**. `ttsHash`(index.html) ↔ `tools/tts/extract.js`의 해시가 **반드시 동일**. 단어/예문 바꾸면 `bash tools/tts/build.sh` 재실행 필수(안 하면 폴백). 목소리 통일이 목적이니 `speechSynthesis`로 되돌리지 말 것(폴백 전용).
 
 ## 9. 테스트 워크플로 (회귀 방지)
 브라우저 렌더 없이 **로직만 빠르게** 검증하며 개발했다:

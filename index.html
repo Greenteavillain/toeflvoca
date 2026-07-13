@@ -317,6 +317,19 @@
   .vol-range::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:var(--blue);border:none;box-shadow:0 2px 6px rgba(63,140,244,.4)}
   .sheet-foot{margin-top:10px;font-size:.72rem;color:var(--muted);text-align:center}
 
+  /* ── 이전 단어 다시 보기(읽기 전용 리뷰) ── */
+  .rev-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+  .rev-nav{width:42px;height:42px;flex:0 0 auto;border-radius:12px;border:1.5px solid var(--line);background:var(--card);font-size:1.5rem;line-height:1;cursor:pointer;color:var(--ink);display:grid;place-items:center}
+  .rev-nav:disabled{opacity:.32;cursor:default}
+  .rev-count{font-size:.86rem;font-weight:800;color:var(--muted)}
+  .rev-body{background:var(--bg-top);border:1px solid var(--line);border-radius:14px;padding:16px}
+  .rev-word{font-size:1.5rem;font-weight:800;color:var(--ink);word-break:break-word}
+  .rev-mean{font-size:1rem;color:var(--blue-ink);margin-top:3px;font-weight:700}
+  .rev-ex{margin-top:13px;font-size:.98rem;line-height:1.7;color:var(--ink)} .rev-ex b{color:var(--blue-ink)}
+  .rev-syn{margin-top:11px;font-size:.9rem;color:var(--muted)}
+  .rev-note{margin-top:11px;font-size:.86rem;color:var(--muted);line-height:1.55}
+  .rev-speak{width:100%;justify-content:center;margin-top:14px}
+
   /* ── 스피킹 ── */
   .sp-card{background:var(--card-top);border:1px solid var(--line);border-radius:18px;padding:18px;margin-top:6px}
   .sp-badges{display:flex;align-items:center;gap:6px}
@@ -373,6 +386,7 @@
   <div class="top" id="topbar">
     <button class="trophy" id="quitBtn" type="button" aria-label="홈으로 (진행 상황 저장됨)">🏠</button>
     <div class="bar"><div class="bar-fill" id="barFill"></div></div>
+    <button class="mode-toggle hidden" id="prevWordBtn" type="button" title="이전 단어 다시 보기">← 이전</button>
     <div class="counter" id="counter">0 / 0</div>
     <button class="mode-toggle hidden" id="blankModeBtn" type="button" title="빈칸 표시 방식 전환"><span id="mtA">글자칸</span><span class="mt-sep">/</span><span id="mtB">자유입력</span></button>
   </div>
@@ -593,10 +607,6 @@
         <div class="group-title">틀린 단어 <span class="fl-sub">탭하면 예문·동의어</span></div>
         <div class="wordlist" id="missList"></div>
       </div>
-      <div id="hintBlock" class="hidden">
-        <div class="group-title">힌트로 맞힌 것</div>
-        <div class="wordlist" id="hintList"></div>
-      </div>
       <div class="result-actions">
         <button class="btn btn-primary hidden" id="retryWrongBtn">틀린 것만 다시 풀기</button>
         <button class="btn btn-soft" id="againBtn">이 세트 다시 풀기</button>
@@ -708,6 +718,18 @@
     <button class="reset-link" id="resetBtn" type="button">기록 초기화</button>
   </div>
   <div class="sheet-foot">말해보카식 복습 · 기록은 이 기기와 클라우드에 자동 저장돼요</div>
+</div>
+
+<!-- 이전 단어 다시 보기(읽기 전용 · 기록 안 건드림) -->
+<div class="sheet hidden" id="reviewSheet" role="dialog" aria-label="이전 단어 다시 보기">
+  <div class="sheet-grab"></div>
+  <div class="rev-head">
+    <button class="rev-nav" id="revPrev" type="button" aria-label="이전 카드">‹</button>
+    <div class="rev-count" id="revCount">1 / 1</div>
+    <button class="rev-nav" id="revNext" type="button" aria-label="다음 카드">›</button>
+  </div>
+  <div class="rev-body" id="revBody"></div>
+  <button class="btn btn-soft" id="revClose" type="button" style="width:100%;justify-content:center;margin-top:12px">닫기</button>
 </div>
 
 <script>
@@ -999,10 +1021,17 @@ let store = loadStore();
 if (!store.words) store.words = {};
 if (!store.sessions) store.sessions = [];
 
+/* 틀린 단어(약한 단어) 판정의 단일 기준.
+   ★의도(유저 요청 2026-07-12): '틀린 단어'에 담는 조건은 딱 둘 —
+     ① 단어 스펠링을 틀렸을 때(correct=false)
+     ② 힌트를 쓰고 맞혔을 때(correct && hinted)
+   동의어 고르기(MCQ) 결과는 이 기준에 절대 관여하지 않는다. 그래서 각 모드는
+   pushResult에 '단어 스펠링'의 정오/힌트만 넘긴다(해커스는 MCQ의 clean을 넘기지 않음). */
+function isWeak(correct, hinted){ return !correct || !!hinted; }
 function recordResult(key, correct, hinted){
   const w = store.words[key] || {seen:0, correct:0, wrong:0, hinted:0};
   w.seen++; if (correct) w.correct++; else w.wrong++; if (hinted) w.hinted++;
-  w.lastResult = correct ? 'o' : 'x'; w.lastAt = Date.now();
+  w.lastResult = isWeak(correct, hinted) ? 'x' : 'o'; w.lastAt = Date.now();
   store.words[key] = w; saveStore();
 }
 
@@ -1081,7 +1110,47 @@ function renderSettingsUI(){
 function openSettings(){ $('settingsSheet').classList.remove('hidden'); $('sheetVeil').classList.remove('hidden'); renderSettingsUI(); }
 function closeSettings(){ $('settingsSheet').classList.add('hidden'); $('sheetVeil').classList.add('hidden'); }
 $('settingsBtn').addEventListener('click', openSettings);
-$('sheetVeil').addEventListener('click', closeSettings);
+$('sheetVeil').addEventListener('click', () => { closeSettings(); closeReview(); });   // 베일은 두 시트 공용
+
+/* ── 이전 단어 다시 보기 ──
+   지금 풀던 덱(deck)에서 이미 지나온 카드(0..idx-1)를 읽기 전용으로 다시 본다.
+   ★기록(store/results)은 절대 건드리지 않는다 — 정답만 공개해 보여주고 🔊 발음만 재생. */
+let revIdx = 0;
+function openReview(){ if (idx <= 0) return; revIdx = idx - 1; $('reviewSheet').classList.remove('hidden'); $('sheetVeil').classList.remove('hidden'); renderReview(); }
+function closeReview(){ $('reviewSheet').classList.add('hidden'); if ($('settingsSheet').classList.contains('hidden')) $('sheetVeil').classList.add('hidden'); }
+function reviewOpen(){ return !$('reviewSheet').classList.contains('hidden'); }
+function reviewCardHTML(c){
+  const word = c.mode === 'hackers' ? (c.word + (c.mi || '')) : c.answer;
+  const mean = c.mode === 'hackers' ? c.koMean : plainMean(c.ko);
+  let h = '<div class="rev-word">' + pvEsc(word) + '</div>';
+  if (mean) h += '<div class="rev-mean">' + pvEsc(mean) + '</div>';
+  if (c.pre !== undefined) h += '<div class="rev-ex">' + pvExample(c) + '</div>';
+  if (c.mode === 'hackers' && c.syn && c.syn.length) h += '<div class="rev-syn">동의어 · ' + c.syn.map(pvEsc).join(' · ') + '</div>';
+  if (c.note) h += '<div class="rev-note">※ ' + pvEsc(c.note) + '</div>';
+  return h;
+}
+function renderReview(){
+  const seen = idx;   // 이미 본 카드 수 = 현재 위치(0..idx-1)
+  revIdx = Math.max(0, Math.min(revIdx, seen - 1));
+  const c = deck[revIdx];
+  $('revCount').textContent = (revIdx + 1) + ' / ' + seen;
+  $('revPrev').disabled = revIdx <= 0;
+  $('revNext').disabled = revIdx >= seen - 1;
+  const body = $('revBody'); body.innerHTML = reviewCardHTML(c);
+  const sp = document.createElement('button'); sp.type = 'button'; sp.className = 'btn btn-ghost rev-speak'; sp.textContent = '🔊 발음 듣기';
+  sp.addEventListener('click', () => speakSentence(c));
+  body.appendChild(sp);
+}
+$('prevWordBtn').addEventListener('click', openReview);
+$('revPrev').addEventListener('click', () => { revIdx--; renderReview(); });
+$('revNext').addEventListener('click', () => { revIdx++; renderReview(); });
+$('revClose').addEventListener('click', closeReview);
+document.addEventListener('keydown', e => {
+  if (!reviewOpen()) return;
+  if (e.key === 'Escape'){ e.preventDefault(); closeReview(); }
+  else if (e.key === 'ArrowLeft' && revIdx > 0){ e.preventDefault(); revIdx--; renderReview(); }
+  else if (e.key === 'ArrowRight' && revIdx < idx - 1){ e.preventDefault(); revIdx++; renderReview(); }
+});
 [['segTheme','theme'], ['segRate','rate'], ['segFont','font']].forEach(([id, key]) => {
   $(id).addEventListener('click', (e) => {
     const b = e.target && e.target.closest ? e.target.closest('button') : null; if (!b || !b.dataset.v) return;
@@ -1332,6 +1401,7 @@ function renderCard(){
   else if (c.mode === 'hackers'){ $('cardHackers').classList.remove('hidden'); renderHackers(c); }
   else { $('cardSentence').classList.remove('hidden'); renderSentence(c); }
   $('blankModeBtn').classList.toggle('hidden', !(c.mode === 'sentence' || c.mode === 'hackers'));
+  $('prevWordBtn').classList.toggle('hidden', idx <= 0);   // 첫 카드가 아니면 '← 이전' 노출
   saveSession();   // 카드가 바뀔 때마다 현재 위치 저장 → 껐다 켜도 이어풀기
 }
 function setNextLabel(){ $('nextBtn').textContent = (idx === deck.length - 1) ? '결과 보기' : '다음'; }
@@ -1551,7 +1621,7 @@ function resolveSentence(correct){
   if (sAnswered) return;
   sAnswered = true;
   const c = deck[idx], hinted = $('blank').dataset.hinted === '1';
-  pushResult(c, correct, correct && hinted);
+  pushResult(c, correct, hinted);   // 힌트 사용은 맞혀도 '틀린 단어'로 담김(isWeak)
   const inp = $('blank'); inp.disabled = true; inp.value = c.answer; markBlank('s', c.answer, correct);
   makeAnswerCopyable('s', c.answer);
   if (correct){ $('sFeedback').innerHTML = (hinted ? '정답! (힌트 사용)' : '정답!') + ' <span class="copy-hint">· 단어를 탭하면 복사</span>'; $('sFeedback').className = 'feedback good'; actions({ next:true, speak:true }); }
@@ -1648,8 +1718,8 @@ function wordCorrect(){
   const c = deck[idx];
   wResolved = true;
   wSlotEls.forEach((el, i) => { el.textContent = wWord[i]; }); $('wSlots').className = 'slots ok';
-  pushResult(c, true, wHint > 0);
-  wFeedback('단어 정답!', 'good');
+  pushResult(c, true, wHint > 0);   // 힌트 썼으면 맞혀도 '틀린 단어'로 담김(isWeak)
+  wFeedback(wHint > 0 ? '단어 정답! (힌트 사용 — 틀린 단어에 담아둘게요)' : '단어 정답!', wHint > 0 ? 'warn' : 'good');
   openSynStage(c);
 }
 function wordWrong(){
@@ -1902,7 +1972,8 @@ function finishNoSyn(c){
   const noSynMsg = (c.book && c.book.indexOf('ks') === 0) ? '' : `<div style="color:var(--muted)">이 단어는 함께 외울 동의어가 없어요.</div>`;
   $('hNotePanel').innerHTML = noSynMsg + (c.note ? `<div style="margin-top:${noSynMsg ? '8px' : '0'}">💡 ${c.note}</div>` : '');
   $('hNotePanel').classList.toggle('hidden', !noSynMsg && !c.note);
-  hFeedback(hWordCorrect ? '정답!' : `정답은 “${c.answer}” — 틀린 단어에 담아둘게요`, hWordCorrect ? 'good' : 'wrong');
+  hFeedback(!hWordCorrect ? `정답은 “${c.answer}” — 틀린 단어에 담아둘게요` : (hinted ? '힌트로 맞혔어요 — 틀린 단어에 담아둘게요' : '정답!'),
+            !hWordCorrect ? 'wrong' : (hinted ? 'warn' : 'good'));
   setKbd(null);
   actions({ next:true, speak:true });
   setNextLabel();
@@ -1959,11 +2030,13 @@ function finishHackers(skipped){
   if (hMcqDone) return;
   hMcqDone = true;
   const c = deck[idx];
+  // clean은 동의어 학습 피드백/복습 타겟팅에만 쓴다. '틀린 단어' 판정엔 관여하지 않는다.
   const clean = !skipped && hMcqWrong === 0 && !hMcqHinted;
   if (hFormat === 'pick'){ recordSyn(c, hTargetSyn, clean); }
   else if (!skipped){ hShownSyns.forEach(s => { if (hWrongSyns.indexOf(s) > -1) recordSyn(c, s, false); else if (clean) recordSyn(c, s, true); }); }
-  const hinted = ($('hBlank').dataset.hinted === '1') || hMcqHinted || hMcqWrong > 0;
-  pushResult(c, hWordCorrect && clean, hinted);
+  // ★틀린 단어 기준 = '단어 스펠링'만(정오 + 스펠링 힌트). 동의어 고르기(clean/MCQ 힌트/오답)는 제외.
+  const spellHinted = $('hBlank').dataset.hinted === '1';
+  pushResult(c, hWordCorrect, spellHinted);
   const nb = boldCount(c);
   const list = c.syn.map((s, i) => i < nb ? `<span class="syn-full">${s}</span>` : `<span class="syn-dim">${s}</span>`).join(', ');
   const boldHint = nb < c.syn.length ? `<span class="syn-hint">굵은 글씨 = 책의 핵심 동의어</span>` : '';
@@ -1974,10 +2047,10 @@ function finishHackers(skipped){
   }
   $('hNotePanel').innerHTML = `<div>동의어: ${list}${boldHint}</div>` + (c.note ? `<div style="margin-top:8px">※ ${c.note}</div>` : '') + foHtml;
   $('hNotePanel').classList.remove('hidden');
-  if (hWordCorrect && clean) hFeedback('완벽해요!', 'good');
-  else if (hWordCorrect && !clean) hFeedback('단어는 맞았어요. 동의어를 한 번 더 봐 두세요.', 'warn');
-  else if (!hWordCorrect && clean) hFeedback('동의어는 맞았어요. 스펠링을 한 번 더 연습해요.', 'warn');
-  else hFeedback('괜찮아요. 이 단어는 틀린 단어에 담아둘게요.', 'wrong');
+  if (!hWordCorrect) hFeedback('이 단어는 틀린 단어에 담아둘게요.', 'wrong');
+  else if (spellHinted) hFeedback('힌트로 맞혔어요 — 틀린 단어에 담아 다시 볼게요.', 'warn');
+  else if (!clean) hFeedback('단어 정답! 동의어만 한 번 더 봐 두세요.', 'good');
+  else hFeedback('완벽해요!', 'good');
   actions({ next:true, speak:true });
   setNextLabel();
   $('barFill').style.width = ((idx+1) / deck.length * 100) + '%';
@@ -2005,6 +2078,7 @@ $('wInput').addEventListener('keydown', e => { if (e.key === 'Enter'){ e.prevent
 $('hBlank').addEventListener('keydown', e => { if (e.key === 'Enter'){ e.preventDefault(); if (hStage === 1) submitH1(); } });
 document.addEventListener('keydown', e => {
   if (!kbInput) return;
+  if (reviewOpen()) return;   // 리뷰 시트 중엔 퀴즈 입력 개입 금지(←/→로 카드 넘김)
   if (e.metaKey || e.ctrlKey || e.altKey) return;
   const t = e.target;
   const inField = t && (t === kbInput || t.id === 'blank' || t.id === 'hBlank' || t.id === 'wInput');
@@ -2014,12 +2088,36 @@ document.addEventListener('keydown', e => {
   if (e.key.length === 1 && /[a-zA-Z]/.test(e.key)){ if (!inField){ e.preventDefault(); kbdKey(e.key.toLowerCase()); } }
 });
 /* 문장 TTS — 🔊 버튼과 "정답 시 자동재생"이 공유하는 단일 함수.
-   auto:true = 정답 자동재생 경로(설정에서 끌 수 있음). 🔊 버튼은 설정과 무관하게 항상 재생. */
+   auto:true = 정답 자동재생 경로(설정에서 끌 수 있음). 🔊 버튼은 설정과 무관하게 항상 재생.
+   ★재생은 미리 구운 MP3(audio/<해시>.mp3)를 우선 — 모든 기기에서 같은 목소리(edge-tts Aria).
+     파일명 해시(ttsHash)는 생성 스크립트(scratchpad/extract_tts.js)와 반드시 동일(FNV-1a 32bit·UTF-8).
+     파일이 없거나(신규 단어·404) 로드 실패하면 브라우저 speechSynthesis로 폴백. */
+function ttsHash(str){
+  let h = 0x811c9dc5;
+  const bytes = new TextEncoder().encode(str);
+  for (let i = 0; i < bytes.length; i++){ h ^= bytes[i]; h = Math.imul(h, 0x01000193) >>> 0; }
+  return (h >>> 0).toString(16).padStart(8, '0');
+}
+let ttsAudio = null;
+function speakFallback(text){
+  try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text); u.lang = 'en-US'; u.rate = settings.rate || 0.95; u.volume = (settings.volume == null ? 1 : settings.volume); speechSynthesis.speak(u); } catch(e){}
+}
 function speakSentence(c, opts){
   if (!c) return;
   if (opts && opts.auto && settings.autoSpeak === false) return;
   const text = c.mode === 'word' ? c.word : (c.pre + c.answer + c.post).trim();
-  try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text); u.lang = 'en-US'; u.rate = settings.rate || 0.95; u.volume = (settings.volume == null ? 1 : settings.volume); speechSynthesis.speak(u); } catch(e){}
+  if (!text) return;
+  try {
+    if (ttsAudio){ try { ttsAudio.pause(); } catch(e){} ttsAudio = null; }   // 직전 재생 중단
+    try { speechSynthesis.cancel(); } catch(e){}
+    const a = new Audio('audio/' + ttsHash(text) + '.mp3');
+    a.playbackRate = settings.rate || 0.95;                                   // 속도(느리게/보통/빠르게)
+    a.volume = (settings.volume == null ? 1 : settings.volume);
+    ttsAudio = a;
+    a.addEventListener('error', () => { if (ttsAudio === a) ttsAudio = null; speakFallback(text); }, { once:true });
+    const p = a.play();
+    if (p && p.catch) p.catch(() => {});   // 자동재생 정책 차단 등은 조용히 무시(버튼은 제스처라 통과)
+  } catch(e){ speakFallback(text); }
 }
 $('speakBtn').addEventListener('click', () => speakSentence(deck[idx]));
 
@@ -2039,23 +2137,24 @@ function showResult(){
       ? '지난번 ' + prev.correct + '/' + prev.total + ' → 이번 ' + right + '/' + total + ((right / total) > (prev.correct / prev.total) ? ' 📈' : '')
       : ''; }
   $('scoreMsg').textContent = right === total ? '완벽해요! 전부 맞혔어요.' : right >= total*0.7 ? '잘했어요. 몇 개만 더 다지면 돼요.' : '괜찮아요. 틀린 것만 다시 보면 금방 잡혀요.';
-  const wrong = results.filter(r => !r.correct), hinted = results.filter(r => r.correct && r.hinted);
-  fillList($('missList'), wrong, true); $('missBlock').classList.toggle('hidden', wrong.length === 0);
-  fillList($('hintList'), hinted, false); $('hintBlock').classList.toggle('hidden', hinted.length === 0);
-  $('retryWrongBtn').classList.toggle('hidden', wrong.length === 0);
+  // ★틀린 단어 = 스펠링 틀림 or 힌트 사용(맞혀도). 동의어 고르기는 이미 결과에서 빠져 있다(각 모드가 스펠링만 기록).
+  const weak = results.filter(r => isWeak(r.correct, r.hinted));
+  fillList($('missList'), weak); $('missBlock').classList.toggle('hidden', weak.length === 0);
+  $('retryWrongBtn').classList.toggle('hidden', weak.length === 0);
   store.sessions.push({ at:Date.now(), total, correct:right, f:lastFilter });
   if (store.sessions.length > 100) store.sessions = store.sessions.slice(-100);
   saveStore();
 }
-function fillList(container, arr, miss){
+function fillList(container, arr){
   container.innerHTML = '';
   arr.forEach(r => {
     const c = CARDS[r.i];
     const word = c.mode === 'word' ? c.word : c.mode === 'hackers' ? (c.word + (c.mi || '')) : c.answer;
     const mean = c.mode === 'word' ? c.meaning : c.mode === 'hackers' ? c.koMean : plainMean(c.ko);
+    const wrongSpell = !r.correct;   // 스펠링 오답 = 빨간 강조 / 힌트로 맞힌 것 = "힌트" 태그
     const row = document.createElement('div');
-    row.className = 'wrow' + (miss ? ' miss' : '');
-    row.innerHTML = `<span class="w">${word}</span><span class="mean">${mean}</span>` + (!miss && r.hinted ? '<span class="tag">힌트</span>' : '');
+    row.className = 'wrow' + (wrongSpell ? ' miss' : '');
+    row.innerHTML = `<span class="w">${word}</span><span class="mean">${mean}</span>` + (!wrongSpell && r.hinted ? '<span class="tag">힌트</span>' : '');
     // 탭하면 예문·동의어 펼침 + 🔊 (결과 화면에서 바로 복습)
     row.addEventListener('click', () => {
       const old = row.querySelector('.wrow-detail');
@@ -2075,7 +2174,7 @@ function fillList(container, arr, miss){
 }
 function plainMean(ko){ const m = ko.match(/<mark>(.*?)<\/mark>/); return m ? m[1] : ''; }
 
-$('retryWrongBtn').addEventListener('click', () => { deck = results.filter(r => !r.correct).map(r => ({ ...CARDS[r.i], i:r.i })); idx = 0; results = []; sessionActive = true; sessKey = 'retry'; sessLabel = '틀린 것 다시 풀기'; showScreen('play'); renderCard(); });
+$('retryWrongBtn').addEventListener('click', () => { deck = results.filter(r => isWeak(r.correct, r.hinted)).map(r => ({ ...CARDS[r.i], i:r.i })); idx = 0; results = []; sessionActive = true; sessKey = 'retry'; sessLabel = '틀린 것 다시 풀기'; showScreen('play'); renderCard(); });
 $('againBtn').addEventListener('click', () => startSet(lastFilter, lastShuffle));
 $('homeBtn').addEventListener('click', goHome);
 

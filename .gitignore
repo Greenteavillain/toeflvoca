@@ -3,3 +3,7 @@
 node_modules/
 
 .netlify/
+
+# TTS 생성 도구의 로컬 산출물(레포엔 audio/*.mp3 만 커밋)
+tools/tts/.venv/
+tools/tts/manifest.json

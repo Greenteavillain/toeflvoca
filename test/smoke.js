@@ -59,12 +59,12 @@ let api = null;
 global.__EXPORT__ = (o) => { api = o; };
 try {
   // eslint-disable-next-line no-eval
-  eval(scriptText + '\n;__EXPORT__({ CARDS, deckFor, mcqPool, blankNorm, cardKey, SPEAKING_TOPICS, mergeStores, pickInterviewQuestions, speakingPool, collapseMeanings });');
+  eval(scriptText + '\n;__EXPORT__({ CARDS, deckFor, mcqPool, blankNorm, cardKey, SPEAKING_TOPICS, mergeStores, pickInterviewQuestions, speakingPool, collapseMeanings, isWeak });');
 } catch (e) {
   console.error('앱 초기화 중 오류(모크 부족 가능):', e.message);
   process.exit(1);
 }
-const { CARDS, deckFor, mcqPool, blankNorm, cardKey, SPEAKING_TOPICS, mergeStores, pickInterviewQuestions, speakingPool, collapseMeanings } = api;
+const { CARDS, deckFor, mcqPool, blankNorm, cardKey, SPEAKING_TOPICS, mergeStores, pickInterviewQuestions, speakingPool, collapseMeanings, isWeak } = api;
 
 /* ---------- 단언 ---------- */
 let fail = 0;
@@ -149,6 +149,16 @@ console.log('다의어 접기 — 한 판에 한 뜻(랜덤)');
   }
   ok(seen.size === 3, 'account for ①②③가 회차에 따라 모두 출제됨 (' + [...seen].join('') + ')');
 }
+
+console.log('틀린 단어 판정 — 스펠링 오답 or 힌트, 동의어 무관');
+ok(isWeak(false, false) === true, '스펠링 오답 → 담김');
+ok(isWeak(false, true) === true, '스펠링 오답 + 힌트 → 담김');
+ok(isWeak(true, true) === true, '스펠링 맞음 + 힌트 → 담김');
+ok(isWeak(true, false) === false, '스펠링 맞음 + 힌트無 → 안 담김(정복)');
+// 동의어 MCQ는 이 함수에 인자로 들어오지 않는다 = 구조적으로 무관.
+// (해커스: finishHackers가 pushResult에 hWordCorrect/스펠링힌트만 넘기고 clean은 안 넘김)
+ok(scriptText.includes('pushResult(c, hWordCorrect, spellHinted)'), '해커스: 동의어 clean이 판정에서 제외됨(스펠링만 기록)');
+ok(!/pushResult\(c, hWordCorrect && clean/.test(scriptText), '해커스: 옛 clean 결합 코드가 남아있지 않음');
 
 console.log('클라우드 병합 — 초기화(clearedAt) 의미론');
 const mA = mergeStores({ words:{}, sessions:[], clearedAt:2000 }, { words:{ old:{ seen:5, lastAt:1500 } } });
