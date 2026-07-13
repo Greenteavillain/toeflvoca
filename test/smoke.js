@@ -119,12 +119,17 @@ ok(speakingPool('all', 'all').length === 270, '전체 풀 270문항 (69+201) (' 
 // 새 주제도 실전 인터뷰 구성 가능(일상2+의견2)
 ok(pickInterviewQuestions(byId.tech).length === 4 && pickInterviewQuestions(byId.community).length === 4, '새 주제 인터뷰 4문항 구성');
 
-console.log('스피킹 출처 라벨 (Set X-Y · Qnn)');
+console.log('스피킹 출처 라벨 (Set X-Y · Q주제연번)');
 const techPers = speakingPool('tech', 'personal');
-ok(techPers[7].src === 'Set 3-1 · Q08' && techPers[8].src === 'Set 3-2 · Q01', 'tech 개인 세트 경계 3-1 Q08 → 3-2 Q01 (' + techPers[7].src + ' / ' + techPers[8].src + ')');
+ok(techPers[7].src === 'Set 3-1 · Q08' && techPers[8].src === 'Set 3-2 · Q09', 'tech 개인 세트 경계 3-1 Q08 → 3-2 Q09 (' + techPers[7].src + ' / ' + techPers[8].src + ')');
 const commOpin = speakingPool('community', 'opinion');
-ok(commOpin[0].src === 'Set 8-3 · Q01', 'community 의견 첫문항 = Set 8-3 · Q01 (' + commOpin[0].src + ')');
-ok(commOpin[commOpin.length - 1].src === 'Set 8-4 · Q08', 'community 의견 마지막 = Set 8-4 · Q08 (' + commOpin[commOpin.length - 1].src + ')');
+ok(commOpin[0].src === 'Set 8-3 · Q17', 'community 의견 첫문항(8-3) = Set 8-3 · Q17 (' + commOpin[0].src + ')');
+ok(commOpin[8].src === 'Set 8-4 · Q25', 'community 8-4 첫문항 = Set 8-4 · Q25 (' + commOpin[8].src + ')');
+ok(commOpin[commOpin.length - 1].src === 'Set 8-4 · Q32', 'community 마지막(8-4) = Set 8-4 · Q32 (' + commOpin[commOpin.length - 1].src + ')');
+// 각 주제: 문항 번호가 Q01부터 총 문항수까지 연속(personal→opinion 순서 그대로)
+Object.keys(EXP).forEach(id => { const p0 = speakingPool(id, 'all');
+  const seq = p0.every((p, i) => p.src && +(p.src.match(/Q(\d+)$/) || [])[1] === i + 1);
+  ok(seq, id + ' 주제연번 Q01..Q' + p0.length + ' 연속'); });
 ok(speakingPool('living', 'all').every(p => p.src == null) && speakingPool('career', 'all').every(p => p.src == null), '구 문항(living/career)은 출처 라벨 없음(null)');
 ok(speakingPool('all', 'all').filter(p => p.src).length === 201, '출처 라벨 붙은 문항 201개 (' + speakingPool('all', 'all').filter(p => p.src).length + ')');
 

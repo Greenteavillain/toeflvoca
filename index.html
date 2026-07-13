@@ -2535,9 +2535,15 @@ const SPK_SETS = {
 };
 function spkSrcLabel(topicId, type, qi){
   const t = SPK_SETS[topicId]; if (!t || !t[type]) return null;
-  let i = qi;
-  for (const [set, n] of t[type]){ if (i < n) return 'Set ' + set + ' · Q' + String(i + 1).padStart(2, '0'); i -= n; }
-  return null;
+  // 어느 Set인지(해당 type 배열 내 qi로 판별)
+  let i = qi, set = null;
+  for (const [s, n] of t[type]){ if (i < n){ set = s; break; } i -= n; }
+  if (set === null) return null;
+  // 문항 번호는 ★주제 전체 연번(교재 방식): personal 세트들 먼저(0~), 그다음 opinion.
+  // 예: 지역사회 8-1~8-4 = Q01~Q32, 8-4는 Q25~Q32.
+  const personalCount = (t.personal || []).reduce((a, pair) => a + pair[1], 0);
+  const num = (type === 'opinion' ? personalCount : 0) + qi + 1;
+  return 'Set ' + set + ' · Q' + String(num).padStart(2, '0');
 }
 function speakingPool(topicFilter, typeFilter){
   const stars = loadStars(), pool = [];
