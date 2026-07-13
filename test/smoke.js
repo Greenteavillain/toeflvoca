@@ -73,7 +73,7 @@ const ok = (cond, msg) => { if (!cond) { console.log('  ✗', msg); fail++; } el
 console.log('데이터/카운트');
 const H = CARDS.filter(c => c.mode === 'hackers');
 ok(Array.isArray(CARDS) && CARDS.length > 0, 'CARDS 로드됨 (' + CARDS.length + '장)');
-ok(H.length === 226, '해커스 총 226장 (Day1·Voca 145 + Day2 63 + 경선식 18) (' + H.length + ')');
+ok(H.length === 288, '해커스 총 288장 (Day1·Voca 145 + Day2 63 + Day3 62 + 경선식 18) (' + H.length + ')');
 ok(deckFor('sent:all').length === 17, '문장 전체 17');
 ok(deckFor('sent:1').length === 17, '문장 Day 1 = 17(토픽 통합)');
 ok(deckFor('ks:all').length === 18, '경선식 전체 18');
@@ -155,6 +155,14 @@ ok(deckFor('ks:1').length === 9 && deckFor('ks:2').length === 9, '경선식 Lect
 ok(deckFor('ks:1').every(c => c.syn.length === 0), '경선식은 동의어 없음(단일 스테이지)');
 { const hk = CARDS.filter(c => c.mode === 'hackers'); const keys = hk.map(c => 'hk:' + c.key); ok(new Set(keys).size === keys.length, '전체 해커스 key 유일(Day2·경선식 포함)'); }
 { const c = deckFor('hk2:1').find(x => x.word === 'decline'); ok(mcqPool(c).every(x => x.book === 'hk2'), 'Day2 오답풀은 Day2 안에서만'); }
+
+console.log('Day 3 추가분');
+ok(deckFor('hk3:all').length === 62, 'Day3 전체 62장(다의어 포함) (' + deckFor('hk3:all').length + ')');
+ok(collapseMeanings(deckFor('hk3:all')).length === 56, 'Day3 접으면 56단어');
+ok(deckFor('hk3:1').length === 23 && deckFor('hk3:2').length === 22 && deckFor('hk3:3').length === 17, 'Day3 seg 카드수 23/22/17');
+ok(collapseMeanings(deckFor('hk3:1')).length === 20 && collapseMeanings(deckFor('hk3:2')).length === 20 && collapseMeanings(deckFor('hk3:3')).length === 16, 'Day3 seg 단어수 20/20/16');
+{ const c = deckFor('hk3:1').find(x => x.word === 'apparent'); ok(mcqPool(c).every(x => x.book === 'hk3') && mcqPool(c).length >= 4, 'Day3 오답풀은 Day3 안에서만(4장+)'); }
+ok(deckFor('hk3:all').every(x => (x.pre + x.answer + x.post).includes(x.answer) && x.syn.length && /<mark>[^<]+<\/mark>/.test(x.ko) && x.bold >= 1 && x.bold <= x.syn.length), 'Day3 카드 무결성(answer·syn·mark·bold)');
 
 console.log('다의어 접기 — 한 판에 한 뜻(랜덤)');
 {
