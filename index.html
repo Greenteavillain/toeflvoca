@@ -338,6 +338,12 @@
   .sp-tools{margin-left:auto;display:flex;gap:6px}
   .icon-btn.sm{width:36px;height:36px;font-size:15px}
   .sp-q{margin-top:12px;font-size:1.18rem;line-height:1.55;font-weight:700;color:var(--ink);word-break:break-word}
+  .sp-badge.src{color:var(--muted);background:var(--soft)}
+  .sp-q-hidden{margin-top:12px;font-size:1rem;color:var(--muted);line-height:1.6}
+  .sp-reveal{margin-left:6px;border:1px solid var(--line);background:var(--card);border-radius:8px;padding:4px 10px;font:inherit;font-size:.82rem;font-weight:700;color:var(--blue-ink);cursor:pointer}
+  .sp-result{width:100%;margin-top:12px;background:var(--blue-soft);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+  .sp-result-src{font-size:.8rem;font-weight:800;color:var(--blue-ink);margin-bottom:4px}
+  .sp-result-q{font-size:1.02rem;font-weight:700;color:var(--ink);line-height:1.5;word-break:break-word}
   .sp-rec-zone{margin-top:16px;display:flex;flex-direction:column;align-items:center}
   .sp-timer{font-size:2rem;font-weight:800;color:var(--blue-ink);font-variant-numeric:tabular-nums;margin-bottom:6px}
   .sp-timer.over{color:var(--warn-ink)}
@@ -622,14 +628,19 @@
       <div class="pv-title-wrap"><span class="pv-title">한 문제씩 연습</span><span class="pv-count" id="spCount"></span></div>
     </div>
     <div class="sp-card">
-      <div class="sp-badges"><span class="sp-badge" id="spTopicBadge"></span><span class="sp-badge type" id="spTypeBadge"></span><span class="sp-tools"><button class="icon-btn sm" id="spListen" type="button" aria-label="질문 듣기">🔊</button><button class="icon-btn sm" id="spStar" type="button" aria-label="어려운 질문 표시">☆</button></span></div>
+      <div class="sp-badges"><span class="sp-badge" id="spTopicBadge"></span><span class="sp-badge type" id="spTypeBadge"></span><span class="sp-badge src hidden" id="spSrcBadge"></span><span class="sp-tools"><button class="icon-btn sm" id="spToggleQ" type="button" aria-label="질문 표시 전환" title="질문 보기/숨기기">👁</button><button class="icon-btn sm" id="spListen" type="button" aria-label="질문 듣기">🔊</button><button class="icon-btn sm" id="spStar" type="button" aria-label="어려운 질문 표시">☆</button></span></div>
       <div class="sp-q" id="spQuestion"></div>
+      <div class="sp-q-hidden hidden" id="spQHidden">🔊 <b>질문을 듣고</b> 답해 보세요 <button class="sp-reveal" id="spRevealBtn" type="button">질문 보기</button></div>
     </div>
     <div class="sp-rec-zone">
       <div class="sp-timer hidden" id="spTimer">0.0초</div>
       <div class="sp-meter hidden" id="spMeter"><div class="sp-meter-fill" id="spMeterFill"></div></div>
       <button class="btn btn-primary sp-recbtn" id="spRecBtn" type="button">⏺ 녹음 시작</button>
       <audio id="spAudio" controls class="hidden" style="width:100%;margin-top:12px"></audio>
+      <div class="sp-result hidden" id="spResult">
+        <div class="sp-result-src" id="spResultSrc"></div>
+        <div class="sp-result-q" id="spResultQ"></div>
+      </div>
       <div class="sp-after hidden" id="spAfter">
         <button class="btn btn-soft" id="spDownloadBtn" type="button">⬇ 저장</button>
         <button class="btn btn-soft" id="spRetryBtn" type="button">다시 녹음</button>
@@ -2511,6 +2522,23 @@ const IV_ANSWER_SEC = 45;   // ETS 2026: 문항당 45초, 준비시간 0
 const STARS_KEY = 'malhaeboca_speak_stars';
 function loadStars(){ try { return new Set(JSON.parse(localStorage.getItem(STARS_KEY)) || []); } catch(e){ return new Set(); } }
 function saveStars(set){ try { localStorage.setItem(STARS_KEY, JSON.stringify([...set])); } catch(e){} }
+/* 원본 교재의 세트/문항 번호 복원용. personal/opinion 배열이 어떤 Set들을 이어붙였는지 개수로 기술.
+   (예: tech.personal = Set 3-1 8문항 + Set 3-2 9문항) → qi로 "Set X-Y · Qnn" 계산.
+   living/career(구 69문항)는 교재 출처가 없어 라벨 없음(null). 문항 추가 시 여기 개수도 같이 갱신. */
+const SPK_SETS = {
+  tech:      { personal:[['3-1',8],['3-2',9]], opinion:[['3-3',6],['3-4',6]] },
+  lifestyle: { personal:[['4-1',11],['4-2',10]], opinion:[['4-3',7],['4-4',6]] },
+  travel:    { personal:[['5-1',8],['5-2',8]], opinion:[['5-3',8],['5-4',9]] },
+  education: { personal:[['6-1',11],['6-2',9]], opinion:[['6-3',9],['6-4',8]] },
+  media:     { personal:[['7-1',8],['7-2',8]], opinion:[['7-3',10],['7-4',10]] },
+  community: { personal:[['8-1',8],['8-2',8]], opinion:[['8-3',8],['8-4',8]] },
+};
+function spkSrcLabel(topicId, type, qi){
+  const t = SPK_SETS[topicId]; if (!t || !t[type]) return null;
+  let i = qi;
+  for (const [set, n] of t[type]){ if (i < n) return 'Set ' + set + ' · Q' + String(i + 1).padStart(2, '0'); i -= n; }
+  return null;
+}
 function speakingPool(topicFilter, typeFilter){
   const stars = loadStars(), pool = [];
   SPEAKING_TOPICS.forEach(t => {
@@ -2521,7 +2549,7 @@ function speakingPool(topicFilter, typeFilter){
       t[type].forEach((q, qi) => {
         const key = t.id + ':' + type + ':' + qi;
         if (typeFilter === 'star' && !stars.has(key)) return;
-        pool.push({ topic: t, type, qi, q, key });
+        pool.push({ topic: t, type, qi, q, key, src: spkSrcLabel(t.id, type, qi) });
       });
     });
   });
@@ -2619,7 +2647,7 @@ async function recDelete(id){
 /* 녹음 파일 다운로드 — 학원 제출 등에 저장 */
 function recExt(blob){ const t = (blob && blob.type) || ''; return t.indexOf('mp4') >= 0 ? 'm4a' : t.indexOf('ogg') >= 0 ? 'ogg' : 'webm'; }
 function recFileName(q, blob){
-  const slug = (q || 'answer').replace(/[^A-Za-z0-9 ]/g, '').trim().slice(0, 40).replace(/\s+/g, '-') || 'answer';
+  const slug = (q || 'answer').replace(/[^A-Za-z0-9 -]/g, '').trim().slice(0, 44).replace(/\s+/g, '-').replace(/-+/g, '-') || 'answer';
   return 'TOEFL-speaking_' + slug + '.' + recExt(blob);
 }
 function downloadBlob(blob, name){
@@ -2721,7 +2749,17 @@ async function renderRecentRecs(){
 }
 
 /* ── 연습 모드 ── */
-let spPool = [], spPos = -1, spCur = null, spRecording = false, spT0 = 0, spTimerIv = null, spLastBlob = null, spLastQ = '';
+let spPool = [], spPos = -1, spCur = null, spRecording = false, spT0 = 0, spTimerIv = null, spLastBlob = null, spLastQ = '', spLastSrc = '';
+function spShowQ(){ return settings.spkShowQ !== false; }   // 연습 질문 텍스트 표시 여부(기본 표시)
+function spApplyShowQ(){
+  const show = spShowQ();
+  const q = $('spQuestion'), hid = $('spQHidden'), sb = $('spSrcBadge'), tg = $('spToggleQ');
+  if (q && q.classList) q.classList.toggle('hidden', !show);
+  if (hid && hid.classList) hid.classList.toggle('hidden', show);
+  // 출처 배지는 표시모드 + 출처 있을 때만(숨김모드에선 세트번호도 가려 스포일러 방지 → 녹음 후 결과에서 공개)
+  if (sb && sb.classList) sb.classList.toggle('hidden', !show || !(spCur && spCur.src));
+  if (tg) tg.textContent = show ? '👁' : '🙈';
+}
 function openPractice(){
   spPool = speakingPool(spkTopicFilter, spkTypeFilter);
   if (!spPool.length){ toast(spkTypeFilter === 'star' ? '⭐ 표시한 질문이 아직 없어요' : '조건에 맞는 질문이 없어요'); return; }
@@ -2734,10 +2772,11 @@ function spResetUI(){
   spRecording = false;
   clearInterval(spTimerIv);
   stopMeter();
-  const ids = [['spTimer', true], ['spMeter', true], ['spAudio', true], ['spAfter', true]];
+  const ids = [['spTimer', true], ['spMeter', true], ['spAudio', true], ['spAfter', true], ['spResult', true]];
   ids.forEach(([id, hide]) => { const el = $(id); if (el && el.classList) el.classList.toggle('hidden', hide); });
   const rb = $('spRecBtn'); if (rb){ rb.textContent = '⏺ 녹음 시작'; if (rb.classList) rb.classList.remove('rec'); }
   const t = $('spTimer'); if (t && t.classList) t.classList.remove('over');
+  if (spCur) spApplyShowQ();   // 재도전 시 질문 표시상태 원복(숨김모드면 다시 숨김)
 }
 function spNextQ(){
   spResetUI();
@@ -2746,7 +2785,9 @@ function spNextQ(){
   $('spQuestion').textContent = spCur.q;
   $('spTopicBadge').textContent = spCur.topic.title;
   $('spTypeBadge').textContent = spCur.type === 'personal' ? '일상 · 개인' : '의견';
+  if ($('spSrcBadge')) $('spSrcBadge').textContent = spCur.src || '';
   $('spCount').textContent = (spPos + 1) + ' / ' + spPool.length;
+  spApplyShowQ();
   spRenderStar();
 }
 function spRenderStar(){
@@ -2786,14 +2827,27 @@ $('spRecBtn').addEventListener('click', async () => {
       const au = $('spAudio');
       try { au.src = URL.createObjectURL(blob); } catch(e){}
       au.classList.remove('hidden'); $('spAfter').classList.remove('hidden');
-      spLastBlob = blob; spLastQ = spCur.q;
+      spLastBlob = blob; spLastQ = spCur.q; spLastSrc = spCur.src || '';
+      // 녹음 후: 질문과 출처(Set X-Y · Qnn)를 공개 → 교재로 돌아가 체크. 숨김모드였어도 여기선 보여준다.
+      $('spResultSrc').textContent = spCur.src || (spCur.topic.title + ' · ' + (spCur.type === 'personal' ? '일상 · 개인' : '의견'));
+      $('spResultQ').textContent = spCur.q;
+      $('spResult').classList.remove('hidden');
       recSave({ kind: 'practice', q: spCur.q, topic: spCur.topic.id, dur: Math.round(dur) }, blob);
     }
   }
 });
-$('spDownloadBtn').addEventListener('click', () => downloadBlob(spLastBlob, recFileName(spLastQ, spLastBlob)));
+$('spDownloadBtn').addEventListener('click', () => downloadBlob(spLastBlob, recFileName((spLastSrc ? spLastSrc + ' ' : '') + spLastQ, spLastBlob)));
 $('spRetryBtn').addEventListener('click', () => { spResetUI(); });
 $('spNextBtn').addEventListener('click', () => spNextQ());
+// 질문 표시/숨김 토글(설정에 저장 → 다음에도 유지). 숨김이면 🔊로 듣고 답하는 연습.
+$('spToggleQ').addEventListener('click', () => { settings.spkShowQ = !spShowQ(); saveSettings(); spApplyShowQ(); });
+// 숨김모드에서 이 문항만 잠깐 열어보기(설정은 안 바뀜)
+$('spRevealBtn').addEventListener('click', () => {
+  const q = $('spQuestion'), hid = $('spQHidden'), sb = $('spSrcBadge');
+  if (q && q.classList) q.classList.remove('hidden');
+  if (hid && hid.classList) hid.classList.add('hidden');
+  if (sb && sb.classList && spCur && spCur.src) sb.classList.remove('hidden');
+});
 $('spBack').addEventListener('click', goHome);
 $('practiceStartBtn').addEventListener('click', openPractice);
 

@@ -119,6 +119,15 @@ ok(speakingPool('all', 'all').length === 270, '전체 풀 270문항 (69+201) (' 
 // 새 주제도 실전 인터뷰 구성 가능(일상2+의견2)
 ok(pickInterviewQuestions(byId.tech).length === 4 && pickInterviewQuestions(byId.community).length === 4, '새 주제 인터뷰 4문항 구성');
 
+console.log('스피킹 출처 라벨 (Set X-Y · Qnn)');
+const techPers = speakingPool('tech', 'personal');
+ok(techPers[7].src === 'Set 3-1 · Q08' && techPers[8].src === 'Set 3-2 · Q01', 'tech 개인 세트 경계 3-1 Q08 → 3-2 Q01 (' + techPers[7].src + ' / ' + techPers[8].src + ')');
+const commOpin = speakingPool('community', 'opinion');
+ok(commOpin[0].src === 'Set 8-3 · Q01', 'community 의견 첫문항 = Set 8-3 · Q01 (' + commOpin[0].src + ')');
+ok(commOpin[commOpin.length - 1].src === 'Set 8-4 · Q08', 'community 의견 마지막 = Set 8-4 · Q08 (' + commOpin[commOpin.length - 1].src + ')');
+ok(speakingPool('living', 'all').every(p => p.src == null) && speakingPool('career', 'all').every(p => p.src == null), '구 문항(living/career)은 출처 라벨 없음(null)');
+ok(speakingPool('all', 'all').filter(p => p.src).length === 201, '출처 라벨 붙은 문항 201개 (' + speakingPool('all', 'all').filter(p => p.src).length + ')');
+
 console.log('실전 인터뷰 세트 구성 (일상2 → 의견2)');
 for (let t = 0; t < 20; t++){
   const set = pickInterviewQuestions(liv);
