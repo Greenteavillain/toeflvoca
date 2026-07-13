@@ -111,7 +111,7 @@ const [liv, car] = SPEAKING_TOPICS;
 ok(liv.personal.length === 22 && liv.opinion.length === 15, '주거 22+15 (' + liv.personal.length + '/' + liv.opinion.length + ')');
 ok(car.personal.length === 16 && car.opinion.length === 16, '커리어 16+16 (' + car.personal.length + '/' + car.opinion.length + ')');
 const byId = Object.fromEntries(SPEAKING_TOPICS.map(t => [t.id, t]));
-const EXP = { tech:[17,12], lifestyle:[21,13], travel:[16,17], education:[20,17], media:[16,20], community:[16,16] };
+const EXP = { living:[22,15], career:[16,16], tech:[17,12], lifestyle:[21,13], travel:[16,17], education:[20,17], media:[16,20], community:[16,16] };
 Object.entries(EXP).forEach(([id, [p, o]]) => ok(byId[id] && byId[id].personal.length === p && byId[id].opinion.length === o,
   id + ' ' + p + '+' + o + ' (' + (byId[id] ? byId[id].personal.length + '/' + byId[id].opinion.length : '없음') + ')'));
 ok(SPEAKING_TOPICS.every(t => t.id && t.title && t.titleEn && t.scenario && [...t.personal, ...t.opinion].every(q => typeof q === 'string' && q.length > 10)), '모든 질문이 유효한 문자열');
@@ -130,8 +130,11 @@ ok(commOpin[commOpin.length - 1].src === 'Set 8-4 · Q32', 'community 마지막(
 Object.keys(EXP).forEach(id => { const p0 = speakingPool(id, 'all');
   const seq = p0.every((p, i) => p.src && +(p.src.match(/Q(\d+)$/) || [])[1] === i + 1);
   ok(seq, id + ' 주제연번 Q01..Q' + p0.length + ' 연속'); });
-ok(speakingPool('living', 'all').every(p => p.src == null) && speakingPool('career', 'all').every(p => p.src == null), '구 문항(living/career)은 출처 라벨 없음(null)');
-ok(speakingPool('all', 'all').filter(p => p.src).length === 201, '출처 라벨 붙은 문항 201개 (' + speakingPool('all', 'all').filter(p => p.src).length + ')');
+const livAll = speakingPool('living', 'all'), carAll = speakingPool('career', 'all');
+ok(livAll[0].src === 'Set 1-1 · Q01' && livAll[10].src === 'Set 1-1 · Q11' && livAll[11].src === 'Set 1-2 · Q12' && livAll[livAll.length - 1].src === 'Set 1-4 · Q37', 'living: Set 1-1 Q01 ~ Set 1-4 Q37 (' + livAll[0].src + ' … ' + livAll[livAll.length - 1].src + ')');
+ok(carAll[0].src === 'Set 2-1 · Q01' && carAll[16].src === 'Set 2-3 · Q17' && carAll[carAll.length - 1].src === 'Set 2-4 · Q32', 'career: Set 2-1 Q01 ~ Set 2-4 Q32 (' + carAll[0].src + ' … ' + carAll[carAll.length - 1].src + ')');
+ok(speakingPool('all', 'all').every(p => p.src), '이제 모든 스피킹 문항에 출처 라벨 있음');
+ok(speakingPool('all', 'all').filter(p => p.src).length === 270, '출처 라벨 붙은 문항 270개 (' + speakingPool('all', 'all').filter(p => p.src).length + ')');
 
 console.log('실전 인터뷰 세트 구성 (일상2 → 의견2)');
 for (let t = 0; t < 20; t++){
