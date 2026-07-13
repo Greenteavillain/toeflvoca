@@ -18,8 +18,8 @@ global.setTimeout = () => {};
 global.speechSynthesis = { cancel(){}, speak(){} };
 global.SpeechSynthesisUtterance = function(){};
 global.getComputedStyle = () => ({ fontSize:'16px', fontFamily:'x', fontWeight:'700' });
-try { eval(m[1] + '\n;__EXPORT__({ CARDS });'); } catch(e){ console.error('앱 초기화 오류:', e.message); process.exit(1); }
-const { CARDS } = global.api;
+try { eval(m[1] + '\n;__EXPORT__({ CARDS, SPEAKING_TOPICS, IV_ACKS, IV_CLOSING });'); } catch(e){ console.error('앱 초기화 오류:', e.message); process.exit(1); }
+const { CARDS, SPEAKING_TOPICS, IV_ACKS, IV_CLOSING } = global.api;
 
 // ★ index.html의 ttsHash와 100% 동일해야 한다
 function ttsHash(str){
@@ -34,14 +34,22 @@ function spokenText(c){ return c.mode === 'word' ? c.word : (c.pre + c.answer + 
 const seen = new Map();       // hash -> text (같은 문장은 파일 1개 공유)
 const collisions = [];
 let bad = 0;
-CARDS.forEach(c => {
-  const t = spokenText(c);
-  if (!t || /undefined/.test(t)) { bad++; console.error('빈/undefined 텍스트:', JSON.stringify(c).slice(0,120)); return; }
+const add = (t) => {
+  if (!t || /undefined/.test(t)) { bad++; console.error('빈/undefined 텍스트:', JSON.stringify(t).slice(0,120)); return; }
   const h = ttsHash(t);
   if (seen.has(h) && seen.get(h) !== t) collisions.push([h, seen.get(h), t]);
   seen.set(h, t);
-});
+};
+// ① 카드 예문 (speakSentence)
+let nCards = 0;
+CARDS.forEach(c => { add(spokenText(c)); nCards++; });
+const nAfterCards = seen.size;
+// ② 스피킹 (speakText): 인터뷰/연습 질문 + 추임새 + 마무리 멘트
+(SPEAKING_TOPICS || []).forEach(t => { [...(t.personal||[]), ...(t.opinion||[])].forEach(add); });
+(IV_ACKS || []).forEach(add);
+if (IV_CLOSING) add(IV_CLOSING);
+const nSpeaking = seen.size - nAfterCards;
 if (collisions.length){ console.error('해시 충돌 발생(생성 중단):', collisions); process.exit(1); }
 const manifest = [...seen.entries()].map(([hash, text]) => ({ hash, text }));
 fs.writeFileSync(path.join(__dirname, 'manifest.json'), JSON.stringify(manifest, null, 2));
-console.log(`총 카드 ${CARDS.length} · 고유 문장(MP3) ${manifest.length} · 빈텍스트 ${bad} · 충돌 0`);
+console.log(`카드 예문 고유 ${nAfterCards} · 스피킹 고유 ${nSpeaking} · 합계 MP3 ${manifest.length} · 빈텍스트 ${bad} · 충돌 0`);

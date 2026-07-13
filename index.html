@@ -2395,20 +2395,39 @@ function downloadBlob(blob, name){
   } catch(e){ toast('다운로드에 실패했어요'); }
 }
 
-/* ── 질문 TTS (onend 미발화 대비 가드 타이머 내장) ── */
+/* ── 질문 TTS — 예문과 동일하게 미리 구운 MP3(audio/<ttsHash>.mp3) 우선, 없으면 speechSynthesis 폴백.
+   ★인터뷰 흐름은 onend 콜백에 의존하므로 반드시 유지: 오디오 ended → done, 404 → 폴백, 자동재생 차단 등은
+     가드 타이머가 진행시킨다(파일 실제 길이가 로드되면 그 길이로 가드를 재설정해 질문이 잘리지 않게 함). */
 let ttsGuardT = null;
-function speakText(text, onend){
-  let called = false;
-  const done = () => { if (called) return; called = true; clearTimeout(ttsGuardT); if (onend) onend(); };
+function speakTextFallback(text, done){
   try {
     speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(text);
     u.lang = 'en-US'; u.rate = settings.rate || 0.95; u.volume = (settings.volume == null ? 1 : settings.volume);
     u.onend = done; u.onerror = done;
     speechSynthesis.speak(u);
-    const est = Math.max(3000, Math.round(text.split(/\s+/).length * 470 / (u.rate || 1)));
-    ttsGuardT = setTimeout(done, est + 1500);
-  } catch(e){ done(); }
+  } catch(e){ if (done) done(); }
+}
+function speakText(text, onend){
+  let called = false;
+  const done = () => { if (called) return; called = true; clearTimeout(ttsGuardT); if (onend) onend(); };
+  if (!text){ done(); return; }
+  try {
+    if (ttsAudio){ try { ttsAudio.pause(); } catch(e){} ttsAudio = null; }
+    try { speechSynthesis.cancel(); } catch(e){}
+    const a = new Audio('audio/' + ttsHash(text) + '.mp3');
+    a.playbackRate = settings.rate || 0.95;
+    a.volume = (settings.volume == null ? 1 : settings.volume);
+    ttsAudio = a;
+    a.onended = done;
+    a.onerror = () => { if (ttsAudio === a) ttsAudio = null; speakTextFallback(text, done); };
+    // 가드: 우선 단어수 추정치, 메타데이터 로드되면 실제 길이로 교체(질문이 잘려서 답변단계로 넘어가지 않게)
+    const est = Math.max(3000, Math.round(text.split(/\s+/).length * 480 / (settings.rate || 1)));
+    ttsGuardT = setTimeout(done, est + 4000);
+    a.onloadedmetadata = () => { if (isFinite(a.duration) && a.duration > 0){ clearTimeout(ttsGuardT); ttsGuardT = setTimeout(done, (a.duration / (a.playbackRate || 1)) * 1000 + 3000); } };
+    const p = a.play();
+    if (p && p.catch) p.catch(() => {});
+  } catch(e){ speakTextFallback(text, done); }
 }
 
 /* ── 스피킹 홈(허브 스피킹 팬) ── */
@@ -2544,6 +2563,7 @@ $('practiceStartBtn').addEventListener('click', openPractice);
 /* ── 실전 인터뷰 모드 ── */
 let iv = null, ivCountIv = null;
 const IV_ACKS = ['I see. Thank you.', 'Thank you. That makes sense.', 'Interesting, thank you.', 'Okay, I see.'];
+const IV_CLOSING = 'Thank you. That is the end of the interview.';   // 마무리 멘트(음성 미리굽기 대상 · extract.js와 단일 소스)
 function openInterview(){
   const cands = SPEAKING_TOPICS.filter(t => spkTopicFilter === 'all' || t.id === spkTopicFilter);
   const topic = cands[Math.floor(Math.random() * cands.length)] || SPEAKING_TOPICS[0];
@@ -2611,7 +2631,7 @@ async function ivFinishAnswer(t0){
     ivSetState('…');
     speakText(IV_ACKS[Math.floor(Math.random() * IV_ACKS.length)], () => ivNextQ());
   } else {
-    speakText('Thank you. That is the end of the interview.', () => ivNextQ());
+    speakText(IV_CLOSING, () => ivNextQ());
   }
 }
 let ivDoneT0 = null;

@@ -176,9 +176,9 @@ hk:{part}  → 해당 part
 - `weakKeys()`: `lastResult === 'x'`인 카드 key 목록 → `weak`('틀린 단어') 필터. `lastResult`는 `recordResult`가 **`isWeak(correct, hinted)`** 로 정한다(§8-10).
 
 ### 7.7 발음(TTS) — 미리 구운 MP3 (2026-07-12)
-- 예문 음성은 **미리 구운 `audio/<hash>.mp3`** 재생(`speakSentence`). 기기마다 목소리가 다른 `speechSynthesis`를 대체 → **모든 기기 동일 목소리**(edge-tts `en-US-AriaNeural`). 파일 없거나 로드 실패면 `speakFallback`(speechSynthesis)로 폴백.
-- 파일명 = **재생 텍스트**(`(pre+answer+post).trim()`)의 `ttsHash`(FNV-1a 32bit·UTF-8). 내용 바뀌면 해시가 바뀌어 자동 무효화. 속도=`audio.playbackRate`(설정 rate), 볼륨=`audio.volume`(설정 volume).
-- 생성 파이프라인 = **`tools/tts/build.sh`**(`extract.js`→`manifest.json`→`generate.py`). **단어/예문 추가·수정 후 반드시 재실행**해야 새 문장이 파일로 생김(안 하면 그 문장만 브라우저 TTS로 폴백). `audio/*.mp3`는 레포에 커밋(현재 216개·7.2MB), `.venv`·`manifest.json`은 gitignore.
+- **두 경로 모두** 미리 구운 `audio/<hash>.mp3` 재생: ①예문 = `speakSentence`, ②스피킹 질문/추임새/마무리 = `speakText`(인터뷰 `onend` 콜백으로 흐름 진행 → 오디오 `ended`가 onend 발화·`onloadedmetadata`로 실제 길이만큼 가드). 기기마다 다른 `speechSynthesis`를 대체 → **모든 기기 동일 목소리**(edge-tts `en-US-AriaNeural`). 파일 없거나 로드 실패면 speechSynthesis로 폴백(`speakFallback`/`speakTextFallback`).
+- 파일명 = **재생 텍스트**의 `ttsHash`(FNV-1a 32bit·UTF-8). 예문=`(pre+answer+post).trim()`, 스피킹=질문/추임새/`IV_CLOSING` 원문. 내용 바뀌면 해시가 바뀌어 자동 무효화. 속도=`audio.playbackRate`, 볼륨=`audio.volume`.
+- 생성 파이프라인 = **`tools/tts/build.sh`**(`extract.js`→`manifest.json`→`generate.py`). `extract.js`가 CARDS 예문 + `SPEAKING_TOPICS`(personal+opinion) + `IV_ACKS` + `IV_CLOSING`을 전부 뽑음. **단어/예문/스피킹 질문 추가·수정 후 반드시 재실행**(안 하면 그 항목만 브라우저 TTS 폴백). `audio/*.mp3`는 레포에 커밋(현재 290개=예문216+스피킹74·9.5MB), `.venv`·`manifest.json`은 gitignore.
 - 오프라인: `sw.js`가 `.mp3`를 **들은 즉시 캐시**(Range 무시 전체 200 저장). 정적 자산 아님 → 전용 분기.
 
 ## 8. 지켜야 할 규칙 & 함정 요약
