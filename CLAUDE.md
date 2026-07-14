@@ -183,6 +183,7 @@ hk:{part}  → 해당 part
 - 오프라인: `sw.js`가 `.mp3`를 **들은 즉시 캐시**(Range 무시 전체 200 저장). 정적 자산 아님 → 전용 분기.
 
 ## 8. 지켜야 할 규칙 & 함정 요약
+0. **입력 = 강제 영어(한영키 무관)**: 빈칸 input 3종은 **`readonly`**(한글 IME 조합 원천 차단, 값은 `kbdKey`로만 주입). 물리키 핸들러는 **`e.code`(물리 위치)** 로 판별해 IME가 한글모드여도 영문만 입력 — `e.key`(회귀 금지). 전역 keydown이라 **어디를 클릭했든** 정답칸으로 감. 온스크린 키는 **`pointerdown`**(즉시 발동, `click`은 터치 연타 유실 → 회귀 금지). `.key`에 `touch-action:manipulation`.
 1. **정답 비교는 `blankNorm`** (영숫자만). `trim().toLowerCase()` 직접 비교로 회귀 금지.
 2. **오답은 `mcqPool` = 카드의 홈 세트(part/lesson)**. 파트 섞지 말 것.
 3. **`STORE_KEY` 고정**('malhaeboca_v3').

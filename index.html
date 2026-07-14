@@ -83,7 +83,8 @@
   .kbd-row.indent{padding:0 4.5%}
   /* 실물 QWERTY 스태거: q→a→z가 각각 오른쪽 아래로 이어지도록 z열은 왼쪽만 더 들여쓴다 */
   .kbd-row.indent2{padding-left:9.5%}
-  .key{flex:1 1 0;min-width:0;height:47px;border:none;border-radius:9px;background:var(--key);box-shadow:0 1px 2px rgba(50,95,150,.2);font:inherit;font-size:1.1rem;font-weight:700;color:var(--ink);cursor:pointer;display:grid;place-items:center;padding:0}
+  .key{flex:1 1 0;min-width:0;height:47px;border:none;border-radius:9px;background:var(--key);box-shadow:0 1px 2px rgba(50,95,150,.2);font:inherit;font-size:1.1rem;font-weight:700;color:var(--ink);cursor:pointer;display:grid;place-items:center;padding:0;touch-action:manipulation;-webkit-tap-highlight-color:transparent;user-select:none}
+  .key:active{background:var(--key-active);transform:translateY(1px)}
   .key:active{background:var(--key-active);transform:translateY(1px)}
   .key.kb-back{background:var(--key-back);flex:1.4 1 0;font-size:1.16rem}
   .key.kb-space{flex:5 1 0;font-size:.9rem;color:var(--ink-soft)}
@@ -547,7 +548,7 @@
         <div class="en">
           <span class="pre" id="pre"></span><input class="blank" id="blank"
             autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
-            inputmode="none" aria-label="빈칸에 영어 단어 입력"><span class="inline-slots hidden" id="blankSlots"></span><span class="post" id="post"></span>
+            inputmode="none" readonly aria-label="빈칸에 영어 단어 입력"><span class="inline-slots hidden" id="blankSlots"></span><span class="post" id="post"></span>
         </div>
         <div class="feedback" id="sFeedback"></div>
         <div class="src" id="sSrc"></div>
@@ -570,7 +571,7 @@
         </div>
         <input class="w-input otp" id="wInput"
           autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
-          inputmode="none" aria-label="영어 입력">
+          inputmode="none" readonly aria-label="영어 입력">
         <div class="feedback" id="wFeedback"></div>
         <div class="note-panel hidden" id="wNote"></div>
         <div class="src" id="wSrc"></div>
@@ -588,7 +589,7 @@
         <div class="en" id="hEnWrap">
           <span class="pre" id="hPre"></span><input class="blank" id="hBlank"
             autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
-            inputmode="none" aria-label="빈칸에 영어 단어 입력"><span class="inline-slots hidden" id="hBlankSlots"></span><span class="post" id="hPost"></span>
+            inputmode="none" readonly aria-label="빈칸에 영어 단어 입력"><span class="inline-slots hidden" id="hBlankSlots"></span><span class="post" id="hPost"></span>
         </div>
         <div class="hk-mcq hidden" id="hMcqArea">
           <div class="mcq-q" id="hMcqQ">동의어를 고르세요</div>
@@ -1723,7 +1724,9 @@ function setKbd(inp, enter){
 function buildKeyboard(){
   const rows = [['q','w','e','r','t','y','u','i','o','p'],['a','s','d','f','g','h','j','k','l'],['z','x','c','v','b','n','m']];
   const kbd = $('kbd'); kbd.innerHTML = '';
-  const mkKey = (label, cls, fn) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'key' + (cls ? ' ' + cls : ''); b.textContent = label; b.addEventListener('mousedown', e => e.preventDefault()); b.addEventListener('click', fn); return b; };
+  // ★pointerdown = 누르는 즉시 발동(마우스·터치 공통). click은 터치 시작→끝+무이동이어야 발동해
+  //   빠른 연타·미세한 손가락 이동에서 유실됨 → 실물 키보드처럼 눌리게 pointerdown으로.
+  const mkKey = (label, cls, fn) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'key' + (cls ? ' ' + cls : ''); b.textContent = label; b.addEventListener('pointerdown', e => { e.preventDefault(); fn(); }); return b; };
   rows.forEach((r, ri) => {
     const row = document.createElement('div'); row.className = 'kbd-row' + (ri === 1 ? ' indent' : ri === 2 ? ' indent2' : '');
     r.forEach(ch => row.appendChild(mkKey(ch, '', () => kbdKey(ch))));
@@ -2228,12 +2231,15 @@ document.addEventListener('keydown', e => {
   if (!kbInput) return;
   if (reviewOpen()) return;   // 리뷰 시트 중엔 퀴즈 입력 개입 금지(←/→로 카드 넘김)
   if (e.metaKey || e.ctrlKey || e.altKey) return;
-  const t = e.target;
-  const inField = t && (t === kbInput || t.id === 'blank' || t.id === 'hBlank' || t.id === 'wInput');
-  if (e.key === 'Enter'){ if (!inField){ e.preventDefault(); kbdDoEnter(); } return; }
-  if (e.key === 'Backspace'){ if (!inField){ e.preventDefault(); kbdBack(); } return; }
-  if (e.key === ' ' || e.key === 'Spacebar'){ if (!inField){ e.preventDefault(); kbdKey(' '); } return; }
-  if (e.key.length === 1 && /[a-zA-Z]/.test(e.key)){ if (!inField){ e.preventDefault(); kbdKey(e.key.toLowerCase()); } }
+  // ★물리 키 위치(e.code)로 판별 → IME(한/영) 상태와 무관하게 항상 영어 입력(한영키 강제).
+  //   입력칸은 readonly라 한글이 조합돼 들어가지 않고, 여기서 e.code로 영문만 정답칸에 주입한다.
+  //   전역 핸들러라 어디를 클릭했든(입력칸 포커스 여부 무관) 타이핑이 정답칸으로 간다.
+  const code = e.code || '';
+  if (e.key === 'Enter' || code === 'Enter' || code === 'NumpadEnter'){ e.preventDefault(); kbdDoEnter(); return; }
+  if (e.key === 'Backspace' || code === 'Backspace'){ e.preventDefault(); kbdBack(); return; }
+  if (code === 'Space' || e.key === ' ' || e.key === 'Spacebar'){ e.preventDefault(); kbdKey(' '); return; }
+  if (/^Key[A-Z]$/.test(code)){ e.preventDefault(); kbdKey(code.charAt(3).toLowerCase()); return; }
+  if (!code && e.key && e.key.length === 1 && /[a-zA-Z]/.test(e.key)){ e.preventDefault(); kbdKey(e.key.toLowerCase()); }   // e.code 미지원 폴백
 });
 /* 문장 TTS — 🔊 버튼과 "정답 시 자동재생"이 공유하는 단일 함수.
    auto:true = 정답 자동재생 경로(설정에서 끌 수 있음). 🔊 버튼은 설정과 무관하게 항상 재생.
