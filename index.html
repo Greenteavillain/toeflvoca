@@ -1718,7 +1718,10 @@ function makeAnswerCopyable(which, ans){
 }
 function clearCopyable(which){
   const { inp, slotsBox } = blankEls(which);
-  if (inp){ inp.readOnly = false; inp.classList.remove('copyable'); inp.onclick = null; }
+  // ★readOnly는 항상 true로 유지한다. 예전엔 여기서 false로 풀어 정답칸이 편집 가능해졌고,
+  //   그 결과 포커스 시 한/영 IME가 한글을 조합해 밀어넣어 backspace가 자모 단위로 지워졌다.
+  //   입력은 전역 keydown(e.code)·온스크린 키가 kbInput으로만 주입하므로 항상 readonly여야 안전.
+  if (inp){ inp.readOnly = true; inp.classList.remove('copyable'); inp.onclick = null; }
   if (slotsBox){ slotsBox.classList.remove('copyable'); slotsBox.onclick = null; }
 }
 function updateBlankModeBtn(){ $('mtA').classList.toggle('on', blankMode === 'slots'); $('mtB').classList.toggle('on', blankMode === 'width'); }
@@ -1745,6 +1748,20 @@ function setKbd(inp, enter){
   if (inp && !FINE_POINTER){ $('checkBtn').classList.add('hidden'); if (wrap) wrap.style.paddingBottom = (kbd.offsetHeight + 24) + 'px'; }
   else if (wrap){ wrap.style.paddingBottom = ''; }
 }
+// ★한/영 IME 조합 원천 차단: 정답 입력칸(blank·hBlank·wInput)에 포커스를 절대 주지 않는다.
+//   포커스된 readonly 칸에도 일부 브라우저/OS는 IME가 한글 조합을 밀어넣어, backspace가
+//   조합 자모를 한 번에 하나씩 지우느라 여러 번 눌러야 했고 입력이 씹혔다.
+//   입력 라우팅은 전역 keydown(e.code)·온스크린 키가 kbInput 변수로만 하므로 DOM 포커스는
+//   전혀 불필요 → 포커스 자체를 막으면 IME가 조합할 대상이 사라져 문제가 근본 해결된다.
+['blank','hBlank','wInput'].forEach(id => {
+  const el = $(id); if (!el) return;
+  // 1차 방어 = 항상 readonly(clearCopyable에서 유지) → readonly 칸은 IME 조합을 받지 않는다.
+  // 2차 안전망 = 혹시 비표준 브라우저가 조합을 시작하면 즉시 blur+취소해 자모가 안 쌓이게 한다.
+  el.addEventListener('compositionstart', ev => { ev.preventDefault(); el.blur(); });
+  el.addEventListener('beforeinput', ev => {
+    if (ev.inputType && ev.inputType.indexOf('insertComposition') === 0) ev.preventDefault();
+  });
+});
 function buildKeyboard(){
   const rows = [['q','w','e','r','t','y','u','i','o','p'],['a','s','d','f','g','h','j','k','l'],['z','x','c','v','b','n','m']];
   const kbd = $('kbd'); kbd.innerHTML = '';
@@ -3163,11 +3180,12 @@ const SB_KEY = 'sb_publishable_0HMfBq89jIDMWqhJLs5neg_FtyNZwgG';
 const CLOUD_KEY = 'voca-shared-6bf0576b67668af3b021';   // 고정 공유 키(모든 기기 동일) → 자동 동기화
 let cloudReady = false, pushTimer = null;
 
-async function sbRpc(fn, body){
+async function sbRpc(fn, body, keepalive){
   const r = await fetch(SB_URL + '/rest/v1/rpc/' + fn, {
     method:'POST',
     headers:{ apikey:SB_KEY, Authorization:'Bearer '+SB_KEY, 'Content-Type':'application/json' },
-    body: JSON.stringify(body)
+    body: JSON.stringify(body),
+    keepalive: !!keepalive   // 앱 이탈/종료 중에도 push가 완료되도록(플러시 경로에서만 사용)
   });
   if (!r.ok) throw new Error('rpc ' + fn + ' ' + r.status);
   const t = await r.text(); return t ? JSON.parse(t) : null;
@@ -3177,15 +3195,33 @@ function cloudPushSoon(){
   if (pushTimer) clearTimeout(pushTimer);
   pushTimer = setTimeout(cloudPushNow, 1500);
 }
-async function cloudPushNow(){
+async function cloudPushNow(opts){
   if (typeof navigator === 'undefined' || !navigator.onLine) return;
+  // ★빈 진도로 클라우드를 덮어쓰지 않는다: 단어가 하나도 없고 초기화(clearedAt)도 아니면
+  //   (로드 실패·최초 로딩 등 비정상 상태) push를 건너뛴다 → 타 기기의 진도 유실 방지.
+  //   진짜 초기화는 words={}라도 clearedAt이 있으므로 정상 전파된다.
+  if ((!store.words || Object.keys(store.words).length === 0) && !store.clearedAt) return;
+  const flush = !!(opts && opts.keepalive);
   try {
-    // 올리기 전 다른 기기가 그새 올린 변경을 먼저 병합 → 폰↔노트북 동시 사용 시 유실 방지
-    const remote = await sbRpc('toeflvoca_pull', { p_code:CLOUD_KEY });
-    if (remote && remote.words){ store = mergeStores(store, remote); try { localStorage.setItem(STORE_KEY, JSON.stringify(store)); } catch(e){} }
-    await sbRpc('toeflvoca_push', { p_code:CLOUD_KEY, p_data:store });
+    if (!flush){
+      // 평상시: 올리기 전 다른 기기가 그새 올린 변경을 먼저 병합 → 폰↔노트북 동시 사용 시 유실 방지
+      const remote = await sbRpc('toeflvoca_pull', { p_code:CLOUD_KEY });
+      if (remote && remote.words){ store = mergeStores(store, remote); try { localStorage.setItem(STORE_KEY, JSON.stringify(store)); } catch(e){} }
+    }
+    // flush(앱 이탈/종료)일 땐 병합을 건너뛰고 즉시 push — 언로드 중에도 끝나도록 keepalive.
+    // 다음 실행의 cloudInit이 어차피 pull-병합하므로 병합 생략이 안전하다.
+    await sbRpc('toeflvoca_push', { p_code:CLOUD_KEY, p_data:store }, flush);
   } catch(e){}
 }
+// 앱을 벗어나거나(탭 전환·홈으로 나감) 닫을 때, 미룬 1.5초 debounce를 즉시 반영.
+// 답하고 바로 앱을 나가/닫아도 클라우드에 안 올라가던 유실을 막는다.
+function cloudFlush(){
+  if (!cloudReady) return;
+  if (pushTimer){ clearTimeout(pushTimer); pushTimer = null; }
+  cloudPushNow({ keepalive:true });
+}
+if (typeof document !== 'undefined' && document.addEventListener) document.addEventListener('visibilitychange', () => { if (document.hidden) cloudFlush(); });
+if (typeof window !== 'undefined' && window.addEventListener) window.addEventListener('pagehide', cloudFlush);
 /* 단어별로 lastAt(최근 활동)이 더 나중인 기록을 채택 → 어느 기기 진도도 안 잃음.
    clearedAt = "기록 초기화" 시각. 이게 없으면 초기화 후 클라우드 병합이 지운 기록을
    되살리는 버그가 있었음(빈 로컬 + 클라우드 원본 → 원본 부활). 초기화보다 오래된
