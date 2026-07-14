@@ -430,8 +430,9 @@
 
         <div class="field-label">학습지 문장</div>
         <div class="chips">
-          <button class="chip" data-filter="sent:all">전체<span class="n">17</span></button>
+          <button class="chip" data-filter="sent:all">전체<span class="n">29</span></button>
           <button class="chip" data-filter="sent:1">Day 1<span class="n">17</span></button>
+          <button class="chip" data-filter="sent:2">Day 2<span class="n">12</span></button>
         </div>
 
         <div class="field-label">TOEFL Voca 01</div>
@@ -815,6 +816,44 @@ const CARDS = [
     note:'형용사', pre:'The store isn’t ', answer:'obligated',
     post:' to give you a refund simply because the item doesn’t fit or you had a change of heart.' },
 
+
+  /* ── 학습지 문장 Day 2 (12장, ETS Actual Test Complete the Words) ── */
+  { set:'2', ko:'게다가 그 도시는 메소아메리카 대부분의 지역과 경제적, 그리고 아마도 <mark>종교적</mark> 교류를 했다.',
+    note:'', pre:'Moreover, the city had economic and perhaps ', answer:'religious',
+    post:' contacts with most parts of Mesoamerica.' },
+  { set:'2', ko:'1970년, <mark>지질학자</mark> Kenneth J. Hsu와 William B. F. Ryan은 해양 연구 선박 Glomar Challenger호에 승선한 채 연구 자료를 수집하고 있었다.',
+    note:'', pre:'In 1970, ', answer:'geologists',
+    post:' Kenneth J. Hsu and William B. F. Ryan were collecting research data while aboard the oceanographic research vessel Glomar Challenger.' },
+  { set:'2', ko:'1970년, 지질학자 Kenneth J. Hsu와 William B. F. Ryan은 해양 연구 <mark>선박</mark> Glomar Challenger호에 승선한 채 연구 자료를 수집하고 있었다.',
+    note:'', pre:'In 1970, geologists Kenneth J. Hsu and William B. F. Ryan were collecting research data while aboard the oceanographic research ', answer:'vessel',
+    post:' Glomar Challenger.' },
+  { set:'2', ko:'이 특정 항해의 <mark>목적</mark>은 지중해 해저를 조사하는 것이었다.',
+    note:'', pre:'An ', answer:'objective',
+    post:' of this particular cruise was to investigate the floor of the Mediterranean.' },
+  { set:'2', ko:'이 특정 <mark>항해</mark>의 목적은 지중해 해저를 조사하는 것이었다.',
+    note:'', pre:'An objective of this particular ', answer:'cruise',
+    post:' was to investigate the floor of the Mediterranean.' },
+  { set:'2', ko:'한 가지 의문은 지중해의 <mark>무척추동물</mark> 동물군(척추가 없는 동물)이 약 600만 년 전에 갑자기 변했다는 증거와 관련이 있었다.',
+    note:'', pre:'One question was related to evidence that the ', answer:'invertebrate',
+    post:' fauna (animals without spines) of the Mediterranean had changed abruptly about 6 million years ago.' },
+  { set:'2', ko:'한 가지 의문은 지중해의 무척추동물 동물군(척추가 없는 동물)이 약 600만 년 전에 <mark>갑자기</mark> 변했다는 증거와 관련이 있었다.',
+    note:'', pre:'One question was related to evidence that the invertebrate fauna (animals without spines) of the Mediterranean had changed ', answer:'abruptly',
+    post:' about 6 million years ago.' },
+  { set:'2', ko:'몇몇은 대서양으로 <mark>이주하는</mark> 데 성공했다.',
+    note:'', pre:'A few managed to ', answer:'migrate',
+    post:' into the Atlantic.' },
+  { set:'2', ko:'환경 보호 단체들은 <mark>부수 어획</mark>과 관련된 명백하고 극심한 낭비를 비난해 왔다.',
+    note:'', pre:'Conservation organizations have condemned the obvious and extreme waste associated with ', answer:'bycatch',
+    post:'.' },
+  { set:'2', ko:'새우 저인망에 걸리는 멸종 위기 바다거북의 높은 폐사율에 대한 대중의 <mark>우려</mark>는 1980년대에 거북 제외 장치(TED) 개발로 이어졌다.',
+    note:'', pre:'Public ', answer:'concern',
+    post:' over high mortality rates of endangered marine turtles captured in shrimp trawls led to the development of turtle exclusion devices (TEDs) in the 1980s.' },
+  { set:'2', ko:'새우 저인망에 걸리는 멸종 위기 바다거북의 높은 <mark>폐사율</mark>에 대한 대중의 우려는 1980년대에 거북 제외 장치(TED) 개발로 이어졌다.',
+    note:'', pre:'Public concern over high ', answer:'mortality',
+    post:' rates of endangered marine turtles captured in shrimp trawls led to the development of turtle exclusion devices (TEDs) in the 1980s.' },
+  { set:'2', ko:'해양 엔지니어와 어부들은 부수 어획 감소 장치(BRD)를 포함하는 새우 그물 디자인 <mark>또한</mark> 개발했다.',
+    note:'', pre:'Marine engineers and fishers ', answer:'also',
+    post:' developed shrimp net designs that incorporate bycatch reduction devices (BRDs).' },
 
   /* ── 단어 암기 · TOEFL Voca 01 (해커스식, 60장) ── */
   {"mode": "hackers", "lesson": "1-1", "key": "1-1/abound", "word": "abound", "pos": "동사", "mi": "", "koMean": "풍부하다, 많이 있다", "syn": ["be plentiful", "teem", "proliferate"], "ko": "차갑고 영양분이 풍부한 북쪽 연안 바다에는 물고기가 <mark>많이 산다</mark>.", "pre": "Fish ", "answer": "abound", "post": " in the cold, nutrient-rich waters off the northern coast.", "note": "abound in/with로 자주 씁니다. abound는 ‘성공하다’가 아니라 ‘많이 존재하다’입니다."},
@@ -1398,7 +1437,7 @@ function collapseMeanings(list){
 
 /* ── 미리 보기(목록) ── */
 function filterLabel(f){
-  const map = { 'sent:all':'학습지 문장 · 전체','sent:1':'학습지 문장 · Day 1',
+  const map = { 'sent:all':'학습지 문장 · 전체','sent:1':'학습지 문장 · Day 1','sent:2':'학습지 문장 · Day 2',
     'voca:1-1':'TOEFL Voca 01 · 레슨 1-1','voca:1-2':'TOEFL Voca 01 · 레슨 1-2','voca:2-1':'TOEFL Voca 01 · 레슨 2-1','voca:2-2':'TOEFL Voca 01 · 레슨 2-2','voca:all':'TOEFL Voca 01 · 전체',
     'hk:1':'해커스 Day 1 · 1','hk:2':'해커스 Day 1 · 2','hk:3':'해커스 Day 1 · 3','hk:all':'해커스 Day 1 · 전체',
     'hk2:1':'해커스 Day 2 · 1','hk2:2':'해커스 Day 2 · 2','hk2:3':'해커스 Day 2 · 3','hk2:all':'해커스 Day 2 · 전체',

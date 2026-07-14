@@ -74,8 +74,10 @@ console.log('데이터/카운트');
 const H = CARDS.filter(c => c.mode === 'hackers');
 ok(Array.isArray(CARDS) && CARDS.length > 0, 'CARDS 로드됨 (' + CARDS.length + '장)');
 ok(H.length === 288, '해커스 총 288장 (Day1·Voca 145 + Day2 63 + Day3 62 + 경선식 18) (' + H.length + ')');
-ok(deckFor('sent:all').length === 17, '문장 전체 17');
+ok(deckFor('sent:all').length === 29, '문장 전체 29 (Day1 17 + Day2 12)');
 ok(deckFor('sent:1').length === 17, '문장 Day 1 = 17(토픽 통합)');
+ok(deckFor('sent:2').length === 12, '문장 Day 2 = 12(학습지 Complete the Words)');
+ok(deckFor('sent:2').every(c => (c.pre + c.answer + c.post).includes(c.answer) && /<mark>[^<]+<\/mark>/.test(c.ko)), '문장 Day 2 무결성(answer·mark)');
 ok(deckFor('ks:all').length === 18, '경선식 전체 18');
 ok(deckFor('voca:all').length === 80, 'Voca 전체 80');
 ok(deckFor('voca:1-1').length === 20 && deckFor('voca:1-2').length === 20 && deckFor('voca:2-1').length === 20 && deckFor('voca:2-2').length === 20, 'Voca 레슨 각 20(1-1/1-2/2-1/2-2)');
@@ -174,7 +176,7 @@ console.log('다의어 접기 — 한 판에 한 뜻(랜덤)');
   ok(col.every(c => full.includes(c)), '전부 원본 카드(합성 카드 아님)');
   ok(collapseMeanings(deckFor('hk:all')).length === 57, 'hk:all 65장 → 57단어');
   ok(collapseMeanings(deckFor('voca:all')).length === 80, 'Voca는 다의어 없음 → 80 유지');
-  ok(collapseMeanings(deckFor('sent:all')).length === 17, '문장형 영향 없음 → 17 유지');
+  ok(collapseMeanings(deckFor('sent:all')).length === 29, '문장형 영향 없음 → 29 유지');
   // 100회 반복 시 account for의 세 뜻이 모두 등장(랜덤 커버리지)
   const seen = new Set();
   for (let t = 0; t < 100; t++){
