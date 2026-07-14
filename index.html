@@ -471,9 +471,11 @@
 
         <div class="field-label">경선식 영단어</div>
         <div class="chips">
-          <button class="chip" data-filter="ks:all">전체<span class="n">18</span></button>
+          <button class="chip" data-filter="ks:all">전체<span class="n">39</span></button>
           <button class="chip" data-filter="ks:1">Lecture 01<span class="n">9</span></button>
           <button class="chip" data-filter="ks:2">Lecture 02<span class="n">9</span></button>
+          <button class="chip" data-filter="ks:3">Lecture 03<span class="n">7</span></button>
+          <button class="chip" data-filter="ks:4">Lecture 04<span class="n">14</span></button>
         </div>
       </div>
 
@@ -1147,7 +1149,29 @@ const CARDS = [
   {"mode": "hackers", "book": "ks2", "key": "ks2/nourish", "word": "nourish", "pos": "동사", "mi": "", "koMean": "영양분을 주다, 키우다", "syn": [], "ko": "좋은 음식은 몸에 <mark>영양분을 준다</mark>.", "pre": "Good food ", "answer": "nourishes", "post": " the body.", "note": "경선식: 밭에 거름으로 넣어리 쉬(nourish)를 → 영양분을 주다 · nourishment 영양분"},
   {"mode": "hackers", "book": "ks2", "key": "ks2/soar", "word": "soar", "pos": "동사", "mi": "", "koMean": "높이 치솟다, (물가 등이) 치솟다", "syn": [], "ko": "로켓은 공중으로 높이 <mark>치솟았다</mark>.", "pre": "The rocket ", "answer": "soared", "post": " up into the air.", "note": "경선식: 미사일을 쏘아(soar)서 하늘 높이 치솟다"},
   {"mode": "hackers", "book": "ks2", "key": "ks2/tidy", "word": "tidy", "pos": "형용사", "mi": "", "koMean": "단정한, 깔끔한", "syn": [], "ko": "내 방은 항상 <mark>깔끔하다</mark>.", "pre": "My room is always ", "answer": "tidy", "post": ".", "note": "경선식: 양복 입고 타이(tie)로 마무리하여 단정한·깔끔한"},
-  {"mode": "hackers", "book": "ks2", "key": "ks2/pale", "word": "pale", "pos": "형용사", "mi": "", "koMean": "창백한, (색깔이) 옅은, 흐릿한", "syn": [], "ko": "너 <mark>창백해</mark> 보여.", "pre": "You look ", "answer": "pale", "post": ".", "note": "경선식: 볼이 쏙 패일 정도로 살이 빠져서 창백한"}
+  {"mode": "hackers", "book": "ks2", "key": "ks2/pale", "word": "pale", "pos": "형용사", "mi": "", "koMean": "창백한, (색깔이) 옅은, 흐릿한", "syn": [], "ko": "너 <mark>창백해</mark> 보여.", "pre": "You look ", "answer": "pale", "post": ".", "note": "경선식: 볼이 쏙 패일 정도로 살이 빠져서 창백한"},
+  /* ── 경선식 Lecture 03·04 (21장, 밑줄=모르는 단어) ── */
+  {"mode":"hackers","book":"ks3","key":"ks3/grasshopper","word":"grasshopper","pos":"명사","mi":"","koMean":"메뚜기","syn":[],"ko":"나는 여름 내내 노래를 부른 <mark>메뚜기</mark>와 같다.","pre":"I'm like the ","answer":"grasshopper","post":" who sang all summer.","note":"grass(풀)에서 hop(깡충 뛰는) + er(~것) → 메뚜기."},
+  {"mode":"hackers","book":"ks3","key":"ks3/seldom","word":"seldom","pos":"부사","mi":"","koMean":"거의 ~ 않다","syn":[],"ko":"우리는 함께 저녁 식사를 <mark>거의 하지 않는다</mark>.","pre":"We ","answer":"seldom","post":" have dinner together.","note":"인심이 팍팍해진 요즘 상점 주인들은 물건을 sell(팔) 때 덤을 거의 주지 않는다 → seldom."},
+  {"mode":"hackers","book":"ks3","key":"ks3/wander","word":"wander","pos":"동사","mi":"","koMean":"헤매다, 떠돌아다니다","syn":[],"ko":"Kate는 벽에 걸린 그림들을 보면서 방 주위를 <mark>어슬렁거리고</mark> 있었다.","pre":"Kate was ","answer":"wandering","post":" around the room looking at the pictures on the walls.","note":"전라남도 완도에 놀러갔다가 길을 잃어 헤매다·떠돌아다니다 → wander."},
+  {"mode":"hackers","book":"ks3","key":"ks3/anxious","word":"anxious","pos":"형용사","mi":"","koMean":"① 걱정하는 ② 열망하는","syn":[],"ko":"나는 그의 건강이 <mark>염려된다</mark>.","pre":"I'm ","answer":"anxious","post":" about his health.","note":"공부해야 하는데 1시간이나 앵! 쉬었수ㅠㅠ → 잠시 쉬었다고 걱정하는(anxious about), 서울대를 그토록 열망하는(anxious for)."},
+  {"mode":"hackers","book":"ks3","key":"ks3/reap","word":"reap","pos":"동사","mi":"","koMean":"수확하다","syn":[],"ko":"농부는 씨를 뿌렸고, 그가 뿌렸던 것을 <mark>거두었다</mark>.","pre":"The farmer sowed seeds and ","answer":"reaped","post":" what he sowed.","note":"배추 잎, 상추 잎을 리읍(reap) 수확하다."},
+  {"mode":"hackers","book":"ks3","key":"ks3/warrant","word":"warrant","pos":"동사","mi":"","koMean":"보증, (수색·체포 등을 위한) 영장; 보증하다","syn":[],"ko":"이것이 좋은 기계임을 제가 <mark>보증합니다</mark>.","pre":"I ","answer":"warrant","post":" this is a good machine.","note":"청소년이 휴대폰을 살 때는 어른 two(2)명이 보증해야 한다 → 보증·보증하다, 그리고 수색·체포를 보증해 주는 영장."},
+  {"mode":"hackers","book":"ks3","key":"ks3/diameter","word":"diameter","pos":"명사","mi":"","koMean":"지름, 직경","syn":[],"ko":"<mark>직경</mark> 10센티미터","pre":"10 centimeters in ","answer":"diameter","post":"","note":"다이아몬드가 몇 미터인지 재는 지름·직경 (다이아+미터 → diameter)."},
+  {"mode":"hackers","book":"ks4","key":"ks4/outburst","word":"outburst","pos":"명사","mi":"","koMean":"(감정의) 폭발, 분출, 급격한 증가","syn":[],"ko":"폭력적인 <mark>폭발</mark>이 발생할 경우 즉시 개입해야 한다.","pre":"When a violent ","answer":"outburst","post":" occurs, immediate intervention is required.","note":"out(밖으로) + burst(폭발하다) → (감정의) 폭발·분출·급격한 증가."},
+  {"mode":"hackers","book":"ks4","key":"ks4/outrage","word":"outrage","pos":"명사","mi":"","koMean":"격분, 격노, 난폭한 행위","syn":[],"ko":"그녀는 <mark>격분</mark>에 휩싸였다.","pre":"She was filled with a sense of ","answer":"outrage","post":".","note":"out(밖으로) rage(분노)를 표출 → 격분·격노·난폭한 행위."},
+  {"mode":"hackers","book":"ks4","key":"ks4/prey","word":"prey","pos":"명사","mi":"","koMean":"먹이, 희생자","syn":[],"ko":"매들은 <mark>먹이</mark>를 찾으며 머리 위에서 맴돌았다.","pre":"Hawks circled overhead looking for ","answer":"prey","post":".","note":"풀에 있는 이는 개구리의 먹이 (pray→play, prey에서는 e(이)가 먹이로 구별)."},
+  {"mode":"hackers","book":"ks4","key":"ks4/detach","word":"detach","pos":"동사","mi":"","koMean":"떼어내다","syn":[],"ko":"그녀는 무리에서 <mark>떨어져 나와</mark> 나에게 합류하러 왔다.","pre":"She ","answer":"detached","post":" herself from the group and came over to join me.","note":"뒤를 뗐지(떼어냈지) → 떼어내다."},
+  {"mode":"hackers","book":"ks4","key":"ks4/cease","word":"cease","pos":"동사","mi":"","koMean":"중지하다, 중단되다","syn":[],"ko":"우리 선생님은 그들에게 싸움을 <mark>중지하라고</mark> 명령했다.","pre":"Our teacher ordered them to ","answer":"cease","post":" fighting.","note":"청소를 중지하다 그리고 손을 씻수(cease)."},
+  {"mode":"hackers","book":"ks4","key":"ks4/further","word":"further","pos":"형용사","mi":"","koMean":"그 이상의; 더욱, 더 멀리","syn":[],"ko":"<mark>더 자세한</mark> 내용은 내일 말씀 드리겠습니다.","pre":"I will tell you ","answer":"further","post":" details tomorrow.","note":"퍼더 → 뻗어: 그 이상으로·더욱 팔을 쭉 뻗어. far(멀리)의 비교급."},
+  {"mode":"hackers","book":"ks4","key":"ks4/rapid","word":"rapid","pos":"형용사","mi":"","koMean":"빠른, 신속한","syn":[],"ko":"대졸자 수의 <mark>급속한</mark> 증가","pre":"a ","answer":"rapid","post":" increase in the number of college graduates","note":"'내 피두(피도) 사용해!' 하며 수혈이 시급한 환자에게 달려간 빠른·신속한 속도 → rapid."},
+  {"mode":"hackers","book":"ks4","key":"ks4/liberal","word":"liberal","pos":"형용사","mi":"","koMean":"자유주의의, 자유로운","syn":[],"ko":"<mark>자유</mark>주의 민주주의","pre":"","answer":"liberal","post":" democracy","note":"국가가 통제하지 않고 '니가 벌고 싶은 대로 벌어!' 하고 내버려두는 → 자유주의의·자유로운(liberal)."},
+  {"mode":"hackers","book":"ks4","key":"ks4/contend","word":"contend","pos":"동사","mi":"","koMean":"① 싸우다, 논쟁하다 ② 주장하다","syn":[],"ko":"나는 정직은 항상 그만한 가치가 있다고 <mark>주장한다</mark>.","pre":"I ","answer":"contend","post":" that honesty is always worthwhile.","note":"북한의 큰 핵 탄두(contend) 개발을 두고 북한과 미국이 싸우다·논쟁하다·주장하다."},
+  {"mode":"hackers","book":"ks4","key":"ks4/fundamental","word":"fundamental","pos":"형용사","mi":"","koMean":"기본적인, 근본적인, 핵심적인","syn":[],"ko":"이것은 <mark>근본적인</mark> 결함이다.","pre":"This is the ","answer":"fundamental","post":" flaw.","note":"집을 짓기 위해 땅을 판다 그리고 철근으로 맨 틀(fundamental)을 만든다 → 기본적인·핵심적인."},
+  {"mode":"hackers","book":"ks4","key":"ks4/innocent","word":"innocent","pos":"형용사","mi":"","koMean":"순진한, 아무 잘못(죄)이 없는","syn":[],"ko":"<mark>순진한</mark> 아기","pre":"an ","answer":"innocent","post":" baby","note":"인어공주가 선(서 있는) 투(innocent)는 순진한·아무 잘못이 없는 투."},
+  {"mode":"hackers","book":"ks4","key":"ks4/voyage","word":"voyage","pos":"명사","mi":"","koMean":"항해; 항해하다","syn":[],"ko":"인생은 <mark>항해</mark>에 비유된다.","pre":"Life is compared to a ","answer":"voyage","post":".","note":"전망대의 선원에게 '육지가 보이지(voyage)?' → 항해·항해하다."},
+  {"mode":"hackers","book":"ks4","key":"ks4/continent","word":"continent","pos":"명사","mi":"","koMean":"대륙","syn":[],"ko":"아프리카 <mark>대륙</mark>","pre":"African ","answer":"continent","post":"","note":"바다 저 멀리 큰 티가 난(continent) two(2)개의 대륙."},
+  {"mode":"hackers","book":"ks4","key":"ks4/nationality","word":"nationality","pos":"명사","mi":"","koMean":"국적","syn":[],"ko":"당신의 <mark>국적</mark>은 어디입니까?","pre":"What is your ","answer":"nationality","post":"?","note":"국기가 그려져 그 사람의 국적인 nation(나라)을 앨려(알려)주는 티셔츠 → nationality."},
 ];
 CARDS.forEach(c => { if (!c.mode) c.mode = 'sentence'; });
 
@@ -1407,7 +1431,7 @@ function deckFor(f){
   if (f.indexOf('hk2:') === 0){ const seg = +f.slice(4); return all.filter(c => c.book === 'hk2' && c.seg === seg); }
   if (f === 'hk3:all') return all.filter(c => c.book === 'hk3');
   if (f.indexOf('hk3:') === 0){ const seg = +f.slice(4); return all.filter(c => c.book === 'hk3' && c.seg === seg); }
-  if (f === 'ks:all') return all.filter(c => c.book === 'ks1' || c.book === 'ks2');
+  if (f === 'ks:all') return all.filter(c => c.book && c.book.indexOf('ks') === 0);
   if (f.indexOf('ks:') === 0){ const l = f.slice(3); return all.filter(c => c.book === 'ks' + l); }
   return [];
 }
@@ -1443,7 +1467,7 @@ function filterLabel(f){
     'hk:1':'해커스 Day 1 · 1','hk:2':'해커스 Day 1 · 2','hk:3':'해커스 Day 1 · 3','hk:all':'해커스 Day 1 · 전체',
     'hk2:1':'해커스 Day 2 · 1','hk2:2':'해커스 Day 2 · 2','hk2:3':'해커스 Day 2 · 3','hk2:all':'해커스 Day 2 · 전체',
     'hk3:1':'해커스 Day 3 · 1','hk3:2':'해커스 Day 3 · 2','hk3:3':'해커스 Day 3 · 3','hk3:all':'해커스 Day 3 · 전체',
-    'ks:all':'경선식 · 전체','ks:1':'경선식 · Lecture 01','ks:2':'경선식 · Lecture 02','weak':'틀린 단어' };
+    'ks:all':'경선식 · 전체','ks:1':'경선식 · Lecture 01','ks:2':'경선식 · Lecture 02','ks:3':'경선식 · Lecture 03','ks:4':'경선식 · Lecture 04','weak':'틀린 단어' };
   return map[f] || '단어 목록';
 }
 function pvEsc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
@@ -2072,7 +2096,13 @@ function renderHackers(c){
   hStage = 1; hResolved = false; hHint = 0; hAns = c.answer;
   hWordCorrect = false; hMcqWrong = 0; hMcqHinted = false; hMcqDone = false;
   hFormat = 'pick'; hTargetSyn = ''; hShownSyns = []; hWrongSyns = []; hForeign = [];
-  $('hLevel').textContent = c.lesson ? `Voca 01 · 레슨 ${c.lesson}` : `Day 1 · ${c.num}번${c.mi || ''}`;
+  $('hLevel').textContent =
+      c.lesson ? `Voca 01 · 레슨 ${c.lesson}`
+    : c.part != null ? `Day 1 · ${c.num}번${c.mi || ''}`
+    : c.book === 'hk2' ? `해커스 Day 2 · ${c.seg}`
+    : c.book === 'hk3' ? `해커스 Day 3 · ${c.seg}`
+    : (c.book && c.book.indexOf('ks') === 0) ? `경선식 · Lecture ${c.book.slice(2).padStart(2, '0')}`
+    : '';
   $('hKo').innerHTML = c.ko;
   $('hPos').textContent = c.pos ? ('※ ' + c.pos + (c.mi ? ' · 뜻 ' + c.mi : '')) : '';
   $('hPre').textContent = c.pre; $('hPost').textContent = c.post;
@@ -2081,7 +2111,13 @@ function renderHackers(c){
   $('hMcqArea').classList.add('hidden'); $('hMcqOpts').innerHTML = '';
   $('hFeedback').textContent = ''; $('hFeedback').className = 'feedback';
   $('hNotePanel').classList.add('hidden'); $('hNotePanel').innerHTML = '';
-  $('hSrc').textContent = c.lesson ? `출처 · TOEFL Voca 01 · 레슨 ${c.lesson}` : `출처 · 해커스 보카 Day 1 · ${c.num}번`;
+  $('hSrc').textContent =
+      c.lesson ? `출처 · TOEFL Voca 01 · 레슨 ${c.lesson}`
+    : c.part != null ? `출처 · 해커스 보카 Day 1 · ${c.num}번`
+    : c.book === 'hk2' ? `출처 · 해커스 보카 Day 2 · ${c.seg}`
+    : c.book === 'hk3' ? `출처 · 해커스 보카 Day 3 · ${c.seg}`
+    : (c.book && c.book.indexOf('ks') === 0) ? `출처 · 경선식 영단어 · Lecture ${c.book.slice(2).padStart(2, '0')}`
+    : '';
   actions({ hint:true, skip:true, check:true });
   setKbd($('hBlank'), submitH1);
   setTimeout(() => $('hBlank').focus(), 30);

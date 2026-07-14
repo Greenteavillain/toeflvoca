@@ -73,12 +73,12 @@ const ok = (cond, msg) => { if (!cond) { console.log('  ✗', msg); fail++; } el
 console.log('데이터/카운트');
 const H = CARDS.filter(c => c.mode === 'hackers');
 ok(Array.isArray(CARDS) && CARDS.length > 0, 'CARDS 로드됨 (' + CARDS.length + '장)');
-ok(H.length === 288, '해커스 총 288장 (Day1·Voca 145 + Day2 63 + Day3 62 + 경선식 18) (' + H.length + ')');
+ok(H.length === 309, '해커스 총 309장 (Day1·Voca 145 + Day2 63 + Day3 62 + 경선식 39) (' + H.length + ')');
 ok(deckFor('sent:all').length === 29, '문장 전체 29 (Day1 17 + Day2 12)');
 ok(deckFor('sent:1').length === 17, '문장 Day 1 = 17(토픽 통합)');
 ok(deckFor('sent:2').length === 12, '문장 Day 2 = 12(학습지 Complete the Words)');
 ok(deckFor('sent:2').every(c => (c.pre + c.answer + c.post).includes(c.answer) && /<mark>[^<]+<\/mark>/.test(c.ko)), '문장 Day 2 무결성(answer·mark)');
-ok(deckFor('ks:all').length === 18, '경선식 전체 18');
+ok(deckFor('ks:all').length === 39, '경선식 전체 39 (9+9+7+14)');
 ok(deckFor('voca:all').length === 80, 'Voca 전체 80');
 ok(deckFor('voca:1-1').length === 20 && deckFor('voca:1-2').length === 20 && deckFor('voca:2-1').length === 20 && deckFor('voca:2-2').length === 20, 'Voca 레슨 각 20(1-1/1-2/2-1/2-2)');
 { const c = deckFor('voca:2-2')[0]; ok(mcqPool(c).length >= 4 && mcqPool(c).every(x => x.lesson === '2-2'), 'Voca 2-2 오답풀은 2-2 안에서만(4장+)');
@@ -153,8 +153,9 @@ ok(deckFor('hk2:all').length === 63, 'Day2 전체 63장(다의어 포함) (' + d
 ok(collapseMeanings(deckFor('hk2:all')).length === 56, 'Day2 접으면 56단어');
 ok(deckFor('hk2:1').length === 24 && deckFor('hk2:2').length === 22 && deckFor('hk2:3').length === 17, 'Day2 seg 카드수 24/22/17');
 ok(collapseMeanings(deckFor('hk2:1')).length === 20 && collapseMeanings(deckFor('hk2:2')).length === 20 && collapseMeanings(deckFor('hk2:3')).length === 16, 'Day2 seg 단어수 20/20/16');
-ok(deckFor('ks:1').length === 9 && deckFor('ks:2').length === 9, '경선식 Lecture 01·02 각 9');
-ok(deckFor('ks:1').every(c => c.syn.length === 0), '경선식은 동의어 없음(단일 스테이지)');
+ok(deckFor('ks:1').length === 9 && deckFor('ks:2').length === 9 && deckFor('ks:3').length === 7 && deckFor('ks:4').length === 14, '경선식 Lecture 01/02/03/04 = 9/9/7/14');
+ok(deckFor('ks:all').every(c => c.syn.length === 0 && c.note), '경선식 전부 동의어 없음(단일 스테이지)+연상 note 있음');
+ok(deckFor('ks:3').every(c => (c.pre + c.answer + c.post).includes(c.answer) && /<mark>[^<]+<\/mark>/.test(c.ko)) && deckFor('ks:4').every(c => (c.pre + c.answer + c.post).includes(c.answer) && /<mark>[^<]+<\/mark>/.test(c.ko)), '경선식 3/4 카드 무결성(answer·mark)');
 { const hk = CARDS.filter(c => c.mode === 'hackers'); const keys = hk.map(c => 'hk:' + c.key); ok(new Set(keys).size === keys.length, '전체 해커스 key 유일(Day2·경선식 포함)'); }
 { const c = deckFor('hk2:1').find(x => x.word === 'decline'); ok(mcqPool(c).every(x => x.book === 'hk2'), 'Day2 오답풀은 Day2 안에서만'); }
 

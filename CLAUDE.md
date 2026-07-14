@@ -84,7 +84,8 @@ malhaeboca/
 Day 2·경선식은 `part`/`lesson` 대신 **`book`** 필드로 구분(그래야 `hk:all`(part)·`voca:all`(lesson)에 안 섞임).
 - **해커스 Day 2**: `book:'hk2'` + `seg:1/2/3`(1–20/21–40/41–56). 필터 `hk2:1/2/3/all`. 다의어는 Day1처럼 `mi`. 63장(56단어).
 - **해커스 Day 3**: `book:'hk3'` + `seg:1/2/3`(단어 20/20/16). 필터 `hk3:1/2/3/all`. **62장(56단어)**. 다의어 6개(apparent·vigorous·spontaneous·rigorous·pore·legendary) `mi:①②`. **`bold` 필드=핵심(굵은) 동의어 개수**(syn=굵은+일반 순, `boldCount`가 앞 `bold`개를 `syn-full`로). 예문 한글번역(`ko`)은 교재에 없어 직접 번역(뜻 `<mark>`).
-- **경선식 영단어**: `book:'ks1'/'ks2'`(Lecture 01/02). 필터 `ks:1/2`. **`syn:[]` → 단일 스테이지**(빈칸만, `finishNoSyn`이 book=ks*면 "동의어 없어요" 대신 `note`(경선식 암기 이미지)만 💡로 표시). 밑줄=모르는 단어만 수록(각 9).
+- **경선식 영단어**: `book:'ks1'~'ks4'`(Lecture 01~04). 필터 `ks:1~4`·`ks:all`(=book이 'ks'로 시작). **`syn:[]` → 단일 스테이지**(빈칸만, `finishNoSyn`이 book=ks*면 "동의어 없어요" 대신 `note`(경선식 연상)만 💡로 표시). 밑줄=모르는 단어만 수록(9/9/7/14=39). 예문 한글번역·연상 note는 사진에서 직접.
+- **★카드 라벨(`renderHackers`의 hLevel/hSrc)**: `lesson`(Voca)·`part`(Day1)·`book`(hk2/hk3/ks*) 전부 분기해야 함. book 분기 빠지면 "Day 1 · undefined번"으로 폴백(Day2/3·경선식 shipped 버그였음, 2026-07-14 수정).
 - `deckFor`/`mcqPool`/`collapseMeanings`/미리보기 카운트 그룹키 모두 `book` 분기 추가. mcqPool은 book 내에서만 오답.
 
 ### 키 규칙 (중요)
